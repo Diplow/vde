@@ -1,3 +1,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .text-default {
+    @apply text-slate-900 dark:text-slate-100;
+  }
+
+  .text-secondary {
+    @apply text-slate-600 dark:text-slate-400;
+  }
+}
+
+.stop-primary-500 {
+  stop-color: theme("colors.primary.400");
+}
+
+.stop-secondary-500 {
+  stop-color: theme("colors.secondary.600");
+}

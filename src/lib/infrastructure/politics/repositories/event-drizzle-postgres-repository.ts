@@ -1,12 +1,22 @@
 import { eq } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import { EventEntity } from "~/lib/domains/politics/entities";
+import {
+  AuthorEntity,
+  AuthorEntityAttributes,
+  EventAggregate,
+} from "~/lib/domains/politics/entities";
 import { EventRepository } from "~/lib/domains/politics/repositories";
+import { Event as DBEvent } from "~/server/db/schema";
 import * as schema from "~/server/db/schema";
 
 export const EventDrizzlePostgresRepository = (
   db: PostgresJsDatabase<typeof schema>,
 ): EventRepository => {
+  const adapt = (event: DBEvent) => {
+    const author = new AuthorEntity({ id: event.authorId });
+    return new EventAggregate(event, author);
+  };
+
   return {
     getOne: async (eventId: number) => {
       const event = await db.query.events.findFirst({
@@ -17,7 +27,7 @@ export const EventDrizzlePostgresRepository = (
         throw new Error(`Event with ID ${eventId} not found`);
       }
 
-      return new EventEntity(event);
+      return adapt(event);
     },
 
     getMany: async (limit = 50, offset = 0) => {
@@ -27,7 +37,7 @@ export const EventDrizzlePostgresRepository = (
         orderBy: [schema.events.startDate],
       });
 
-      return eventsData.map((event) => new EventEntity(event));
+      return eventsData.map(adapt);
     },
 
     create: async (
@@ -35,7 +45,7 @@ export const EventDrizzlePostgresRepository = (
       description: string | null,
       startDate: Date,
       endDate: Date,
-      authorId: number,
+      author: AuthorEntityAttributes,
     ) => {
       const [insertedEvent] = await db
         .insert(schema.events)
@@ -44,7 +54,7 @@ export const EventDrizzlePostgresRepository = (
           description,
           startDate,
           endDate,
-          authorId,
+          authorId: author.id,
         })
         .returning();
 
@@ -52,7 +62,14 @@ export const EventDrizzlePostgresRepository = (
         throw new Error("Failed to create event: No event returned");
       }
 
-      return new EventEntity(insertedEvent);
+      return adapt(insertedEvent);
+    },
+
+    getByAuthorId: async (authorId: number) => {
+      const eventsData = await db.query.events.findMany({
+        where: eq(schema.events.authorId, authorId),
+      });
+      return eventsData.map(adapt);
     },
 
     update: async (
@@ -77,7 +94,7 @@ export const EventDrizzlePostgresRepository = (
         throw new Error("Failed to update event: No event returned");
       }
 
-      return new EventEntity(updatedEvent);
+      return adapt(updatedEvent);
     },
 
     remove: async (eventId: number) => {

@@ -72,7 +72,7 @@ export const eventRouter = createTRPCRouter({
       const event = await ctx.eventService.getOne(input.id);
 
       // Check if the user is the author of the event
-      if (event.authorId !== ctx.auth.userId) {
+      if (event.author.id !== ctx.auth.userId) {
         throw new Error("You can only update events that you created");
       }
 
@@ -93,7 +93,7 @@ export const eventRouter = createTRPCRouter({
       const event = await ctx.eventService.getOne(input.id);
 
       // Check if the user is the author of the event
-      if (event.authorId !== ctx.auth.userId) {
+      if (event.author.id !== ctx.auth.userId) {
         throw new Error("You can only delete events that you created");
       }
 

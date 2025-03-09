@@ -1,12 +1,29 @@
 import { eq } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import { MapEntity } from "~/lib/domains/mapping/entities";
+import {
+  MapAggregate,
+  OwnerEntity,
+  OwnerEntityAttributes,
+} from "~/lib/domains/mapping/entities";
 import { MapRepository } from "~/lib/domains/mapping/repositories";
 import * as schema from "~/server/db/schema";
 
 export const MapDrizzlePostgresRepository = (
   db: PostgresJsDatabase<typeof schema>,
 ): MapRepository => {
+  /**
+   * Adapts a database map record to a MapAggregate instance
+   */
+  const adapt = (map: typeof schema.maps.$inferSelect): MapAggregate => {
+    // Create owner attributes
+    const owner = new OwnerEntity({
+      id: map.ownerId,
+    });
+
+    // Return MapAggregate with empty items array
+    return new MapAggregate(map, owner, []);
+  };
+
   return {
     getOne: async (mapId: number) => {
       const map = await db.query.maps.findFirst({
@@ -17,7 +34,7 @@ export const MapDrizzlePostgresRepository = (
         throw new Error(`Map with ID ${mapId} not found`);
       }
 
-      return new MapEntity(map);
+      return adapt(map);
     },
 
     getMany: async (limit = 50, offset = 0) => {
@@ -27,7 +44,7 @@ export const MapDrizzlePostgresRepository = (
         orderBy: [schema.maps.createdAt],
       });
 
-      return mapsData.map((map) => new MapEntity(map));
+      return mapsData.map(adapt);
     },
 
     getByOwnerId: async (ownerId: number, limit = 50, offset = 0) => {
@@ -38,30 +55,28 @@ export const MapDrizzlePostgresRepository = (
         orderBy: [schema.maps.createdAt],
       });
 
-      return mapsData.map((map) => new MapEntity(map));
+      return mapsData.map(adapt);
     },
 
     create: async (
       name: string,
       description: string | null,
-      ownerId: number,
-      ownerType: string,
+      owner: OwnerEntityAttributes,
     ) => {
       const [insertedMap] = await db
         .insert(schema.maps)
         .values({
           name,
           description,
-          ownerId,
-          ownerType: ownerType as "user",
+          ownerId: owner.id,
+          ownerType: "user",
         })
         .returning();
 
       if (!insertedMap) {
         throw new Error("Failed to create map: No map returned");
       }
-
-      return new MapEntity(insertedMap);
+      return adapt(insertedMap);
     },
 
     update: async (
@@ -84,7 +99,7 @@ export const MapDrizzlePostgresRepository = (
         throw new Error("Failed to update map: No map returned");
       }
 
-      return new MapEntity(updatedMap);
+      return adapt(updatedMap);
     },
 
     remove: async (mapId: number) => {

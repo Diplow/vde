@@ -1,35 +1,14 @@
-import { MapEntity } from "~/lib/domains/mapping/entities";
 import { MapRepository } from "~/lib/domains/mapping/repositories";
 import { MapActions } from "~/lib/domains/mapping/actions";
-
-export interface MapContract {
-  id: string; // Converting from number to string for the API
-  name: string;
-  description: string | null;
-  ownerId: string;
-  ownerType: string;
-  createdAt: string; // ISO format for API
-  updatedAt: string; // ISO format for API
-}
+import { adapters, MapContract } from "~/lib/domains/mapping/adapters";
+import { OwnerEntity } from "./entities";
 
 export const ServiceMap = (repository: MapRepository) => {
   const actions = MapActions(repository);
 
-  const adapt = (entity: MapEntity): MapContract => {
-    return {
-      id: String(entity.data.id),
-      name: entity.data.name,
-      description: entity.data.description,
-      ownerId: String(entity.data.ownerId),
-      ownerType: entity.data.ownerType,
-      createdAt: entity.data.createdAt.toISOString(),
-      updatedAt: entity.data.updatedAt.toISOString(),
-    };
-  };
-
   const getOne = async (id: string): Promise<MapContract> => {
     const map = await actions.getOne(validateAndParseId(id));
-    return adapt(map);
+    return adapters.map(map);
   };
 
   const getMany = async (
@@ -43,7 +22,7 @@ export const ServiceMap = (repository: MapRepository) => {
       return [];
     }
 
-    return maps.map(adapt);
+    return maps.map(adapters.map);
   };
 
   const getByOwnerId = async (
@@ -62,23 +41,19 @@ export const ServiceMap = (repository: MapRepository) => {
       return [];
     }
 
-    return maps.map(adapt);
+    return maps.map(adapters.map);
   };
 
   const create = async (
     name: string,
     description: string | null,
     ownerId: string,
-    ownerType: string,
   ): Promise<MapContract> => {
-    const map = await actions.create(
-      name,
-      description,
-      validateAndParseId(ownerId),
-      ownerType,
-    );
+    const map = await actions.create(name, description, {
+      id: validateAndParseId(ownerId),
+    });
 
-    return adapt(map);
+    return adapters.map(map);
   };
 
   const update = async (
@@ -88,9 +63,9 @@ export const ServiceMap = (repository: MapRepository) => {
       description?: string | null;
     },
   ): Promise<MapContract> => {
-    assertUpdateDataIsNotEmpty(data);
+    validateUpdateDataIsNotEmpty(data);
     const updatedMap = await actions.update(validateAndParseId(id), data);
-    return adapt(updatedMap);
+    return adapters.map(updatedMap);
   };
 
   const remove = async (id: string): Promise<void> => {
@@ -122,7 +97,7 @@ const validatePaginationParameters = (limit?: number, offset?: number) => {
   };
 };
 
-const assertUpdateDataIsNotEmpty = (data: {
+const validateUpdateDataIsNotEmpty = (data: {
   name?: string;
   description?: string | null;
 }) => {

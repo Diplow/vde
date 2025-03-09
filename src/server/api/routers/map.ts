@@ -65,7 +65,6 @@ export const mapRouter = createTRPCRouter({
         input.name,
         input.description ?? null,
         ctx.auth.userId,
-        "user", // Default owner type
       );
     }),
 
@@ -88,7 +87,7 @@ export const mapRouter = createTRPCRouter({
       const map = await ctx.mapService.getOne(input.id);
 
       // Check if the user is the owner of the map
-      if (map.ownerId !== ctx.auth.userId) {
+      if (map.owner.id !== ctx.auth.userId) {
         throw new Error("You can only update maps that you created");
       }
 
@@ -109,7 +108,7 @@ export const mapRouter = createTRPCRouter({
       const map = await ctx.mapService.getOne(input.id);
 
       // Check if the user is the owner of the map
-      if (map.ownerId !== ctx.auth.userId) {
+      if (map.owner.id !== ctx.auth.userId) {
         throw new Error("You can only delete maps that you created");
       }
 

@@ -1,60 +1,75 @@
-import { MapEntity, MapAttributes } from "~/lib/domains/mapping/entities";
+import {
+  MapAggregate,
+  MapAttributes,
+  MapItemEntity,
+  OwnerEntity,
+  OwnerEntityAttributes,
+} from "~/lib/domains/mapping/entities";
 import { MapRepository } from "~/lib/domains/mapping/repositories";
+import { GenericAggregateMemoryRepository } from "~/lib/infrastructure/common/generic-memory-repository";
+import { GenericAggregate } from "~/lib/domains/utils/entities";
 
-export class MapMemoryRepository implements MapRepository {
-  private maps: Map<number, MapAttributes> = new Map();
-  private idCounter: number = 1;
+export class MapAggregateRepository implements MapRepository {
+  private repository: GenericAggregateMemoryRepository<
+    MapAttributes,
+    MapAggregate
+  >;
 
-  async getOne(mapId: number): Promise<MapEntity> {
-    const map = this.maps.get(mapId);
-    if (!map) {
-      throw new Error(`Map with ID ${mapId} not found`);
-    }
-    return new MapEntity(map);
+  constructor() {
+    this.repository = new GenericAggregateMemoryRepository<
+      MapAttributes,
+      MapAggregate
+    >(
+      class extends MapAggregate {
+        constructor(
+          data: MapAttributes,
+          relatedItems: Record<string, GenericAggregate>,
+          relatedLists: Record<string, GenericAggregate[]>,
+        ) {
+          super(
+            data,
+            relatedItems.owner as OwnerEntity,
+            relatedLists.items as MapItemEntity[],
+          );
+        }
+      },
+    );
   }
 
-  async getMany(limit = 50, offset = 0): Promise<MapEntity[]> {
-    const maps = Array.from(this.maps.values())
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-      .slice(offset, offset + limit);
+  async getOne(mapId: number): Promise<MapAggregate> {
+    return await this.repository.getOne(mapId);
+  }
 
-    return maps.map((map) => new MapEntity(map));
+  async getMany(limit?: number, offset?: number): Promise<MapAggregate[]> {
+    return await this.repository.getMany(limit, offset);
   }
 
   async getByOwnerId(
     ownerId: number,
-    limit = 50,
-    offset = 0,
-  ): Promise<MapEntity[]> {
-    const maps = Array.from(this.maps.values())
-      .filter((map) => map.ownerId === ownerId)
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-      .slice(offset, offset + limit);
-
-    return maps.map((map) => new MapEntity(map));
+    limit?: number,
+    offset?: number,
+  ): Promise<MapAggregate[]> {
+    return await this.repository.getByRelatedItem(
+      "owner",
+      ownerId,
+      limit,
+      offset,
+    );
   }
 
   async create(
     name: string,
     description: string | null,
-    ownerId: number,
-    ownerType: string,
-  ): Promise<MapEntity> {
-    const id = this.idCounter++;
-    const now = new Date();
-
-    const map: MapAttributes = {
-      id,
-      name,
-      description,
-      ownerId,
-      ownerType: ownerType as "user",
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    this.maps.set(id, map);
-    return new MapEntity(map);
+    owner: OwnerEntityAttributes,
+  ): Promise<MapAggregate> {
+    return await this.repository.create(
+      {
+        name,
+        description,
+      },
+      { owner: new OwnerEntity(owner) },
+      { items: [] },
+    );
   }
 
   async update(
@@ -63,32 +78,23 @@ export class MapMemoryRepository implements MapRepository {
       name?: string;
       description?: string | null;
     },
-  ): Promise<MapEntity> {
-    const map = this.maps.get(mapId);
-    if (!map) {
-      throw new Error(`Map with ID ${mapId} not found`);
-    }
+  ): Promise<MapAggregate> {
+    return await this.repository.update(mapId, data);
+  }
 
-    const updatedMap = {
-      ...map,
-      ...data,
-      updatedAt: new Date(),
-    };
+  async addItem(mapId: number, item: MapItemEntity): Promise<MapAggregate> {
+    return await this.repository.addToRelatedList(mapId, "items", item);
+  }
 
-    this.maps.set(mapId, updatedMap);
-    return new MapEntity(updatedMap);
+  async removeItem(mapId: number, itemId: number): Promise<MapAggregate> {
+    return await this.repository.removeFromRelatedList(mapId, "items", itemId);
   }
 
   async remove(mapId: number): Promise<void> {
-    if (!this.maps.has(mapId)) {
-      throw new Error(`Map with ID ${mapId} not found`);
-    }
-
-    this.maps.delete(mapId);
+    await this.repository.remove(mapId);
   }
 
   reset(): void {
-    this.maps.clear();
-    this.idCounter = 1;
+    this.repository.reset();
   }
 }

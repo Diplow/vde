@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { MapMemoryRepositoryGeneric as MapMemoryRepository } from "~/lib/infrastructure/mapping/repositories/map-memory-repository-generic";
+import { MapAggregateRepository } from "~/lib/infrastructure/mapping/repositories/map-memory-repository";
 import { ServiceMap } from "./services";
 
 describe("MapService", () => {
-  const repository = new MapMemoryRepository();
+  const repository = new MapAggregateRepository();
   const service = ServiceMap(repository);
 
   beforeEach(() => {
@@ -12,33 +12,32 @@ describe("MapService", () => {
 
   describe("create", () => {
     it("should create a map", async () => {
-      const map = await service.create(
-        "Test Map",
-        "Test Description",
-        "1",
-        "user",
-      );
+      const map = await service.create("Test Map", "Test Description", "1");
 
       expect(map).toEqual({
         id: "1",
         name: "Test Map",
         description: "Test Description",
-        ownerId: "1",
-        ownerType: "user",
+        owner: {
+          id: "1",
+        },
+        items: [],
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
       });
     });
 
     it("should create a map with null description", async () => {
-      const map = await service.create("Test Map", null, "1", "user");
+      const map = await service.create("Test Map", null, "1");
 
       expect(map).toEqual({
         id: "1",
         name: "Test Map",
         description: null,
-        ownerId: "1",
-        ownerType: "user",
+        owner: {
+          id: "1",
+        },
+        items: [],
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
       });
@@ -47,12 +46,7 @@ describe("MapService", () => {
 
   describe("getOne", () => {
     it("should get a map by id", async () => {
-      const created = await service.create(
-        "Test Map",
-        "Test Description",
-        "1",
-        "user",
-      );
+      const created = await service.create("Test Map", "Test Description", "1");
       const map = await service.getOne(created.id);
 
       expect(map).toEqual(created);
@@ -69,9 +63,9 @@ describe("MapService", () => {
 
   describe("getMany", () => {
     it("should get multiple maps with pagination", async () => {
-      await service.create("Map 1", "Description 1", "1", "user");
-      await service.create("Map 2", "Description 2", "1", "user");
-      await service.create("Map 3", "Description 3", "1", "user");
+      await service.create("Map 1", "Description 1", "1");
+      await service.create("Map 2", "Description 2", "1");
+      await service.create("Map 3", "Description 3", "1");
 
       const maps = await service.getMany(2, 0);
       expect(maps).toHaveLength(2);
@@ -91,18 +85,18 @@ describe("MapService", () => {
 
   describe("getByOwnerId", () => {
     it("should get maps by owner id", async () => {
-      await service.create("Map 1", "Description 1", "1", "user");
-      await service.create("Map 2", "Description 2", "1", "user");
-      await service.create("Map 3", "Description 3", "2", "user");
+      await service.create("Map 1", "Description 1", "1");
+      await service.create("Map 2", "Description 2", "1");
+      await service.create("Map 3", "Description 3", "2");
 
       const userMaps = await service.getByOwnerId("1");
       expect(userMaps).toHaveLength(2);
-      expect(userMaps[0]?.ownerId).toBe("1");
-      expect(userMaps[1]?.ownerId).toBe("1");
+      expect(userMaps[0]?.owner.id).toBe("1");
+      expect(userMaps[1]?.owner.id).toBe("1");
 
       const otherUserMaps = await service.getByOwnerId("2");
       expect(otherUserMaps).toHaveLength(1);
-      expect(otherUserMaps[0]?.ownerId).toBe("2");
+      expect(otherUserMaps[0]?.owner.id).toBe("2");
     });
 
     it("should return empty array if no maps found for owner", async () => {
@@ -113,12 +107,7 @@ describe("MapService", () => {
 
   describe("update", () => {
     it("should update a map", async () => {
-      const created = await service.create(
-        "Test Map",
-        "Test Description",
-        "1",
-        "user",
-      );
+      const created = await service.create("Test Map", "Test Description", "1");
 
       const updated = await service.update(created.id, {
         name: "Updated Map",
@@ -138,12 +127,7 @@ describe("MapService", () => {
     });
 
     it("should update only the name", async () => {
-      const created = await service.create(
-        "Test Map",
-        "Test Description",
-        "1",
-        "user",
-      );
+      const created = await service.create("Test Map", "Test Description", "1");
 
       const updated = await service.update(created.id, {
         name: "Updated Map",
@@ -157,12 +141,7 @@ describe("MapService", () => {
     });
 
     it("should update only the description", async () => {
-      const created = await service.create(
-        "Test Map",
-        "Test Description",
-        "1",
-        "user",
-      );
+      const created = await service.create("Test Map", "Test Description", "1");
 
       const updated = await service.update(created.id, {
         description: "Updated Description",
@@ -176,12 +155,7 @@ describe("MapService", () => {
     });
 
     it("should throw an error if no update data provided", async () => {
-      const created = await service.create(
-        "Test Map",
-        "Test Description",
-        "1",
-        "user",
-      );
+      const created = await service.create("Test Map", "Test Description", "1");
 
       await expect(service.update(created.id, {})).rejects.toThrow(
         "No update data provided",
@@ -191,12 +165,7 @@ describe("MapService", () => {
 
   describe("remove", () => {
     it("should remove a map", async () => {
-      const created = await service.create(
-        "Test Map",
-        "Test Description",
-        "1",
-        "user",
-      );
+      const created = await service.create("Test Map", "Test Description", "1");
 
       await service.remove(created.id);
 

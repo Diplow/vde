@@ -1,17 +1,27 @@
-import { off } from "process";
-import { EventEntity } from "~/lib/domains/politics/entities";
+import {
+  EventAggregate,
+  AuthorEntityAttributes,
+} from "~/lib/domains/politics/entities";
 import { EventRepository } from "~/lib/domains/politics/repositories";
 
 export const EventActions = (repository: EventRepository) => {
-  const getOne = async (id: number): Promise<EventEntity> => {
+  const getOne = async (id: number): Promise<EventAggregate> => {
     return repository.getOne(id);
   };
 
   const getMany = async (
     limit?: number,
     offset?: number,
-  ): Promise<EventEntity[]> => {
+  ): Promise<EventAggregate[]> => {
     return repository.getMany(limit, offset);
+  };
+
+  const getByAuthorId = async (
+    authorId: number,
+    limit?: number,
+    offset?: number,
+  ): Promise<EventAggregate[]> => {
+    return repository.getByAuthorId(authorId, limit, offset);
   };
 
   const create = async (
@@ -19,19 +29,19 @@ export const EventActions = (repository: EventRepository) => {
     description: string | null,
     startDate: Date,
     endDate: Date,
-    authorId: number,
-  ): Promise<EventEntity> => {
-    EventEntity.validateTitle(title);
-    EventEntity.validateStartDate(startDate);
-    EventEntity.validateEndDate(endDate);
-    EventEntity.validateDateRange(startDate, endDate);
+    author: AuthorEntityAttributes,
+  ): Promise<EventAggregate> => {
+    EventAggregate.validateTitle(title);
+    EventAggregate.validateStartDate(startDate);
+    EventAggregate.validateEndDate(endDate);
+    EventAggregate.validateDateRange(startDate, endDate);
 
     return repository.create(
       title.trim(),
       description ? description.trim() : null,
       startDate,
       endDate,
-      authorId,
+      author,
     );
   };
 
@@ -43,17 +53,17 @@ export const EventActions = (repository: EventRepository) => {
       startDate?: Date;
       endDate?: Date;
     },
-  ): Promise<EventEntity> => {
-    data.title && EventEntity.validateTitle(data.title);
-    data.startDate && EventEntity.validateStartDate(data.startDate);
-    data.endDate && EventEntity.validateEndDate(data.endDate);
+  ): Promise<EventAggregate> => {
+    data.title && EventAggregate.validateTitle(data.title);
+    data.startDate && EventAggregate.validateStartDate(data.startDate);
+    data.endDate && EventAggregate.validateEndDate(data.endDate);
     await validateNewEventDates(
       eventId,
       repository,
       data.startDate,
       data.endDate,
     );
-    return repository.update(eventId, EventEntity.cleanData(data));
+    return repository.update(eventId, EventAggregate.cleanData(data));
   };
 
   const remove = async (eventId: number): Promise<void> => {
@@ -63,6 +73,7 @@ export const EventActions = (repository: EventRepository) => {
   return {
     getOne,
     getMany,
+    getByAuthorId,
     create,
     update,
     remove,
@@ -79,5 +90,5 @@ const validateNewEventDates = async (
   const currentEvent = await repository.getOne(eventId);
   const startDate = newStartDate || currentEvent.data.startDate;
   const endDate = newEndDate || currentEvent.data.endDate;
-  EventEntity.validateEndDateAfterStartDate(startDate, endDate);
+  EventAggregate.validateEndDateAfterStartDate(startDate, endDate);
 };

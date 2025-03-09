@@ -1,25 +1,27 @@
-import type { MapEntity } from "~/lib/domains/mapping/entities";
+import type {
+  MapAggregate,
+  OwnerEntityAttributes,
+} from "~/lib/domains/mapping/entities";
 
 export interface MapRepository {
-  getOne(mapId: number): Promise<MapEntity>;
-  getMany(limit?: number, offset?: number): Promise<MapEntity[]>;
+  getOne(mapId: number): Promise<MapAggregate>;
+  getMany(limit?: number, offset?: number): Promise<MapAggregate[]>;
   getByOwnerId(
     ownerId: number,
     limit?: number,
     offset?: number,
-  ): Promise<MapEntity[]>;
+  ): Promise<MapAggregate[]>;
   create(
     name: string,
     description: string | null,
-    ownerId: number,
-    ownerType: string,
-  ): Promise<MapEntity>;
+    owner: OwnerEntityAttributes,
+  ): Promise<MapAggregate>;
   update(
     mapId: number,
     data: {
       name?: string;
       description?: string | null;
     },
-  ): Promise<MapEntity>;
+  ): Promise<MapAggregate>;
   remove(mapId: number): Promise<void>;
 }

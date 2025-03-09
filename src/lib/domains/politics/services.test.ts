@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { EventMemoryRepository } from "~/lib/infrastructure/politics/repositories/event-memory-repository";
+import { EventMemoryRepositoryGeneric } from "~/lib/infrastructure/politics/repositories/event-memory-repository-generic";
 import { ServiceEvent } from "~/lib/domains/politics/services";
 
 describe("EventService", () => {
   // Setup test repository and service
-  const repository = new EventMemoryRepository();
+  const repository = new EventMemoryRepositoryGeneric();
   const eventService = ServiceEvent(repository);
 
   // Test data
@@ -37,7 +37,7 @@ describe("EventService", () => {
         description: testEvent.description,
         startDate: expect.any(String),
         endDate: expect.any(String),
-        authorId: testEvent.authorId,
+        author: { id: testEvent.authorId },
         id: expect.any(String),
         createdAt: expect.any(String),
       });
@@ -230,7 +230,7 @@ describe("EventService", () => {
 
       // Verify ID is a string
       expect(typeof created.id).toBe("string");
-      expect(typeof created.authorId).toBe("string");
+      expect(typeof created.author.id).toBe("string");
 
       // Verify we can parse it back to a number
       expect(Number.isInteger(parseInt(created.id, 10))).toBe(true);

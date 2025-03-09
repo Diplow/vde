@@ -1,15 +1,23 @@
-import type { EventEntity } from "~/lib/domains/politics/entities";
+import type {
+  EventAggregate,
+  AuthorEntityAttributes,
+} from "~/lib/domains/politics/entities";
 
 export interface EventRepository {
-  getOne(eventId: number): Promise<EventEntity>;
-  getMany(limit?: number, offset?: number): Promise<EventEntity[]>;
+  getOne(eventId: number): Promise<EventAggregate>;
+  getMany(limit?: number, offset?: number): Promise<EventAggregate[]>;
+  getByAuthorId(
+    authorId: number,
+    limit?: number,
+    offset?: number,
+  ): Promise<EventAggregate[]>;
   create(
     title: string,
     description: string | null,
     startDate: Date,
     endDate: Date,
-    authorId: number,
-  ): Promise<EventEntity>;
+    author: AuthorEntityAttributes,
+  ): Promise<EventAggregate>;
   update(
     eventId: number,
     data: {
@@ -18,6 +26,6 @@ export interface EventRepository {
       startDate?: Date;
       endDate?: Date;
     },
-  ): Promise<EventEntity>;
+  ): Promise<EventAggregate>;
   remove(eventId: number): Promise<void>;
 }

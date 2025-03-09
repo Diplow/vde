@@ -1,34 +1,13 @@
-import { EventEntity } from "~/lib/domains/politics/entities";
 import { EventRepository } from "~/lib/domains/politics/repositories";
 import { EventActions } from "~/lib/domains/politics/actions";
-
-export interface EventContract {
-  id: string; // Note: Converting from number to string for the API
-  title: string;
-  description: string | null;
-  startDate: string; // ISO format for API
-  endDate: string; // ISO format for API
-  authorId: string;
-  createdAt: string; // ISO format for API
-}
+import { adapters, EventContract } from "~/lib/domains/politics/adapters";
 
 export const ServiceEvent = (repository: EventRepository) => {
   const actions = EventActions(repository);
-  const adapt = (entity: EventEntity): EventContract => {
-    return {
-      id: String(entity.data.id),
-      title: entity.data.title,
-      description: entity.data.description,
-      startDate: entity.data.startDate.toISOString(),
-      endDate: entity.data.endDate.toISOString(),
-      authorId: String(entity.data.authorId),
-      createdAt: entity.data.createdAt.toISOString(),
-    };
-  };
 
   const getOne = async (id: string): Promise<EventContract> => {
     const event = await actions.getOne(validateAndParseId(id));
-    return adapt(event);
+    return adapters.event(event);
   };
 
   const getMany = async (
@@ -42,7 +21,26 @@ export const ServiceEvent = (repository: EventRepository) => {
       return [];
     }
 
-    return await Promise.all(events.map(adapt));
+    return events.map(adapters.event);
+  };
+
+  const getByAuthorId = async (
+    authorId: string,
+    limit?: number,
+    offset?: number,
+  ): Promise<EventContract[]> => {
+    const params = validatePaginationParameters(limit, offset);
+    const events = await actions.getByAuthorId(
+      validateAndParseId(authorId),
+      params.limit,
+      params.offset,
+    );
+
+    if (!events || !Array.isArray(events)) {
+      return [];
+    }
+
+    return events.map(adapters.event);
   };
 
   const create = async (
@@ -57,10 +55,10 @@ export const ServiceEvent = (repository: EventRepository) => {
       description,
       new Date(startDate),
       new Date(endDate),
-      validateAndParseId(authorId),
+      { id: validateAndParseId(authorId) },
     );
 
-    return adapt(event);
+    return adapters.event(event);
   };
 
   const update = async (
@@ -78,17 +76,29 @@ export const ServiceEvent = (repository: EventRepository) => {
       description?: string | null;
       startDate?: Date;
       endDate?: Date;
-    } = {
-      title: data.title,
-      description: data.description,
-      startDate: data.startDate ? new Date(data.startDate) : undefined,
-      endDate: data.endDate ? new Date(data.endDate) : undefined,
-    };
+    } = {};
+
+    if (data.title !== undefined) {
+      updateData.title = data.title;
+    }
+
+    if (data.description !== undefined) {
+      updateData.description = data.description;
+    }
+
+    if (data.startDate) {
+      updateData.startDate = new Date(data.startDate);
+    }
+
+    if (data.endDate) {
+      updateData.endDate = new Date(data.endDate);
+    }
+
     const updatedEvent = await actions.update(
       validateAndParseId(id),
       updateData,
     );
-    return adapt(updatedEvent);
+    return adapters.event(updatedEvent);
   };
 
   const remove = async (id: string): Promise<void> => {
@@ -98,6 +108,7 @@ export const ServiceEvent = (repository: EventRepository) => {
   return {
     getOne,
     getMany,
+    getByAuthorId,
     create,
     update,
     remove,

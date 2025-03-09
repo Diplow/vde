@@ -11,14 +11,6 @@ async function verifySchema() {
       Object.keys(schema).filter((key) => !key.startsWith("_")),
     );
 
-    // Try to query the users table
-    const users = await db.query.users.findMany({
-      limit: 5,
-    });
-    console.log(
-      `Successfully queried users table. Found ${users.length} users.`,
-    );
-
     // Try to query the maps table
     const maps = await db.query.maps.findMany({
       limit: 5,
@@ -31,6 +23,14 @@ async function verifySchema() {
     });
     console.log(
       `Successfully queried events table. Found ${events.length} events.`,
+    );
+
+    // Try to query the resources table
+    const resources = await db.query.resources.findMany({
+      limit: 5,
+    });
+    console.log(
+      `Successfully queried resources table. Found ${resources.length} resources.`,
     );
 
     console.log("Schema verification completed successfully!");

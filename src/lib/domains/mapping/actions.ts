@@ -1,15 +1,18 @@
 import type { MapRepository } from "~/lib/domains/mapping/repositories";
-import type { MapEntity } from "~/lib/domains/mapping/entities";
+import type {
+  MapAggregate,
+  OwnerEntityAttributes,
+} from "~/lib/domains/mapping/entities";
 
 export const MapActions = (repository: MapRepository) => {
-  const getOne = async (mapId: number): Promise<MapEntity> => {
+  const getOne = async (mapId: number): Promise<MapAggregate> => {
     return await repository.getOne(mapId);
   };
 
   const getMany = async (
     limit?: number,
     offset?: number,
-  ): Promise<MapEntity[]> => {
+  ): Promise<MapAggregate[]> => {
     return await repository.getMany(limit, offset);
   };
 
@@ -17,17 +20,16 @@ export const MapActions = (repository: MapRepository) => {
     ownerId: number,
     limit?: number,
     offset?: number,
-  ): Promise<MapEntity[]> => {
+  ): Promise<MapAggregate[]> => {
     return await repository.getByOwnerId(ownerId, limit, offset);
   };
 
   const create = async (
     name: string,
     description: string | null,
-    ownerId: number,
-    ownerType: string,
-  ): Promise<MapEntity> => {
-    return await repository.create(name, description, ownerId, ownerType);
+    owner: OwnerEntityAttributes,
+  ): Promise<MapAggregate> => {
+    return await repository.create(name, description, owner);
   };
 
   const update = async (
@@ -36,7 +38,7 @@ export const MapActions = (repository: MapRepository) => {
       name?: string;
       description?: string | null;
     },
-  ): Promise<MapEntity> => {
+  ): Promise<MapAggregate> => {
     return await repository.update(mapId, data);
   };
 
