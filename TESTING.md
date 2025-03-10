@@ -1,94 +1,119 @@
 # Testing Guide
 
-This document provides information on how to run tests in this project.
+This project uses Vitest for testing and includes both unit tests and integration tests.
+
+## Test Types
+
+- **Unit Tests**: Tests that mock dependencies and focus on testing a single unit of code in isolation.
+- **Integration Tests**: Tests that use real dependencies (like databases) and test how components work together.
+
+## Test Database Setup
+
+Integration tests require a test database. Follow these steps to set up your test database:
+
+1. Create a `.env.test` file in the project root (if not already present) with your test database connection:
+
+```
+TEST_DATABASE_URL=postgres://username:password@localhost:5432/test_db
+```
+
+2. Run the test database setup script:
+
+```bash
+./setup-test-db.sh
+```
+
+This script will:
+
+- Create the test database if it doesn't exist
+- Run migrations to set up the schema
+- Prepare the database for testing
+
+> **Note**: Never use your production database for testing!
 
 ## Running Tests
 
-There are several ways to run tests in this project:
+We provide a convenient script `run-tests.sh` to run tests with various options.
 
-### Using npm/pnpm Scripts
-
-The following scripts are available in `package.json`:
-
-- `pnpm test` - Run tests in interactive mode
-- `pnpm test:run` - Run all tests once
-- `pnpm test:watch` - Run tests in watch mode
-- `pnpm test:ui` - Run tests with UI
-- `pnpm test:coverage` - Run tests with coverage
-
-### Using the Test Runner Script
-
-For convenience, a test runner script is provided:
+### Basic Usage
 
 ```bash
-# Run all tests once
+# Run all tests
 ./run-tests.sh
 
 # Run tests in watch mode
-./run-tests.sh --watch
-# or
 ./run-tests.sh -w
 
 # Run tests with UI
-./run-tests.sh --ui
-# or
 ./run-tests.sh -u
 
 # Run tests with coverage
-./run-tests.sh --coverage
-# or
 ./run-tests.sh -c
-
-# Show help
-./run-tests.sh --help
-# or
-./run-tests.sh -h
 ```
 
-### Using VS Code Tasks
+### Integration Test Options
 
-VS Code tasks are configured for running tests. Press `Ctrl+Shift+P` and type "Tasks: Run Task" to see the available test tasks:
+```bash
+# Run only integration tests
+./run-tests.sh -i
 
-- Run All Tests
-- Run Tests (Watch Mode)
-- Run Tests (UI Mode)
-- Run Tests (Coverage)
+# Skip integration tests
+./run-tests.sh -s
 
-### Using VS Code Keyboard Shortcuts
+# Run only integration tests with coverage
+./run-tests.sh -i -c
 
-When the terminal is focused, you can use the following keyboard shortcuts:
-
-- `Ctrl+Shift+T` - Run all tests
-- `Ctrl+Shift+W` - Run tests in watch mode
-- `Ctrl+Shift+U` - Run tests with UI
-- `Ctrl+Shift+C` - Run tests with coverage
+# Run only integration tests in watch mode
+./run-tests.sh -i -w
+```
 
 ## Writing Tests
 
-Tests are written using [Vitest](https://vitest.dev/) and are located in files with `.test.ts` or `.test.tsx` extensions.
+### Unit Tests
 
-### Example Test
+Unit tests should be placed in the same directory as the file they're testing, with a `.test.ts` extension:
 
 ```typescript
-import { describe, it, expect } from "vitest";
-import { myFunction } from "./myFile";
+// Example: src/lib/example.test.ts
+import { describe, it, expect, vi } from "vitest";
+import { myFunction } from "./example";
 
 describe("myFunction", () => {
-  it("should return the expected result", () => {
-    const result = myFunction();
-    expect(result).toBe(expectedValue);
+  it("should return expected result", () => {
+    expect(myFunction()).toBe("expected result");
   });
 });
 ```
 
-## Test Coverage
+### Integration Tests
 
-To view test coverage, run:
+Integration tests should be placed in the same directory as the file they're testing, with a `.integration.test.ts` extension:
 
-```bash
-pnpm test:coverage
-# or
-./run-tests.sh --coverage
+```typescript
+// Example: src/lib/example.integration.test.ts
+import { describe, it, expect, beforeAll } from "vitest";
+import { myFunction } from "./example";
+import { db } from "~/server/db";
+
+describe("myFunction integration", () => {
+  // Mark as integration test
+  beforeAll(() => {
+    // @ts-ignore - Adding custom metadata for test filtering
+    describe.meta = { ...(describe.meta || {}), integration: true };
+  });
+
+  it("should interact with the database correctly", async () => {
+    // Test with real database
+    const result = await myFunction();
+    expect(result).toBeDefined();
+  });
+});
 ```
 
-This will generate a coverage report in the `coverage` directory.
+## Best Practices
+
+1. **Keep tests isolated**: Each test should be independent and not rely on the state from other tests.
+2. **Clean up after tests**: Use `beforeEach` and `afterEach` to set up and clean up test data.
+3. **Use descriptive test names**: Test names should describe what is being tested and the expected outcome.
+4. **Test edge cases**: Include tests for error conditions and edge cases.
+5. **Avoid testing implementation details**: Focus on testing behavior, not implementation details.

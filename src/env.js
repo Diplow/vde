@@ -1,14 +1,17 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
+// Determine if we're in a test environment
+const isTestEnv = process.env.NODE_ENV === "test" || process.env.VITEST;
+
 export const env = createEnv({
   /**
    * Specify your server-side environment variables schema here. This way you can ensure the app
    * isn't built with invalid env vars.
    */
   server: {
-    DATABASE_URL: z.string().url(),
-    TEST_DATABASE_URL: z.string().url(),
+    DATABASE_URL: isTestEnv ? z.string().url().optional() : z.string().url(),
+    TEST_DATABASE_URL: z.string().url().optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),

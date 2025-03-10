@@ -7,7 +7,9 @@ export default {
   dialect: "postgresql",
   dbCredentials: {
     url:
-      env.NODE_ENV !== "production" ? env.TEST_DATABASE_URL : env.DATABASE_URL,
+      (env.NODE_ENV !== "production"
+        ? env.TEST_DATABASE_URL
+        : env.DATABASE_URL) || "",
   },
   tablesFilter: ["deliberategg_*"],
 } satisfies Config;

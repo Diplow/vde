@@ -1,5 +1,4 @@
-import { clerkClient } from "@clerk/nextjs/server";
-import type { User } from "@clerk/nextjs/server";
+import { clerkClient, type User } from "@clerk/nextjs/server";
 import { UserEntity } from "~/lib/domains/actors/entities";
 import type { UserRepository } from "~/lib/domains/actors/repositories";
 
@@ -10,7 +9,8 @@ const getClerkUsername = (user: User): string | undefined => {
 export const ClerkUserRepository = (): UserRepository => {
   return {
     getOne: async (userId: string): Promise<UserEntity> => {
-      const user = await clerkClient.users.getUser(userId);
+      const clerk = await clerkClient();
+      const user = await clerk.users.getUser(userId);
       return new UserEntity({
         username: getClerkUsername(user),
         imageUrl: user.imageUrl,
@@ -18,12 +18,13 @@ export const ClerkUserRepository = (): UserRepository => {
       });
     },
     getManyByIds: async (userIds: string[]): Promise<UserEntity[]> => {
-      return (
-        await clerkClient.users.getUserList({
-          userId: userIds,
-          limit: 110,
-        })
-      ).map((user) => {
+      const clerk = await clerkClient();
+      const response = await clerk.users.getUserList({
+        userId: userIds,
+        limit: 110,
+      });
+
+      return response.data.map((user: User) => {
         return new UserEntity({
           username: getClerkUsername(user),
           imageUrl: user.imageUrl,
