@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { GenericAggregate } from "~/lib/domains/utils/entities";
+import { GenericAggregate } from "~/lib/domains/utils/generic-objects";
 import { GenericAggregateMemoryRepository } from "~/lib/infrastructure/common/generic-memory-repository";
 import {
   MealAggregate,
@@ -8,7 +8,7 @@ import {
   CourseEntity,
   FoodEntity,
   GuestAggregate,
-} from "~/lib/infrastructure/common/test-entities";
+} from "~/lib/infrastructure/common/test-objects";
 
 describe("GenericAggregateMemoryRepository", () => {
   let repository: GenericAggregateMemoryRepository<

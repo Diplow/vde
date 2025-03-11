@@ -5,7 +5,7 @@ import {
   OwnerEntity,
   OwnerEntityAttributes,
   MapItemEntity,
-} from "~/lib/domains/mapping/entities";
+} from "~/lib/domains/mapping/objects";
 import { MapRepository } from "~/lib/domains/mapping/repositories";
 import { HexCoordinate } from "~/lib/hex-coordinates";
 import * as schema from "~/server/db/schema";
@@ -70,7 +70,7 @@ export const MapDrizzlePostgresRepository = (
       return mapsData.map(adapt);
     },
 
-    getByOwnerId: async (ownerId: number, limit = 50, offset = 0) => {
+    getByOwnerId: async (ownerId: string, limit = 50, offset = 0) => {
       const mapsData = await db.query.maps.findMany({
         where: eq(maps.ownerId, ownerId),
         limit,
@@ -88,6 +88,11 @@ export const MapDrizzlePostgresRepository = (
       name: string,
       description: string | null,
       owner: OwnerEntityAttributes,
+      dimensions?: {
+        rows?: number;
+        columns?: number;
+        baseSize?: number;
+      },
     ) => {
       const [insertedMap] = await db
         .insert(maps)
@@ -96,6 +101,9 @@ export const MapDrizzlePostgresRepository = (
           description,
           ownerId: owner.id,
           ownerType: "user",
+          rows: dimensions?.rows ?? 10,
+          columns: dimensions?.columns ?? 10,
+          baseSize: dimensions?.baseSize ?? 50,
         })
         .returning();
 
@@ -112,6 +120,9 @@ export const MapDrizzlePostgresRepository = (
       data: {
         name?: string;
         description?: string | null;
+        rows?: number;
+        columns?: number;
+        baseSize?: number;
       },
     ) => {
       const [updatedMap] = await db

@@ -4,10 +4,10 @@ import {
   MapItemEntity,
   OwnerEntity,
   OwnerEntityAttributes,
-} from "~/lib/domains/mapping/entities";
+} from "~/lib/domains/mapping/objects";
 import { MapRepository } from "~/lib/domains/mapping/repositories";
 import { GenericAggregateMemoryRepository } from "~/lib/infrastructure/common/generic-memory-repository";
-import { GenericAggregate } from "~/lib/domains/utils/entities";
+import { GenericAggregate } from "~/lib/domains/utils/generic-objects";
 
 export class MapAggregateRepository implements MapRepository {
   private repository: GenericAggregateMemoryRepository<
@@ -45,7 +45,7 @@ export class MapAggregateRepository implements MapRepository {
   }
 
   async getByOwnerId(
-    ownerId: number,
+    ownerId: string,
     limit?: number,
     offset?: number,
   ): Promise<MapAggregate[]> {
@@ -61,11 +61,19 @@ export class MapAggregateRepository implements MapRepository {
     name: string,
     description: string | null,
     owner: OwnerEntityAttributes,
+    dimensions?: {
+      rows?: number;
+      columns?: number;
+      baseSize?: number;
+    },
   ): Promise<MapAggregate> {
     return await this.repository.create(
       {
         name,
         description,
+        rows: dimensions?.rows ?? 10,
+        columns: dimensions?.columns ?? 10,
+        baseSize: dimensions?.baseSize ?? 50,
       },
       { owner: new OwnerEntity(owner) },
       { items: [] },
@@ -77,6 +85,9 @@ export class MapAggregateRepository implements MapRepository {
     data: {
       name?: string;
       description?: string | null;
+      rows?: number;
+      columns?: number;
+      baseSize?: number;
     },
   ): Promise<MapAggregate> {
     return await this.repository.update(mapId, data);

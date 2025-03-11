@@ -1,26 +1,19 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
+  "version": "5",
+  "dialect": "pg",
   "entries": [
     {
       "idx": 0,
       "version": "7",
-      "when": 1741001926750,
-      "tag": "0000_abandoned_power_pack",
+      "when": 1741624060405,
+      "tag": "0000_known_arachne",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1741200048911,
-      "tag": "0001_tired_kang",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1741355321734,
-      "tag": "0002_thankful_menace",
+      "when": 1741652322266,
+      "tag": "0001_motionless_luke_cage",
       "breakpoints": true
     }
   ]

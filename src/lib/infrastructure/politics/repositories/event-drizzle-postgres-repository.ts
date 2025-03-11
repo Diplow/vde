@@ -4,7 +4,7 @@ import {
   AuthorEntity,
   AuthorEntityAttributes,
   EventAggregate,
-} from "~/lib/domains/politics/entities";
+} from "~/lib/domains/politics/objects";
 import { EventRepository } from "~/lib/domains/politics/repositories";
 import { Event as DBEvent } from "~/server/db/schema";
 import * as schema from "~/server/db/schema";
@@ -65,7 +65,7 @@ export const EventDrizzlePostgresRepository = (
       return adapt(insertedEvent);
     },
 
-    getByAuthorId: async (authorId: number) => {
+    getByAuthorId: async (authorId: string) => {
       const eventsData = await db.query.events.findMany({
         where: eq(schema.events.authorId, authorId),
       });

@@ -1,5 +1,5 @@
 {
-  "name": "deliberategg",
+  "name": "vde",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -13,6 +13,7 @@
     "dev": "next dev --turbo",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
+    "init-db": "tsx scripts/init-db.ts",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "preview": "next build && next start",

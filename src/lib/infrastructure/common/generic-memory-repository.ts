@@ -1,4 +1,4 @@
-import { GenericAggregate } from "~/lib/domains/utils/entities";
+import { GenericAggregate } from "~/lib/domains/utils/generic-objects";
 
 /**
  * Generic attributes interface with required ID and timestamps
@@ -104,7 +104,7 @@ export class GenericAggregateMemoryRepository<
    */
   async getByRelatedItem(
     relatedItemKey: string,
-    itemId: number,
+    itemId: number | string,
     limit = 50,
     offset = 0,
   ): Promise<A[]> {

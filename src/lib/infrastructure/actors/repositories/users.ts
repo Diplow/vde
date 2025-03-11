@@ -1,5 +1,5 @@
 import { clerkClient, type User } from "@clerk/nextjs/server";
-import { UserEntity } from "~/lib/domains/actors/entities";
+import { UserEntity } from "~/lib/domains/actors/objects";
 import type { UserRepository } from "~/lib/domains/actors/repositories";
 
 const getClerkUsername = (user: User): string | undefined => {

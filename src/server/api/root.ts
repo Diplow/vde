@@ -1,14 +1,13 @@
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
-import { resourceRouter } from "./routers/resource";
 import { mapRouter } from "~/server/api/routers/map";
 import { eventRouter } from "~/server/api/routers/event";
+
 /**
  * This is the primary router for your server.
  *
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  resource: resourceRouter,
   map: mapRouter,
   event: eventRouter,
 });

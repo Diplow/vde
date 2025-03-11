@@ -17,5 +17,3 @@ Services are the entry point for the domain. APIs will call the services of a do
 ## Repositories
 
 Repositories are pure interfaces that define the data access layer for the domain. They are implemented by the domain's infrastructure layer.
-
-## README

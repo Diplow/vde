@@ -14,12 +14,14 @@ import { TRPCError } from "@trpc/server";
 
 import { db } from "~/server/db";
 import { ClerkUserRepository } from "~/lib/infrastructure/actors/repositories/users";
+import { users } from "~/server/db/schema/users";
+import { eq } from "drizzle-orm";
 
-import { ServiceUser } from "~/lib/domains/actors/services";
+import { UserService } from "~/lib/domains/actors/services";
 import { MapDrizzlePostgresRepository } from "~/lib/infrastructure/mapping/repositories/map-drizzle-postgres-repository";
-import { ServiceMap } from "~/lib/domains/mapping/services";
+import { MapService } from "~/lib/domains/mapping/services/map-service";
 import { EventDrizzlePostgresRepository } from "~/lib/infrastructure/politics/repositories/event-drizzle-postgres-repository";
-import { ServiceEvent } from "~/lib/domains/politics/services";
+import { EventService } from "~/lib/domains/politics/services";
 
 /**
  * 1. CONTEXT
@@ -35,11 +37,54 @@ import { ServiceEvent } from "~/lib/domains/politics/services";
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   const authData = await auth();
+  let dbUser = null;
+
+  // If user is authenticated with Clerk
+  if (authData?.userId) {
+    // Try to find the user in the database
+    dbUser = await db.query.users.findFirst({
+      where: eq(users.clerkId, authData.userId),
+    });
+
+    // If user doesn't exist in the database, create them
+    if (!dbUser && authData.userId) {
+      try {
+        // Get user details from Clerk
+        const clerk = await import("@clerk/nextjs/server").then(
+          (mod) => mod.clerkClient,
+        );
+        const clerkInstance = await clerk();
+        const clerkUser = await clerkInstance.users.getUser(authData.userId);
+
+        // Insert the user into the database
+        const [newUser] = await db
+          .insert(users)
+          .values({
+            clerkId: authData.userId,
+            email: clerkUser.emailAddresses[0]?.emailAddress,
+            firstName: clerkUser.firstName,
+            lastName: clerkUser.lastName,
+            imageUrl: clerkUser.imageUrl,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .returning();
+
+        dbUser = newUser;
+        console.log(
+          `Created new user in database for Clerk ID: ${authData.userId}`,
+        );
+      } catch (error) {
+        console.error("Error creating user in database:", error);
+      }
+    }
+  }
 
   return {
     db,
     headers: opts.headers,
     auth: authData,
+    dbUser,
   };
 };
 
@@ -144,7 +189,6 @@ export const privateProcedure = t.procedure
     return next({
       ctx: {
         ...ctx,
-        // Infers that the user is authenticated
         auth: {
           ...ctx.auth,
           userId: ctx.auth.userId,
@@ -158,7 +202,7 @@ export const mapServiceMiddleware = t.middleware(async ({ ctx, next }) => {
   // Create a new context with the map service
   const db = ctx.db;
   const repository = MapDrizzlePostgresRepository(db);
-  const mapService = ServiceMap(repository);
+  const mapService = MapService(repository);
 
   return next({
     ctx: {
@@ -171,7 +215,7 @@ export const userServiceMiddleware = t.middleware(({ ctx, next }) =>
   next({
     ctx: {
       ...ctx,
-      userService: ServiceUser(ClerkUserRepository()),
+      userService: UserService(ClerkUserRepository()),
     },
   }),
 );
@@ -179,7 +223,7 @@ export const eventServiceMiddleware = t.middleware(({ ctx, next }) =>
   next({
     ctx: {
       ...ctx,
-      eventService: ServiceEvent(EventDrizzlePostgresRepository(ctx.db)),
+      eventService: EventService(EventDrizzlePostgresRepository(ctx.db)),
     },
   }),
 );

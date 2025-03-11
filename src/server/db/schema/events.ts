@@ -11,9 +11,9 @@ export const events = createTable("events", {
   description: text("description"),
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),
-  authorId: integer("author_id")
-    .references(() => users.id)
-    .notNull(),
+  authorId: text("author_id")
+    .notNull()
+    .references(() => users.clerkId),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

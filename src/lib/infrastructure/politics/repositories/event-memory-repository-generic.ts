@@ -3,10 +3,11 @@ import {
   EventAttributes,
   AuthorEntity,
   AuthorEntityAttributes,
-} from "~/lib/domains/politics/entities";
+} from "~/lib/domains/politics/objects";
 import { EventRepository } from "~/lib/domains/politics/repositories";
 import { GenericAggregateMemoryRepository } from "~/lib/infrastructure/common/generic-memory-repository";
-import { GenericAggregate } from "~/lib/domains/utils/entities";
+import { GenericAggregate } from "~/lib/domains/utils/generic-objects";
+import { AuthorEntity as AuthorEntityObject } from "~/lib/domains/politics/objects";
 
 /**
  * Implementation of EventRepository using the generic memory repository
@@ -28,7 +29,7 @@ export class EventMemoryRepositoryGeneric implements EventRepository {
           relatedItems: Record<string, GenericAggregate>,
           relatedLists: Record<string, GenericAggregate[]>,
         ) {
-          super(data, relatedItems.author as AuthorEntity);
+          super(data, relatedItems.author as AuthorEntityObject);
         }
       },
     );
@@ -43,7 +44,7 @@ export class EventMemoryRepositoryGeneric implements EventRepository {
   }
 
   async getByAuthorId(
-    authorId: number,
+    authorId: string,
     limit?: number,
     offset?: number,
   ): Promise<EventAggregate[]> {
@@ -69,7 +70,7 @@ export class EventMemoryRepositoryGeneric implements EventRepository {
         startDate,
         endDate,
       },
-      { author: new AuthorEntity(author) },
+      { author: new AuthorEntityObject(author) },
       {},
     );
   }

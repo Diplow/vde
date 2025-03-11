@@ -1,4 +1,4 @@
-import type { MapItemEntity, OwnerEntity, MapAggregate } from "./entities";
+import type { MapItemEntity, OwnerEntity, MapAggregate } from "./objects";
 import { HexCoordinateSystem } from "~/lib/hex-coordinates";
 
 const ownerAdapter = (entity: OwnerEntity) => {
@@ -24,6 +24,9 @@ const mapAdapter = (entity: MapAggregate) => {
     id: String(entity.data.id),
     name: entity.data.name,
     description: entity.data.description,
+    rows: entity.data.rows,
+    columns: entity.data.columns,
+    baseSize: entity.data.baseSize,
     createdAt: entity.data.createdAt.toISOString(),
     updatedAt: entity.data.updatedAt.toISOString(),
     owner: ownerAdapter(entity.owner),

@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { MapDrizzlePostgresRepository } from "./map-drizzle-postgres-repository";
 import { db } from "~/server/db";
-import { maps } from "~/server/db/schema";
+import { maps } from "~/server/db/schema/maps";
 import { mapItems } from "~/server/db/schema/map-items";
 import { users } from "~/server/db/schema/users";
 import { eq, sql } from "drizzle-orm";
 import { HexDirection } from "~/lib/hex-coordinates";
-import { OwnerEntity } from "~/lib/domains/mapping/entities";
+import { OwnerEntity } from "~/lib/domains/mapping/objects";
 
 // Mark this test as integration
 describe("MapDrizzlePostgresRepository Integration", () => {
@@ -23,35 +23,39 @@ describe("MapDrizzlePostgresRepository Integration", () => {
   const TEST_ID = 999999;
   const testMapName = "Integration Test Map";
   const testMapDescription = "Created during integration testing";
+  const TEST_USER_CLERK_ID = "test-user-id";
+  const testRows = 15;
+  const testColumns = 20;
+  const testBaseSize = 60;
 
   // Clean up database before and after tests
   beforeAll(async () => {
     console.log("Setting up test database...");
 
-    // Delete any existing test data
-    await db.delete(mapItems).where(eq(mapItems.mapId, TEST_ID));
-    await db.delete(maps).where(eq(maps.id, TEST_ID));
-    await db.delete(users).where(eq(users.id, TEST_ID));
+    // Clean up existing data
+    await db.delete(mapItems).execute();
+    await db.delete(maps).execute();
+    await db.delete(users).execute();
 
-    try {
-      // Create test user with direct SQL to avoid schema issues
-      await db.execute(sql`
-        INSERT INTO deliberategg_users (id, clerk_id, email, image_url)
-        VALUES (${TEST_ID}, 'test-clerk-id', ${`test-${TEST_ID}@example.com`}, NULL)
-        ON CONFLICT (id) DO NOTHING
-      `);
-      console.log(`Created test user with ID ${TEST_ID}`);
-    } catch (error) {
-      console.error("Error setting up test user:", error);
-      throw error;
-    }
+    // Create a test user
+    await db.insert(users).values({
+      id: 999999,
+      clerkId: TEST_USER_CLERK_ID,
+      email: "test@example.com",
+      firstName: "Test",
+      lastName: "User",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    console.log("Created test user with ID 999999");
   });
 
   afterAll(async () => {
     // Clean up after tests
-    await db.delete(mapItems).where(eq(mapItems.mapId, TEST_ID));
-    await db.delete(maps).where(eq(maps.id, TEST_ID));
-    await db.delete(users).where(eq(users.id, TEST_ID));
+    await db.delete(mapItems).execute();
+    await db.delete(maps).execute();
+    await db.delete(users).execute();
   });
 
   // Reset before each test
@@ -65,8 +69,11 @@ describe("MapDrizzlePostgresRepository Integration", () => {
       id: TEST_ID,
       name: testMapName,
       description: testMapDescription,
-      ownerId: TEST_ID,
+      ownerId: TEST_USER_CLERK_ID,
       ownerType: "user",
+      rows: testRows,
+      columns: testColumns,
+      baseSize: testBaseSize,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -82,7 +89,10 @@ describe("MapDrizzlePostgresRepository Integration", () => {
       expect(map.data.id).toBe(TEST_ID);
       expect(map.data.name).toBe(testMapName);
       expect(map.data.description).toBe(testMapDescription);
-      expect(map.owner.data.id).toBe(TEST_ID);
+      expect(map.data.rows).toBe(testRows);
+      expect(map.data.columns).toBe(testColumns);
+      expect(map.data.baseSize).toBe(testBaseSize);
+      expect(map.owner.data.id).toBe(TEST_USER_CLERK_ID);
       expect(map.items).toHaveLength(0);
     });
 
@@ -101,8 +111,11 @@ describe("MapDrizzlePostgresRepository Integration", () => {
         id: 998,
         name: "Second Test Map",
         description: "Another test map",
-        ownerId: TEST_ID,
+        ownerId: TEST_USER_CLERK_ID,
         ownerType: "user",
+        rows: 12,
+        columns: 12,
+        baseSize: 40,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -130,18 +143,18 @@ describe("MapDrizzlePostgresRepository Integration", () => {
   describe("getByOwnerId", () => {
     it("should retrieve maps by owner ID", async () => {
       // Act
-      const ownerMaps = await repository.getByOwnerId(TEST_ID);
+      const ownerMaps = await repository.getByOwnerId(TEST_USER_CLERK_ID);
 
       // Assert
       expect(ownerMaps.length).toBeGreaterThan(0);
       if (ownerMaps[0]) {
-        expect(ownerMaps[0].owner.data.id).toBe(TEST_ID);
+        expect(ownerMaps[0].owner.data.id).toBe(TEST_USER_CLERK_ID);
       }
     });
 
     it("should return empty array when owner has no maps", async () => {
       // Act
-      const noMaps = await repository.getByOwnerId(12345);
+      const noMaps = await repository.getByOwnerId("non-existent-user");
 
       // Assert
       expect(noMaps).toHaveLength(0);
@@ -154,7 +167,53 @@ describe("MapDrizzlePostgresRepository Integration", () => {
       await db.delete(maps).where(eq(maps.id, TEST_ID));
 
       // Arrange
-      const owner = new OwnerEntity({ id: TEST_ID });
+      const owner = new OwnerEntity({ id: TEST_USER_CLERK_ID });
+      const dimensions = {
+        rows: 25,
+        columns: 30,
+        baseSize: 45,
+      };
+
+      // Act
+      const result = await repository.create(
+        testMapName,
+        testMapDescription,
+        owner.data,
+        dimensions,
+      );
+
+      // Assert
+      expect(result).toBeDefined();
+      expect(result.data.name).toBe(testMapName);
+      expect(result.data.description).toBe(testMapDescription);
+      expect(result.data.rows).toBe(dimensions.rows);
+      expect(result.data.columns).toBe(dimensions.columns);
+      expect(result.data.baseSize).toBe(dimensions.baseSize);
+      expect(result.owner.data.id).toBe(TEST_USER_CLERK_ID);
+      expect(result.items).toHaveLength(0);
+
+      // Verify in database
+      const mapInDb = await db.query.maps.findFirst({
+        where: eq(maps.name, testMapName),
+      });
+      expect(mapInDb).toBeDefined();
+      if (mapInDb) {
+        expect(mapInDb.name).toBe(testMapName);
+        expect(mapInDb.rows).toBe(dimensions.rows);
+        expect(mapInDb.columns).toBe(dimensions.columns);
+        expect(mapInDb.baseSize).toBe(dimensions.baseSize);
+
+        // Clean up
+        await db.delete(maps).where(eq(maps.id, mapInDb.id));
+      }
+    });
+
+    it("should create a map with default dimensions when not specified", async () => {
+      // First delete the test map to avoid conflicts
+      await db.delete(maps).where(eq(maps.id, TEST_ID));
+
+      // Arrange
+      const owner = new OwnerEntity({ id: TEST_USER_CLERK_ID });
 
       // Act
       const result = await repository.create(
@@ -165,21 +224,13 @@ describe("MapDrizzlePostgresRepository Integration", () => {
 
       // Assert
       expect(result).toBeDefined();
-      expect(result.data.name).toBe(testMapName);
-      expect(result.data.description).toBe(testMapDescription);
-      expect(result.owner.data.id).toBe(TEST_ID);
-      expect(result.items).toHaveLength(0);
+      expect(result.data.rows).toBe(10); // Default value
+      expect(result.data.columns).toBe(10); // Default value
+      expect(result.data.baseSize).toBe(50); // Default value
 
-      // Verify in database
-      const mapInDb = await db.query.maps.findFirst({
-        where: eq(maps.name, testMapName),
-      });
-      expect(mapInDb).toBeDefined();
-      if (mapInDb) {
-        expect(mapInDb.name).toBe(testMapName);
-
-        // Clean up
-        await db.delete(maps).where(eq(maps.id, mapInDb.id));
+      // Clean up
+      if (result.data.id) {
+        await db.delete(maps).where(eq(maps.id, result.data.id));
       }
     });
   });
@@ -189,16 +240,25 @@ describe("MapDrizzlePostgresRepository Integration", () => {
       // Arrange
       const updatedName = "Updated Map Name";
       const updatedDescription = "Updated during test";
+      const updatedRows = 8;
+      const updatedColumns = 16;
+      const updatedBaseSize = 75;
 
       // Act
       const updatedMap = await repository.update(TEST_ID, {
         name: updatedName,
         description: updatedDescription,
+        rows: updatedRows,
+        columns: updatedColumns,
+        baseSize: updatedBaseSize,
       });
 
       // Assert
       expect(updatedMap.data.name).toBe(updatedName);
       expect(updatedMap.data.description).toBe(updatedDescription);
+      expect(updatedMap.data.rows).toBe(updatedRows);
+      expect(updatedMap.data.columns).toBe(updatedColumns);
+      expect(updatedMap.data.baseSize).toBe(updatedBaseSize);
 
       // Verify in database
       const mapInDb = await db.query.maps.findFirst({
@@ -207,7 +267,25 @@ describe("MapDrizzlePostgresRepository Integration", () => {
       if (mapInDb) {
         expect(mapInDb.name).toBe(updatedName);
         expect(mapInDb.description).toBe(updatedDescription);
+        expect(mapInDb.rows).toBe(updatedRows);
+        expect(mapInDb.columns).toBe(updatedColumns);
+        expect(mapInDb.baseSize).toBe(updatedBaseSize);
       }
+    });
+
+    it("should update only specified fields", async () => {
+      // Act - Update only rows and baseSize
+      const updatedMap = await repository.update(TEST_ID, {
+        rows: 5,
+        baseSize: 80,
+      });
+
+      // Assert
+      expect(updatedMap.data.name).toBe(testMapName); // Unchanged
+      expect(updatedMap.data.description).toBe(testMapDescription); // Unchanged
+      expect(updatedMap.data.rows).toBe(5); // Updated
+      expect(updatedMap.data.columns).toBe(testColumns); // Unchanged
+      expect(updatedMap.data.baseSize).toBe(80); // Updated
     });
 
     it("should throw error when updating non-existent map", async () => {
