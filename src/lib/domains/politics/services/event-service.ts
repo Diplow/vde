@@ -1,6 +1,9 @@
 import { EventRepository } from "~/lib/domains/politics/repositories";
 import { EventActions } from "~/lib/domains/politics/actions";
-import { adapters, EventContract } from "~/lib/domains/politics/adapters";
+import {
+  adapters,
+  EventContract,
+} from "~/lib/domains/politics/services/adapters";
 
 export class EventService {
   private readonly actions: EventActions;

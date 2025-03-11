@@ -1,6 +1,6 @@
 import type { MapRepository } from "~/lib/domains/mapping/repositories";
 import { MapActions } from "~/lib/domains/mapping/actions";
-import { adapters, MapContract } from "~/lib/domains/mapping/adapters";
+import { adapters, MapContract } from "~/lib/domains/mapping/services/adapters";
 import { MapAggregate } from "~/lib/domains/mapping/objects";
 
 export class MapService {

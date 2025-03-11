@@ -1,4 +1,4 @@
-import type { MapItemEntity, OwnerEntity, MapAggregate } from "./objects";
+import type { MapItemEntity, OwnerEntity, MapAggregate } from "../objects";
 import { HexCoordinateSystem } from "~/lib/hex-coordinates";
 
 const ownerAdapter = (entity: OwnerEntity) => {

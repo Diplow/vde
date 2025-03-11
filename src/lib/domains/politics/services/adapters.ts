@@ -1,4 +1,4 @@
-import type { EventAggregate, AuthorEntity } from "./objects";
+import type { EventAggregate, AuthorEntity } from "../objects";
 
 const authorAdapter = (entity: AuthorEntity) => {
   return {
