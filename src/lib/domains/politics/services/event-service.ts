@@ -2,35 +2,39 @@ import { EventRepository } from "~/lib/domains/politics/repositories";
 import { EventActions } from "~/lib/domains/politics/actions";
 import { adapters, EventContract } from "~/lib/domains/politics/adapters";
 
-export const EventService = (repository: EventRepository) => {
-  const actions = EventActions(repository);
+export class EventService {
+  private readonly actions: EventActions;
 
-  const getOne = async (id: string): Promise<EventContract> => {
-    const event = await actions.getOne(validateAndParseId(id));
+  constructor(repository: EventRepository) {
+    this.actions = new EventActions(repository);
+  }
+
+  public async getOne(id: string): Promise<EventContract> {
+    const event = await this.actions.getOne(this.validateAndParseId(id));
     return adapters.event(event);
-  };
+  }
 
-  const getMany = async (
+  public async getMany(
     limit?: number,
     offset?: number,
-  ): Promise<EventContract[]> => {
-    const params = validatePaginationParameters(limit, offset);
-    const events = await actions.getMany(params.limit, params.offset);
+  ): Promise<EventContract[]> {
+    const params = this.validatePaginationParameters(limit, offset);
+    const events = await this.actions.getMany(params.limit, params.offset);
 
     if (!events || !Array.isArray(events)) {
       return [];
     }
 
     return events.map(adapters.event);
-  };
+  }
 
-  const getByAuthorId = async (
+  public async getByAuthorId(
     authorId: string,
     limit?: number,
     offset?: number,
-  ): Promise<EventContract[]> => {
-    const params = validatePaginationParameters(limit, offset);
-    const events = await actions.getByAuthorId(
+  ): Promise<EventContract[]> {
+    const params = this.validatePaginationParameters(limit, offset);
+    const events = await this.actions.getByAuthorId(
       authorId,
       params.limit,
       params.offset,
@@ -41,16 +45,16 @@ export const EventService = (repository: EventRepository) => {
     }
 
     return events.map(adapters.event);
-  };
+  }
 
-  const create = async (
+  public async create(
     title: string,
     description: string | null,
     startDate: string,
     endDate: string,
     authorId: string,
-  ): Promise<EventContract> => {
-    const event = await actions.create(
+  ): Promise<EventContract> {
+    const event = await this.actions.create(
       title,
       description,
       new Date(startDate),
@@ -59,9 +63,9 @@ export const EventService = (repository: EventRepository) => {
     );
 
     return adapters.event(event);
-  };
+  }
 
-  const update = async (
+  public async update(
     id: string,
     data: {
       title?: string;
@@ -69,8 +73,8 @@ export const EventService = (repository: EventRepository) => {
       startDate?: string;
       endDate?: string;
     },
-  ): Promise<EventContract> => {
-    assertUpdateDataIsNotEmpty(data);
+  ): Promise<EventContract> {
+    this.assertUpdateDataIsNotEmpty(data);
     const updateData: {
       title?: string;
       description?: string | null;
@@ -94,49 +98,40 @@ export const EventService = (repository: EventRepository) => {
       updateData.endDate = new Date(data.endDate);
     }
 
-    const updatedEvent = await actions.update(
-      validateAndParseId(id),
+    const updatedEvent = await this.actions.update(
+      this.validateAndParseId(id),
       updateData,
     );
     return adapters.event(updatedEvent);
-  };
-
-  const remove = async (id: string): Promise<void> => {
-    await actions.remove(validateAndParseId(id));
-  };
-
-  return {
-    getOne,
-    getMany,
-    getByAuthorId,
-    create,
-    update,
-    remove,
-  };
-};
-
-const validateAndParseId = (id: string) => {
-  const numericId = parseInt(id, 10);
-  if (isNaN(numericId) || numericId <= 0) {
-    throw new Error("Invalid ID: must be a positive number");
   }
-  return numericId;
-};
 
-const validatePaginationParameters = (limit?: number, offset?: number) => {
-  return {
-    limit: limit && limit > 0 ? Math.min(limit, 100) : 50,
-    offset: offset && offset >= 0 ? offset : 0,
-  };
-};
-
-const assertUpdateDataIsNotEmpty = (data: {
-  title?: string;
-  description?: string | null;
-  startDate?: string;
-  endDate?: string;
-}) => {
-  if (!data || Object.keys(data).length === 0) {
-    throw new Error("No update data provided");
+  public async remove(id: string): Promise<void> {
+    await this.actions.remove(this.validateAndParseId(id));
   }
-};
+
+  private validateAndParseId(id: string) {
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId) || numericId <= 0) {
+      throw new Error("Invalid ID: must be a positive number");
+    }
+    return numericId;
+  }
+
+  private validatePaginationParameters(limit?: number, offset?: number) {
+    return {
+      limit: limit && limit > 0 ? Math.min(limit, 100) : 50,
+      offset: offset && offset >= 0 ? offset : 0,
+    };
+  }
+
+  private assertUpdateDataIsNotEmpty(data: {
+    title?: string;
+    description?: string | null;
+    startDate?: string;
+    endDate?: string;
+  }) {
+    if (!data || Object.keys(data).length === 0) {
+      throw new Error("No update data provided");
+    }
+  }
+}

@@ -202,7 +202,7 @@ export const mapServiceMiddleware = t.middleware(async ({ ctx, next }) => {
   // Create a new context with the map service
   const db = ctx.db;
   const repository = MapDrizzlePostgresRepository(db);
-  const mapService = MapService(repository);
+  const mapService = new MapService(repository);
 
   return next({
     ctx: {
@@ -215,7 +215,7 @@ export const userServiceMiddleware = t.middleware(({ ctx, next }) =>
   next({
     ctx: {
       ...ctx,
-      userService: UserService(ClerkUserRepository()),
+      userService: new UserService(ClerkUserRepository()),
     },
   }),
 );
@@ -223,7 +223,7 @@ export const eventServiceMiddleware = t.middleware(({ ctx, next }) =>
   next({
     ctx: {
       ...ctx,
-      eventService: EventService(EventDrizzlePostgresRepository(ctx.db)),
+      eventService: new EventService(EventDrizzlePostgresRepository(ctx.db)),
     },
   }),
 );

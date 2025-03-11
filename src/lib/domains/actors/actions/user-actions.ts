@@ -1,18 +1,19 @@
 import { UserRepository } from "../repositories";
 
-export const UserActions = (repository: UserRepository) => {
-  const getOne = async (userId: string) => {
-    const user = await repository.getOne(userId);
+export class UserActions {
+  private readonly repository: UserRepository;
+
+  constructor(repository: UserRepository) {
+    this.repository = repository;
+  }
+
+  public async getOne(userId: string) {
+    const user = await this.repository.getOne(userId);
     return user.export();
-  };
+  }
 
-  const getManyByIds = async (userIds: string[]) => {
-    const users = await repository.getManyByIds(userIds);
+  public async getManyByIds(userIds: string[]) {
+    const users = await this.repository.getManyByIds(userIds);
     return users.map((user) => user.export());
-  };
-
-  return {
-    getOne,
-    getManyByIds,
-  };
-};
+  }
+}

@@ -5,7 +5,7 @@ import { EventService } from "~/lib/domains/politics/services";
 describe("EventService", () => {
   // Setup test repository and service
   const repository = new EventMemoryRepositoryGeneric();
-  const eventService = EventService(repository);
+  const eventService = new EventService(repository);
 
   // Test data
   const testEvent = {

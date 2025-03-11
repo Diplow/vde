@@ -1,21 +1,20 @@
 import { UserActions } from "~/lib/domains/actors/actions";
 import type { UserRepository } from "~/lib/domains/actors/repositories";
 
-export const UserService = (repository: UserRepository) => {
-  const actions = UserActions(repository);
+export class UserService {
+  private readonly actions: UserActions;
 
-  const getOne = async (userId: string) => {
-    const user = await actions.getOne(userId);
+  constructor(repository: UserRepository) {
+    this.actions = new UserActions(repository);
+  }
+
+  public async getOne(userId: string) {
+    const user = await this.actions.getOne(userId);
     return user;
-  };
+  }
 
-  const getMany = async (userIds: string[]) => {
-    const users = await actions.getManyByIds(userIds);
+  public async getManyByIds(userIds: string[]) {
+    const users = await this.actions.getManyByIds(userIds);
     return users.map((user: any) => user.export());
-  };
-
-  return {
-    getOne,
-    getMany,
-  } as const;
-};
+  }
+}

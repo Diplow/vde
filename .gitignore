@@ -44,3 +44,8 @@ yarn-error.log*
 
 # idea files
 .idea
+.cursor/mcp.json
+drizzle/meta/*
+.cursorignore
+.env.test
+.gitignore

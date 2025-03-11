@@ -4,27 +4,33 @@ import type {
   OwnerEntityAttributes as OwnerEntityAttributesObject,
 } from "~/lib/domains/mapping/objects";
 
-export const MapActions = (repository: MapRepository) => {
-  const getOne = async (mapId: number): Promise<MapAggregateObject> => {
-    return await repository.getOne(mapId);
-  };
+export class MapActions {
+  private readonly repository: MapRepository;
 
-  const getMany = async (
+  constructor(repository: MapRepository) {
+    this.repository = repository;
+  }
+
+  public async getOne(mapId: number): Promise<MapAggregateObject> {
+    return await this.repository.getOne(mapId);
+  }
+
+  public async getMany(
     limit?: number,
     offset?: number,
-  ): Promise<MapAggregateObject[]> => {
-    return await repository.getMany(limit, offset);
-  };
+  ): Promise<MapAggregateObject[]> {
+    return await this.repository.getMany(limit, offset);
+  }
 
-  const getByOwnerId = async (
+  public async getByOwnerId(
     ownerId: string,
     limit?: number,
     offset?: number,
-  ): Promise<MapAggregateObject[]> => {
-    return await repository.getByOwnerId(ownerId, limit, offset);
-  };
+  ): Promise<MapAggregateObject[]> {
+    return await this.repository.getByOwnerId(ownerId, limit, offset);
+  }
 
-  const create = async (
+  public async create(
     name: string,
     description: string | null,
     owner: OwnerEntityAttributesObject,
@@ -33,11 +39,11 @@ export const MapActions = (repository: MapRepository) => {
       columns?: number;
       baseSize?: number;
     },
-  ): Promise<MapAggregateObject> => {
-    return await repository.create(name, description, owner, dimensions);
-  };
+  ): Promise<MapAggregateObject> {
+    return await this.repository.create(name, description, owner, dimensions);
+  }
 
-  const update = async (
+  public async update(
     mapId: number,
     data: {
       name?: string;
@@ -46,20 +52,11 @@ export const MapActions = (repository: MapRepository) => {
       columns?: number;
       baseSize?: number;
     },
-  ): Promise<MapAggregateObject> => {
-    return await repository.update(mapId, data);
-  };
+  ): Promise<MapAggregateObject> {
+    return await this.repository.update(mapId, data);
+  }
 
-  const remove = async (mapId: number): Promise<void> => {
-    await repository.remove(mapId);
-  };
-
-  return {
-    getOne,
-    getMany,
-    getByOwnerId,
-    create,
-    update,
-    remove,
-  };
-}; 
+  public async remove(mapId: number): Promise<void> {
+    await this.repository.remove(mapId);
+  }
+}

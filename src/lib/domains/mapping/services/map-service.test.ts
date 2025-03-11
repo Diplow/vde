@@ -4,7 +4,7 @@ import { MapService } from "~/lib/domains/mapping/services";
 
 describe("MapService", () => {
   const repository = new MapAggregateRepository();
-  const service = MapService(repository);
+  const service = new MapService(repository);
 
   beforeEach(() => {
     repository.reset();
