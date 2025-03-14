@@ -3,11 +3,25 @@
 import { HexCoordinate, HexCoordinateSystem } from "~/lib/hex-coordinates";
 import { HexTile } from "./HexTile";
 
-interface HexGridProps {
-  dimensions: { rows: number; cols: number; baseSize: number };
+interface MapItem {
+  coordinates: HexCoordinate;
+  itemType: "resource" | "event" | "content" | "author";
+  item: any;
 }
 
-export function HexGrid({ dimensions }: HexGridProps) {
+interface HexGridProps {
+  dimensions: { rows: number; cols: number; baseSize: number };
+  items?: MapItem[];
+  onTileClick?: (coordinate: HexCoordinate) => void;
+  selectedCoordinate?: HexCoordinate | null;
+}
+
+export function HexGrid({
+  dimensions,
+  items = [],
+  onTileClick,
+  selectedCoordinate,
+}: HexGridProps) {
   const { rows, cols, baseSize } = dimensions;
 
   // Generate visible hexes based on zoom level
@@ -25,6 +39,16 @@ export function HexGrid({ dimensions }: HexGridProps) {
           const hexId = HexCoordinateSystem.createId(coord);
           const { x, y } = HexCoordinateSystem.getRelativePosition(coord);
 
+          // Find item at this coordinate
+          const itemAtCoord = items.find(
+            (item) => HexCoordinateSystem.createId(item.coordinates) === hexId,
+          );
+
+          // Check if this tile is selected
+          const isSelected = selectedCoordinate
+            ? HexCoordinateSystem.createId(selectedCoordinate) === hexId
+            : false;
+
           return (
             <div
               key={hexId}
@@ -36,7 +60,13 @@ export function HexGrid({ dimensions }: HexGridProps) {
                 height: `${baseSize}px`,
               }}
             >
-              <HexTile className="h-full w-full" />
+              <HexTile
+                className="h-full w-full"
+                isSelected={isSelected}
+                onClick={onTileClick ? () => onTileClick(coord) : undefined}
+                itemType={itemAtCoord?.itemType}
+                item={itemAtCoord?.item}
+              />
             </div>
           );
         })}

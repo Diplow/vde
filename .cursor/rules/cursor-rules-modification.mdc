@@ -1,0 +1,88 @@
+---
+description: Modifying existing cursor rules
+globs: .cursor/rules/*.mdc
+alwaysApply: false
+---
+---
+description: Modifying existing cursor rules
+globs: .cursor/rules/*.mdc
+alwaysApply: false
+---
+# Cursor Rules Modification Guidelines
+
+## Purpose
+This rule provides guidelines for modifying existing cursor rules to ensure consistency, avoid conflicts, and maintain the quality of documentation available to AI assistants.
+
+## When to Modify a Rule
+Modify an existing rule when:
+1. Adding new information to an existing topic
+2. Correcting inaccurate information
+3. Updating guidance to reflect changes in the codebase
+4. Clarifying existing guidance that is unclear or ambiguous
+5. Adding examples to illustrate existing principles
+
+## Before Modifying a Rule
+1. Read the entire rule to understand its current scope and purpose
+2. Check for any related rules that might also need updates
+3. Consider if the change might impact other rules (look for cross-references)
+4. Determine if a new rule would be more appropriate than modifying an existing one
+
+## Modification Process
+1. **Preserve the Original Structure**: Maintain the existing headings and organization
+2. **Maintain Consistency**: Ensure your changes use the same tone and style as the original
+3. **Mark Significant Changes**: For major changes, consider adding a note about the update
+4. **Update Examples**: If the rule contains examples, update them to reflect your changes
+5. **Update the Description**: If needed, update the description in the YAML frontmatter
+
+## What Not to Change
+1. **Don't Change the Filename**: This could break references from other files or tools
+2. **Don't Remove Core Sections**: Expand or modify instead of removing
+3. **Don't Contradict Project Conventions**: Ensure changes align with existing practices
+4. **Don't Change the YAML Frontmatter Structure**: Only modify the values, not the structure
+
+## Testing Changes
+After modifying a rule:
+1. Verify that any code examples still work
+2. Check if other rules reference the modified content
+3. Ensure the guidance is still clear and coherent
+
+## Examples of Good Modifications
+
+### Example 1: Adding a New Section
+```markdown
+// Original rule has sections A, B, C
+
+// After modification:
+// Sections A, B, C remain unchanged
+## New Section D
+Guidelines for handling new scenario D...
+```
+
+### Example 2: Expanding Existing Guidance
+```markdown
+// Original content
+## Input Validation
+Use Zod for input validation.
+
+// Modified content
+## Input Validation
+Use Zod for input validation. Define schemas at the top of the router file and ensure all user inputs are validated before processing.
+
+### Common Validation Patterns
+- IDs: `z.string().uuid()` for UUIDs or `z.number().positive()` for numeric IDs
+- Pagination: `z.object({ limit: z.number().min(1).max(100), offset: z.number().min(0) })`
+- Search queries: `z.string().min(1).max(100)`
+```
+
+## Cross-Rule Consistency
+When modifying a rule, check for consistency with these related areas:
+1. Other cursor rules in the same category
+2. The codebase implementation itself
+3. External documentation or references
+4. Other tools or processes used in the project
+
+## Handling Conflicting Guidance
+If your changes would conflict with another rule:
+1. Identify which rule should be authoritative
+2. Update both rules to maintain consistency
+3. Consider consolidating the rules if they address the same topic

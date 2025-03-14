@@ -5,7 +5,12 @@ import { maps } from "./maps";
 /**
  * Item type enum
  */
-export const itemTypeEnum = pgEnum("item_type", ["resource", "event"]);
+export const itemTypeEnum = pgEnum("item_type", [
+  "resource",
+  "event",
+  "content",
+  "author",
+]);
 
 /**
  * Map items table schema

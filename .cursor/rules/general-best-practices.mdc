@@ -1,0 +1,90 @@
+---
+description: General best practices when coding
+globs: *.tsx, *.ts
+alwaysApply: false
+---
+---
+description: General best practices when coding
+globs: 
+alwaysApply: true
+---
+# General Software Development Best Practices
+
+## Naming Conventions
+- Use descriptive, intention-revealing names for all identifiers
+- Follow consistent casing conventions:
+  - `PascalCase` for classes, interfaces, types, and enums
+  - `camelCase` for variables, functions, methods, and properties
+  - `UPPER_SNAKE_CASE` for constants
+  - `kebab-case` for file names
+- Avoid abbreviations unless they are widely understood
+- Prefix interfaces with `I` only when there's a corresponding implementation class
+- Prefix private class members with `_` to distinguish from public members
+- Use verb phrases for functions and methods (e.g., `calculateTotal`, `fetchData`)
+- Use noun phrases for variables, classes, and interfaces (e.g., `UserService`, `paymentAmount`)
+
+## Code Organization
+- Follow the Single Responsibility Principle (SRP)
+- Keep functions and methods small and focused (< 30 lines ideally)
+- Limit file size (< 400 lines as a guideline)
+- Group related functionality in the same module
+- Organize imports in a consistent order:
+  1. External libraries
+  2. Internal shared modules
+  3. Local imports from the same module
+- Use barrel files (`index.ts`) to simplify imports
+
+## SOLID Principles
+- **S**ingle Responsibility: Each class should have only one reason to change
+- **O**pen/Closed: Classes should be open for extension but closed for modification
+- **L**iskov Substitution: Subtypes must be substitutable for their base types
+- **I**nterface Segregation: Many client-specific interfaces are better than one general-purpose interface
+- **D**ependency Inversion: Depend on abstractions, not concretions
+
+## Error Handling
+- Use specific error types rather than generic errors
+- Include descriptive error messages
+- Handle errors at the appropriate level of abstraction
+- Avoid swallowing exceptions without proper handling
+- Use async/await with try/catch for asynchronous error handling
+
+## Performance Considerations
+- Minimize unnecessary re-renders in UI components
+- Use pagination for large data sets
+- Implement caching for expensive operations
+- Optimize database queries (use indexes, limit result sets)
+- Be mindful of memory usage (avoid memory leaks)
+
+## Security Best Practices
+- Validate all user inputs
+- Use parameterized queries to prevent SQL injection
+- Implement proper authentication and authorization
+- Never store sensitive information in client-side code
+- Follow the principle of least privilege
+
+## Testing
+- Write unit tests for business logic
+- Aim for high test coverage of critical paths
+- Use integration tests for component interactions
+- Write tests that are independent and repeatable
+- Follow the Arrange-Act-Assert pattern
+
+## Documentation
+- Document public APIs and interfaces
+- Include JSDoc comments for functions and classes
+- Document complex algorithms and business rules
+- Keep documentation up-to-date with code changes
+- Use meaningful commit messages
+
+## Code Quality
+- Use linters and formatters to maintain consistent style
+- Refactor regularly to improve code quality
+- Eliminate dead code and unused variables
+- Avoid code duplication (DRY principle) if the abstraction makes sense
+
+## Asynchronous Programming
+- Use async/await instead of raw promises when possible
+- Handle promise rejections properly
+- Avoid deeply nested promises or callbacks
+- Consider using Promise.all for parallel operations
+- Be mindful of race conditions in asynchronous code

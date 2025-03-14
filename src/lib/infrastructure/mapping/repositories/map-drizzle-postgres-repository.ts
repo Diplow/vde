@@ -1,10 +1,12 @@
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import {
   MapAggregate,
   OwnerEntity,
-  OwnerEntityAttributes,
-  MapItemEntity,
+  OwnerAttributes,
+  MapItemAggregate,
+  MapItemReference,
+  MapItemType,
 } from "~/lib/domains/mapping/objects";
 import { MapRepository } from "~/lib/domains/mapping/repositories";
 import { HexCoordinate } from "~/lib/hex-coordinates";
@@ -30,12 +32,23 @@ export const MapDrizzlePostgresRepository = (
     // Convert database map items to MapItemEntity instances
     const items = (map.items || []).map(
       (item) =>
-        new MapItemEntity({
-          id: item.id,
-          itemId: item.itemId,
-          itemType: item.itemType,
-          coordinates: item.coordinates as HexCoordinate,
-        }),
+        new MapItemAggregate(
+          {
+            id: item.id,
+            mapId: item.mapId,
+            coordinates: item.coordinates as HexCoordinate,
+            reference: {
+              id: item.itemId,
+              type: item.itemType as MapItemType,
+            },
+            createdAt: new Date(), // Default to current date as the schema doesn't have this
+            updatedAt: new Date(), // Default to current date as the schema doesn't have this
+          },
+          new OwnerEntity({
+            id: map.ownerId, // Use the map's owner as the item's owner
+          }),
+          [], // Empty related items
+        ),
     );
 
     return new MapAggregate(map, owner, items);
@@ -87,12 +100,10 @@ export const MapDrizzlePostgresRepository = (
     create: async (
       name: string,
       description: string | null,
-      owner: OwnerEntityAttributes,
-      dimensions?: {
-        rows?: number;
-        columns?: number;
-        baseSize?: number;
-      },
+      owner: OwnerAttributes,
+      rows?: number,
+      columns?: number,
+      baseSize?: number,
     ) => {
       const [insertedMap] = await db
         .insert(maps)
@@ -101,9 +112,9 @@ export const MapDrizzlePostgresRepository = (
           description,
           ownerId: owner.id,
           ownerType: "user",
-          rows: dimensions?.rows ?? 10,
-          columns: dimensions?.columns ?? 10,
-          baseSize: dimensions?.baseSize ?? 50,
+          rows: rows ?? 10,
+          columns: columns ?? 10,
+          baseSize: baseSize ?? 50,
         })
         .returning();
 
@@ -155,6 +166,82 @@ export const MapDrizzlePostgresRepository = (
 
       if (result.length === 0) {
         throw new Error(`Map with ID ${mapId} not found or already deleted`);
+      }
+    },
+
+    addItem: async (
+      mapId: number,
+      coordinates: HexCoordinate,
+      reference: MapItemReference,
+      ownerId: string,
+    ) => {
+      // First check if the map exists
+      const map = await db.query.maps.findFirst({
+        where: eq(maps.id, mapId),
+      });
+
+      if (!map) {
+        throw new Error(`Map with ID ${mapId} not found`);
+      }
+
+      // Validate the coordinates and reference
+      MapItemAggregate.validateCoordinates(coordinates);
+      MapItemAggregate.validateReference(reference);
+
+      // Insert the new map item
+      const [insertedItem] = await db
+        .insert(mapItems)
+        .values({
+          mapId,
+          itemId: Number(reference.id),
+          itemType: reference.type,
+          coordinates: coordinates,
+        })
+        .returning();
+
+      if (!insertedItem) {
+        throw new Error("Failed to create map item: No item returned");
+      }
+
+      // Create and return the domain entity
+      return new MapItemAggregate(
+        {
+          id: insertedItem.id,
+          mapId: insertedItem.mapId,
+          coordinates: insertedItem.coordinates as HexCoordinate,
+          reference: {
+            id: insertedItem.itemId,
+            type: insertedItem.itemType as MapItemType,
+          },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        new OwnerEntity({
+          id: ownerId,
+        }),
+        [], // No related items initially
+      );
+    },
+
+    removeItem: async (mapId: number, reference: MapItemReference) => {
+      // Validate the reference
+      MapItemAggregate.validateReference(reference);
+
+      const result = await db
+        .delete(mapItems)
+        .where(
+          and(
+            eq(mapItems.mapId, mapId),
+            eq(mapItems.itemId, Number(reference.id)),
+            eq(mapItems.itemType, reference.type),
+          ),
+        )
+        .returning({ id: mapItems.id });
+
+      if (result.length === 0) {
+        throw new Error(
+          `Map item with reference ID ${reference.id} and type ${reference.type} not found or already deleted`,
+        );
       }
     },
   };

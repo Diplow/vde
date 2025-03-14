@@ -1,7 +1,11 @@
 import {
   MapAggregate,
-  OwnerEntityAttributes,
+  OwnerAttributes,
+  MapItemAggregate,
+  MapItemReference,
+  MapItemAttributes,
 } from "~/lib/domains/mapping/objects";
+import { HexCoordinate } from "~/lib/hex-coordinates";
 
 export interface MapRepository {
   getOne(mapId: number): Promise<MapAggregate>;
@@ -14,12 +18,10 @@ export interface MapRepository {
   create(
     name: string,
     description: string | null,
-    owner: OwnerEntityAttributes,
-    dimensions?: {
-      rows?: number;
-      columns?: number;
-      baseSize?: number;
-    },
+    owner: OwnerAttributes,
+    rows?: number,
+    columns?: number,
+    baseSize?: number,
   ): Promise<MapAggregate>;
   update(
     mapId: number,
@@ -32,4 +34,19 @@ export interface MapRepository {
     },
   ): Promise<MapAggregate>;
   remove(mapId: number): Promise<void>;
+
+  /**
+   * Add an item to a map
+   */
+  addItem(
+    mapId: number,
+    coordinates: HexCoordinate,
+    reference: MapItemReference,
+    ownerId: string,
+  ): Promise<MapItemAggregate>;
+
+  /**
+   * Remove an item from a map
+   */
+  removeItem(mapId: number, reference: MapItemReference): Promise<void>;
 }

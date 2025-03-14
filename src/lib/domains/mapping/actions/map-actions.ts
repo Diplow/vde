@@ -1,7 +1,7 @@
 import type { MapRepository } from "~/lib/domains/mapping/repositories";
 import type {
-  MapAggregate as MapAggregateObject,
-  OwnerEntityAttributes as OwnerEntityAttributesObject,
+  MapAggregate,
+  OwnerAttributes,
 } from "~/lib/domains/mapping/objects";
 
 export class MapActions {
@@ -11,14 +11,14 @@ export class MapActions {
     this.repository = repository;
   }
 
-  public async getOne(mapId: number): Promise<MapAggregateObject> {
+  public async getOne(mapId: number): Promise<MapAggregate> {
     return await this.repository.getOne(mapId);
   }
 
   public async getMany(
     limit?: number,
     offset?: number,
-  ): Promise<MapAggregateObject[]> {
+  ): Promise<MapAggregate[]> {
     return await this.repository.getMany(limit, offset);
   }
 
@@ -26,21 +26,26 @@ export class MapActions {
     ownerId: string,
     limit?: number,
     offset?: number,
-  ): Promise<MapAggregateObject[]> {
+  ): Promise<MapAggregate[]> {
     return await this.repository.getByOwnerId(ownerId, limit, offset);
   }
 
   public async create(
     name: string,
     description: string | null,
-    owner: OwnerEntityAttributesObject,
-    dimensions?: {
-      rows?: number;
-      columns?: number;
-      baseSize?: number;
-    },
-  ): Promise<MapAggregateObject> {
-    return await this.repository.create(name, description, owner, dimensions);
+    owner: OwnerAttributes,
+    rows?: number,
+    columns?: number,
+    baseSize?: number,
+  ): Promise<MapAggregate> {
+    return await this.repository.create(
+      name,
+      description,
+      owner,
+      rows,
+      columns,
+      baseSize,
+    );
   }
 
   public async update(
@@ -52,7 +57,18 @@ export class MapActions {
       columns?: number;
       baseSize?: number;
     },
-  ): Promise<MapAggregateObject> {
+  ): Promise<MapAggregate> {
+    // Ensure there's at least one field to update
+    if (
+      !data.name &&
+      data.description === undefined &&
+      data.rows === undefined &&
+      data.columns === undefined &&
+      data.baseSize === undefined
+    ) {
+      throw new Error("No update data provided");
+    }
+
     return await this.repository.update(mapId, data);
   }
 

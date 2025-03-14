@@ -1,0 +1,105 @@
+---
+description: Modifying the database schema
+globs: src/server/db/schema/*.ts
+alwaysApply: false
+---
+---
+description: Modifying the database schema
+globs: src/server/db/schema/*.ts
+alwaysApply: false
+---
+# Database Schema Modification Pattern
+
+## Structure and Organization
+- Organize schema files by entity in `/server/db/schema/` directory
+- Create separate files for each entity (e.g., `users.ts`, `maps.ts`)
+- Use a central `index.ts` file to re-export all tables and types
+- Define relations in a dedicated `relations.ts` file
+- Use utility functions for common table creation patterns
+
+## Table Naming and Structure
+- Use plural, lowercase names for tables (e.g., `users`, `maps`)
+- Define primary keys consistently (typically integer with identity generation)
+- Use snake_case for column names in the database
+- Use camelCase for TypeScript property names
+- Include standard timestamp fields: `created_at` and `updated_at`
+- Define foreign keys with explicit references
+
+## Type Definitions
+- Export inferred types for each table using Drizzle's `$inferSelect` and `$inferInsert`
+- Follow naming convention: `EntityName` for select type and `NewEntityName` for insert type
+- Re-export all types from the central `index.ts` file
+
+## Enum Definitions
+- Define enums using `pgEnum` with descriptive names
+- Export enum definitions for use in both schema and application code
+- Use consistent naming: `{purpose}Enum` (e.g., `ownerTypeEnum`)
+
+## Column Definitions
+- Use appropriate column types based on the data being stored
+- Add `notNull()` constraint for required fields
+- Set default values where appropriate
+- Use `unique()` constraint for fields that must be unique
+- Use `references()` for foreign key relationships
+
+## JSON and Complex Data
+- Use `jsonb` type for storing complex structured data
+- Document the expected structure in comments
+- Consider normalization for frequently queried data
+
+## Relations
+- Define relations in a dedicated file using Drizzle's relations API
+- Name relation definitions with pattern: `{tableName}Relations`
+- Specify relation types: one-to-one, one-to-many, many-to-many
+- Define both sides of relationships for complete type safety
+
+## Example Structure
+```typescript
+// Entity table definition (users.ts)
+import { integer, timestamp, text } from "drizzle-orm/pg-core";
+import { createTable } from "./utils";
+
+export const users = createTable("users", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  externalId: text("external_id").notNull().unique(),
+  email: text("email").unique(),
+  name: text("name"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+
+// Relations definition (relations.ts)
+import { relations } from "drizzle-orm";
+import { users } from "./users";
+import { items } from "./items";
+
+export const usersRelations = relations(users, ({ many }) => ({
+  items: many(items),
+}));
+
+export const itemsRelations = relations(items, ({ one }) => ({
+  owner: one(users, {
+    fields: [items.ownerId],
+    references: [users.id],
+  }),
+}));
+```
+
+## Database Connection
+- Create a central database connection in `server/db/index.ts`
+- Support different connection strings for different environments
+- Export the Drizzle instance and schema for use throughout the application
+- Implement environment-specific configuration (development, test, production)
+
+## Key Principles
+- Maintain consistent naming conventions
+- Define explicit types for all database entities
+- Use appropriate constraints to maintain data integrity
+- Normalize data structure to reduce redundancy
+- Define explicit relations between tables
+- Organize schema files by entity for maintainability
+- Use enums for fields with a fixed set of values
+- Include timestamps for auditing purposes

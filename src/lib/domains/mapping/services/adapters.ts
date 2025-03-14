@@ -1,4 +1,9 @@
-import type { MapItemEntity, OwnerEntity, MapAggregate } from "../objects";
+import type {
+  MapItemAggregate,
+  OwnerEntity,
+  MapAggregate,
+  MapItemReference,
+} from "~/lib/domains/mapping/objects";
 import { HexCoordinateSystem } from "~/lib/hex-coordinates";
 
 const ownerAdapter = (entity: OwnerEntity) => {
@@ -9,11 +14,21 @@ const ownerAdapter = (entity: OwnerEntity) => {
 
 export type OwnerContract = ReturnType<typeof ownerAdapter>;
 
-const mapItemAdapter = (entity: MapItemEntity) => {
+const mapItemAdapter = (entity: MapItemAggregate) => {
   return {
-    itemId: String(entity.data.itemId),
-    itemType: entity.data.itemType,
+    id: String(entity.data.id),
+    mapId: String(entity.data.mapId),
     coordinates: HexCoordinateSystem.createId(entity.data.coordinates),
+    reference: {
+      id: String(entity.data.reference.id),
+      type: entity.data.reference.type,
+    },
+    owner: ownerAdapter(entity.owner),
+    relatedItems: entity.relatedMapItems
+      ? entity.relatedMapItems.map((item) => String(item.data.id))
+      : [],
+    createdAt: entity.data.createdAt.toISOString(),
+    updatedAt: entity.data.updatedAt.toISOString(),
   };
 };
 

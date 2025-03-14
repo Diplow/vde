@@ -1,0 +1,14 @@
+---
+description: Using github
+globs: 
+alwaysApply: true
+---
+---
+description: Using github
+globs: 
+alwaysApply: false
+---
+- My github username is "Diplow"
+- The project's name is "vde"
+- Create new branch from the develop branch after pulling develop
+- When creating a a pull request, use your prompt as description
