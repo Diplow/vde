@@ -75,7 +75,9 @@ export const mapRouter = createTRPCRouter({
         input.name,
         input.description,
         ctx.auth.userId,
-        input.dimensions,
+        input.dimensions?.rows,
+        input.dimensions?.columns,
+        input.dimensions?.baseSize,
       );
     }),
 

@@ -10,6 +10,19 @@ export {
 } from "./map-items";
 export { resources, type Resource, type NewResource } from "./resources";
 export { events, type Event, type NewEvent } from "./events";
+export { contents, type Content, type NewContent } from "./content";
 
 // Export relations
-export { mapsRelations, mapItemsRelations } from "./relations";
+export {
+  mapsRelations,
+  mapItemsRelations,
+  contentsRelations,
+  contentResourcesRelations,
+  contentEventsRelations,
+  contentResources,
+  contentEvents,
+  type ContentResource,
+  type NewContentResource,
+  type ContentEvent,
+  type NewContentEvent,
+} from "./relations";

@@ -1,0 +1,14 @@
+---
+description: Implementing infrastructure domain repositories
+globs: src/lib/infrastructure/domains/**/repositories/*repository.ts
+alwaysApply: false
+---
+---
+description: Implementing infrastructure domain repositories
+globs: src/lib/infrastructure/domains/**/repositories/*repository.ts
+alwaysApply: false
+---
+- Infrastructure repositories must implement domain repository interfaces
+- Infrastructure repositories should only import from the domain entities, the domain repositories, the schema and eventually some tools packages (like Drizzle).
+- Memory repositories should have a private repository GenericAggregateMemoryRepository that they use to implement their methods.
+- Memory repositories constructors

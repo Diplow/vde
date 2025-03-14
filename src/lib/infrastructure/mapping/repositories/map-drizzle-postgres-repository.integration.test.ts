@@ -179,7 +179,9 @@ describe("MapDrizzlePostgresRepository Integration", () => {
         testMapName,
         testMapDescription,
         owner.data,
-        dimensions,
+        dimensions.rows,
+        dimensions.columns,
+        dimensions.baseSize,
       );
 
       // Assert
@@ -328,10 +330,10 @@ describe("MapDrizzlePostgresRepository Integration", () => {
       // Assert
       expect(map.items).toHaveLength(2);
       if (map.items[0] && map.items[1]) {
-        expect(map.items[0].data.itemId).toBe(101);
-        expect(map.items[0].data.itemType).toBe("resource");
-        expect(map.items[1].data.itemId).toBe(102);
-        expect(map.items[1].data.itemType).toBe("event");
+        expect(map.items[0].data.reference.id).toBe(101);
+        expect(map.items[0].data.reference.type).toBe("resource");
+        expect(map.items[1].data.reference.id).toBe(102);
+        expect(map.items[1].data.reference.type).toBe("event");
       }
     });
   });

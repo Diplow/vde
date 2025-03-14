@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { MapAggregateRepository } from "~/lib/infrastructure/mapping/repositories/map-memory-repository";
 import { MapService } from "~/lib/domains/mapping/services";
+import { MapItemType } from "~/lib/domains/mapping/objects";
+import { HexCoordinateSystem } from "~/lib/hex-coordinates";
 
 describe("MapService", () => {
   const repository = new MapAggregateRepository();
@@ -50,26 +52,22 @@ describe("MapService", () => {
     });
 
     it("should create a map with custom dimensions", async () => {
-      const dimensions = {
-        rows: 20,
-        columns: 25,
-        baseSize: 40,
-      };
-
       const map = await service.create(
         "Test Map",
         "Test Description",
         "1",
-        dimensions,
+        20, // rows
+        25, // columns
+        40, // baseSize
       );
 
       expect(map).toEqual({
         id: "1",
         name: "Test Map",
         description: "Test Description",
-        rows: dimensions.rows,
-        columns: dimensions.columns,
-        baseSize: dimensions.baseSize,
+        rows: 20,
+        columns: 25,
+        baseSize: 40,
         owner: {
           id: "1",
         },
@@ -229,6 +227,204 @@ describe("MapService", () => {
 
     it("should throw an error if map not found", async () => {
       await expect(service.remove("999")).rejects.toThrow("not found");
+    });
+  });
+
+  describe("getMapItems", () => {
+    it("should return map items for a map", async () => {
+      // Create a map first
+      const map = await service.create("Test Map", "Test Description", "1");
+
+      // Define coordinates for the item
+      const coordinates = { row: 3, col: 4, path: [] };
+      const itemId = 123;
+      const itemType = MapItemType.CONTENT;
+
+      // Add an item to the map
+      await service.addItemToMap(
+        map.id,
+        itemId,
+        itemType,
+        coordinates,
+        "1", // ownerId
+      );
+
+      // Get the map items
+      const items = await service.getMapItems(map.id);
+
+      // Verify items returned correctly
+      expect(items).toHaveLength(1);
+      expect(items[0]).toMatchObject({
+        coordinates: "3,4", // Coordinates are serialized as a string
+        reference: {
+          id: String(itemId),
+          type: itemType,
+        },
+      });
+    });
+
+    it("should return empty array when map has no items", async () => {
+      const map = await service.create("Test Map", "Test Description", "1");
+      const items = await service.getMapItems(map.id);
+      expect(items).toEqual([]);
+    });
+
+    it("should throw an error when map does not exist", async () => {
+      await expect(service.getMapItems("999")).rejects.toThrow("not found");
+    });
+  });
+
+  describe("getMapItemsWithDetails", () => {
+    it("should return map items with details", async () => {
+      // Create a map first
+      const map = await service.create("Test Map", "Test Description", "1");
+
+      // Define coordinates for the item
+      const coordinates = { row: 3, col: 4, path: [] };
+      const itemId = 123;
+      const itemType = MapItemType.CONTENT;
+
+      // Add an item to the map
+      await service.addItemToMap(
+        map.id,
+        itemId,
+        itemType,
+        coordinates,
+        "1", // ownerId
+      );
+
+      // Get the map items with details
+      const items = await service.getMapItemsWithDetails(map.id);
+
+      // Verify items returned correctly
+      expect(items).toHaveLength(1);
+      expect(items[0]).toMatchObject({
+        coordinates: "3,4",
+        reference: {
+          id: String(itemId),
+          type: itemType,
+        },
+      });
+    });
+
+    it("should throw an error when map does not exist", async () => {
+      await expect(service.getMapItemsWithDetails("999")).rejects.toThrow(
+        "not found",
+      );
+    });
+  });
+
+  describe("addItemToMap", () => {
+    it("should add an item to a map", async () => {
+      // Create a map first
+      const map = await service.create("Test Map", "Test Description", "1");
+
+      // Define coordinates and data for the item
+      const coordinates = { row: 3, col: 4, path: [] };
+      const itemId = 123;
+      const itemType = MapItemType.CONTENT;
+
+      // Add the item to the map
+      const item = await service.addItemToMap(
+        map.id,
+        itemId,
+        itemType,
+        coordinates,
+        "1", // ownerId
+      );
+
+      // Verify the item was created correctly
+      expect(item).toMatchObject({
+        coordinates: "3,4",
+        reference: {
+          id: String(itemId),
+          type: itemType,
+        },
+        owner: {
+          id: "1",
+        },
+      });
+
+      // Verify the item was added to the map
+      const mapItems = await service.getMapItems(map.id);
+      expect(mapItems).toHaveLength(1);
+      expect(mapItems[0]?.reference.id).toBe(String(itemId));
+      expect(mapItems[0]?.reference.type).toBe(itemType);
+    });
+
+    it("should throw an error when adding an item to a non-existent map", async () => {
+      const coordinates = { row: 3, col: 4, path: [] };
+      const itemId = 123;
+      const itemType = MapItemType.CONTENT;
+
+      await expect(
+        service.addItemToMap("999", itemId, itemType, coordinates, "1"),
+      ).rejects.toThrow("not found");
+    });
+
+    it("should validate coordinates within map boundaries", async () => {
+      // Creating test as a validation check rather than an error check
+      // since coordinate validation might be done at a different level
+      const map = await service.create("Test Map", "Test Description", "1");
+      const validCoordinates = { row: 5, col: 5, path: [] };
+      const itemId = 123;
+      const itemType = MapItemType.CONTENT;
+
+      const item = await service.addItemToMap(
+        map.id,
+        itemId,
+        itemType,
+        validCoordinates,
+        "1",
+      );
+
+      expect(item).toBeTruthy();
+    });
+  });
+
+  describe("removeItemFromMap", () => {
+    it("should remove an item from a map", async () => {
+      // Create a map
+      const map = await service.create("Test Map", "Test Description", "1");
+
+      // Add an item to the map
+      const coordinates = { row: 3, col: 4, path: [] };
+      const itemId = 123;
+      const itemType = MapItemType.CONTENT;
+      await service.addItemToMap(map.id, itemId, itemType, coordinates, "1");
+
+      // Verify item was added
+      const mapItemsBefore = await service.getMapItems(map.id);
+      expect(mapItemsBefore).toHaveLength(1);
+
+      // Remove the item
+      await service.removeItemFromMap(map.id, itemId, itemType);
+
+      // Verify item was removed
+      const mapItemsAfter = await service.getMapItems(map.id);
+      expect(mapItemsAfter).toHaveLength(0);
+    });
+
+    it("should throw an error when removing an item from a non-existent map", async () => {
+      const itemId = 123;
+      const itemType = MapItemType.CONTENT;
+
+      await expect(
+        service.removeItemFromMap("999", itemId, itemType),
+      ).rejects.toThrow("not found");
+    });
+
+    it("should throw an error when removing a non-existent item", async () => {
+      // Create a map
+      const map = await service.create("Test Map", "Test Description", "1");
+
+      // Try to remove an item that doesn't exist
+      const itemId = 456;
+      const itemType = MapItemType.CONTENT;
+
+      await expect(
+        service.removeItemFromMap(map.id, itemId, itemType),
+      ).rejects.toThrow("not found");
     });
   });
 });

@@ -1,13 +1,16 @@
 import {
   MapAggregate,
   MapAttributes,
-  MapItemEntity,
+  MapItemAggregate,
+  MapItemReference,
+  MapItemType,
   OwnerEntity,
-  OwnerEntityAttributes,
+  OwnerAttributes,
 } from "~/lib/domains/mapping/objects";
 import { MapRepository } from "~/lib/domains/mapping/repositories";
 import { GenericAggregateMemoryRepository } from "~/lib/infrastructure/common/generic-memory-repository";
 import { GenericAggregate } from "~/lib/domains/utils/generic-objects";
+import { HexCoordinate } from "~/lib/hex-coordinates";
 
 export class MapAggregateRepository implements MapRepository {
   private repository: GenericAggregateMemoryRepository<
@@ -29,7 +32,7 @@ export class MapAggregateRepository implements MapRepository {
           super(
             data,
             relatedItems.owner as OwnerEntity,
-            relatedLists.items as MapItemEntity[],
+            relatedLists.items as MapItemAggregate[],
           );
         }
       },
@@ -60,20 +63,18 @@ export class MapAggregateRepository implements MapRepository {
   async create(
     name: string,
     description: string | null,
-    owner: OwnerEntityAttributes,
-    dimensions?: {
-      rows?: number;
-      columns?: number;
-      baseSize?: number;
-    },
+    owner: OwnerAttributes,
+    rows?: number,
+    columns?: number,
+    baseSize?: number,
   ): Promise<MapAggregate> {
     return await this.repository.create(
       {
         name,
         description,
-        rows: dimensions?.rows ?? 10,
-        columns: dimensions?.columns ?? 10,
-        baseSize: dimensions?.baseSize ?? 50,
+        rows: rows ?? 10,
+        columns: columns ?? 10,
+        baseSize: baseSize ?? 50,
       },
       { owner: new OwnerEntity(owner) },
       { items: [] },
@@ -93,12 +94,62 @@ export class MapAggregateRepository implements MapRepository {
     return await this.repository.update(mapId, data);
   }
 
-  async addItem(mapId: number, item: MapItemEntity): Promise<MapAggregate> {
-    return await this.repository.addToRelatedList(mapId, "items", item);
+  async addItem(
+    mapId: number,
+    coordinates: HexCoordinate,
+    reference: MapItemReference,
+    ownerId: string,
+  ): Promise<MapItemAggregate> {
+    // Validate the coordinates and reference
+    MapItemAggregate.validateCoordinates(coordinates);
+    MapItemAggregate.validateReference(reference);
+
+    // Create a new MapItemAggregate
+    const item = new MapItemAggregate(
+      {
+        id: Date.now(), // Generate a unique ID based on timestamp
+        mapId,
+        coordinates,
+        reference,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      new OwnerEntity({ id: ownerId }),
+      [], // No related items initially
+    );
+
+    // Add the item to the map's items list
+    await this.repository.addToRelatedList(mapId, "items", item);
+
+    return item;
   }
 
-  async removeItem(mapId: number, itemId: number): Promise<MapAggregate> {
-    return await this.repository.removeFromRelatedList(mapId, "items", itemId);
+  async removeItem(mapId: number, reference: MapItemReference): Promise<void> {
+    // Validate the reference
+    MapItemAggregate.validateReference(reference);
+
+    // Get the map with its items
+    const map = await this.getOne(mapId);
+
+    // Find the item to remove based on the reference
+    const itemToRemove = map.items.find(
+      (item) =>
+        item.data.reference.id.toString() === reference.id.toString() &&
+        item.data.reference.type === reference.type,
+    );
+
+    if (!itemToRemove) {
+      throw new Error(
+        `Map item with reference ID ${reference.id} and type ${reference.type} not found`,
+      );
+    }
+
+    // Remove the item by its ID
+    await this.repository.removeFromRelatedList(
+      mapId,
+      "items",
+      itemToRemove.data.id,
+    );
   }
 
   async remove(mapId: number): Promise<void> {

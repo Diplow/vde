@@ -1,7 +1,17 @@
 import type { MapRepository } from "~/lib/domains/mapping/repositories";
 import { MapActions } from "~/lib/domains/mapping/actions";
-import { adapters, MapContract } from "~/lib/domains/mapping/services/adapters";
-import { MapAggregate } from "~/lib/domains/mapping/objects";
+import {
+  adapters,
+  MapContract,
+  MapItemContract,
+} from "~/lib/domains/mapping/services/adapters";
+import {
+  MapAggregate,
+  MapItemAggregate,
+  MapItemType,
+  OwnerEntity,
+} from "~/lib/domains/mapping/objects";
+import { HexCoordinate } from "~/lib/hex-coordinates";
 
 export class MapService {
   private readonly actions: MapActions;
@@ -42,19 +52,19 @@ export class MapService {
     name: string,
     description: string | null,
     ownerId: string,
-    dimensions?: {
-      rows?: number;
-      columns?: number;
-      baseSize?: number;
-    },
+    rows?: number,
+    columns?: number,
+    baseSize?: number,
   ): Promise<MapContract> {
     MapAggregate.validateName(name);
 
     const map = await this.actions.create(
       name,
       description,
-      { id: ownerId },
-      dimensions,
+      { id: ownerId, name: ownerId },
+      rows,
+      columns,
+      baseSize,
     );
     return adapters.map(map);
   }
@@ -75,6 +85,18 @@ export class MapService {
       MapAggregate.validateName(data.name);
     }
 
+    if (
+      data.rows !== undefined ||
+      data.columns !== undefined ||
+      data.baseSize !== undefined
+    ) {
+      MapAggregate.validateDimensions({
+        rows: data.rows,
+        columns: data.columns,
+        baseSize: data.baseSize,
+      });
+    }
+
     const numericId = MapService.validateAndParseId(mapId);
     return adapters.map(await this.actions.update(numericId, data));
   }
@@ -82,6 +104,85 @@ export class MapService {
   public async remove(mapId: string): Promise<void> {
     const numericId = MapService.validateAndParseId(mapId);
     await this.actions.remove(numericId);
+  }
+
+  /**
+   * Get all map items for a map
+   */
+  public async getMapItems(mapId: string): Promise<MapItemContract[]> {
+    const numericId = MapService.validateAndParseId(mapId);
+    const map = await this.actions.getOne(numericId);
+
+    // Transform map items into a more client-friendly format
+    return map.items.map(adapters.mapItem);
+  }
+
+  /**
+   * Get map items with their full details
+   */
+  public async getMapItemsWithDetails(
+    mapId: string,
+  ): Promise<MapItemContract[]> {
+    const items = await this.getMapItems(mapId);
+
+    // In a real implementation, we would fetch the actual item details
+    // based on the item ID and type from their respective repositories
+
+    return items;
+  }
+
+  /**
+   * Add an item to a map
+   */
+  public async addItemToMap(
+    mapId: string,
+    itemId: number,
+    itemType: MapItemType,
+    coordinates: HexCoordinate,
+    ownerId: string,
+  ): Promise<MapItemContract> {
+    const numericMapId = MapService.validateAndParseId(mapId);
+
+    // Create a new map item entity
+    const mapItem = new MapItemAggregate(
+      {
+        id: 0, // Temporary ID, will be assigned by the repository
+        mapId: numericMapId,
+        reference: { id: itemId, type: itemType },
+        coordinates,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      new OwnerEntity({ id: ownerId }),
+      [],
+    );
+
+    // Add the item to the map
+    await this.repository.addItem(
+      numericMapId,
+      coordinates,
+      mapItem.data.reference,
+      ownerId,
+    );
+
+    return adapters.mapItem(mapItem);
+  }
+
+  /**
+   * Remove an item from a map
+   */
+  public async removeItemFromMap(
+    mapId: string,
+    itemId: number,
+    itemType: MapItemType,
+  ): Promise<void> {
+    const numericMapId = MapService.validateAndParseId(mapId);
+
+    // Remove the item from the map
+    await this.repository.removeItem(numericMapId, {
+      id: itemId,
+      type: itemType,
+    });
   }
 
   private static validateAndParseId(id: string) {

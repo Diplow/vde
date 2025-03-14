@@ -1,0 +1,119 @@
+---
+description: Implementing the trpc API
+globs: src/server/api/*
+alwaysApply: false
+---
+---
+description: Implementing the trpc API
+globs: src/server/api/*
+alwaysApply: false
+---
+# API Layer Pattern
+
+## Structure and Organization
+- Use tRPC for type-safe API endpoints
+- Organize routers by domain in `/server/api/routers/` directory
+- Export all routers through a single root router in `root.ts`
+- Use middleware for service injection and authentication
+- Implement input validation using Zod schemas
+
+## Router Naming and Structure
+- Name router files after the domain entity (e.g., `map.ts` for map-related endpoints)
+- Export router with the pattern: `{entity}Router`
+- Group related operations within a single router
+- Follow RESTful naming conventions for procedures:
+  - `getOne`: Retrieve a single entity
+  - `getMany`: Retrieve multiple entities with pagination
+  - `create`: Create a new entity
+  - `update`: Update an existing entity
+  - `delete`: Remove an entity
+
+## Authentication and Authorization
+- Use `publicProcedure` for unauthenticated endpoints
+- Use `privateProcedure` for authenticated endpoints
+- Implement ownership checks before update/delete operations
+- Throw appropriate error messages for unauthorized actions
+- Access user information through the context (`ctx.auth.userId`)
+
+## Input Validation
+- Define Zod schemas for all input validation
+- Place validation schemas at the top of the router file
+- Validate IDs, pagination parameters, and entity properties
+- Use appropriate constraints (min/max length, ranges, etc.)
+- Coerce types when necessary (e.g., `z.coerce.number()` for IDs)
+
+## Service Integration
+- Use middleware to inject domain services into the context
+- Access services through the context (e.g., `ctx.mapService`)
+- Delegate business logic to domain services
+- Keep router procedures thin and focused on:
+  - Input validation
+  - Authentication/authorization
+  - Service delegation
+  - Response formatting
+
+## Example Structure
+```typescript
+import { z } from "zod";
+import {
+  createTRPCRouter,
+  publicProcedure,
+  privateProcedure,
+  entityServiceMiddleware,
+} from "~/server/api/trpc";
+
+// Input validation schemas
+const createEntitySchema = z.object({
+  name: z.string().min(3).max(100),
+  description: z.string().max(500).nullable(),
+  // Other properties
+});
+
+export const entityRouter = createTRPCRouter({
+  getOne: publicProcedure
+    .use(entityServiceMiddleware)
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await ctx.entityService.getOne(input.id);
+    }),
+
+  create: privateProcedure
+    .use(entityServiceMiddleware)
+    .input(createEntitySchema)
+    .mutation(async ({ ctx, input }) => {
+      if (!ctx.auth?.userId) {
+        throw new Error("Authentication required");
+      }
+      
+      return await ctx.entityService.create(
+        input.name,
+        input.description,
+        ctx.auth.userId,
+      );
+    }),
+    
+  // Other procedures...
+});
+```
+
+## Error Handling
+- Use tRPC's error system for consistent error responses
+- Throw `TRPCError` with appropriate error codes
+- Include descriptive error messages
+- Handle both validation errors and business logic errors
+- Propagate domain errors with appropriate HTTP status codes
+
+## Middleware Implementation
+- Create service middlewares in the main tRPC file
+- Inject repositories into services
+- Pass database connection through context
+- Use timing middleware for performance monitoring
+- Implement authentication middleware for protected routes
+
+## Key Principles
+- Keep API layer thin - delegate to domain services
+- Enforce strong input validation
+- Implement proper authentication and authorization
+- Maintain clear separation between API and domain layers
+- Use type-safe contracts between client and server
+- Follow consistent naming and structure patterns

@@ -1,0 +1,104 @@
+---
+description: Achitecting Frontend
+globs: 
+alwaysApply: false
+---
+---
+description:
+globs: 
+alwaysApply: false
+---
+# Frontend Architecture Rules
+rule "Frontend code should handle mostly presentation concerns. Business logic should most of the time be handled by the backend"
+
+# Server/Client Component Rules
+rule "Server components should not use client-side hooks" {
+  matches = "src/app/**/*.tsx"
+  excludes = ["src/app/**/*.client.tsx", "src/app/**/page.client.tsx"]
+  disallows = [
+    "useState",
+    "useEffect",
+    "useContext",
+    "useReducer",
+    "useCallback",
+    "useMemo",
+    "useRef",
+    "useImperativeHandle",
+    "useLayoutEffect",
+    "useDebugValue",
+    "useDeferredValue",
+    "useTransition",
+    "useId",
+    "useSyncExternalStore",
+    "useInsertionEffect"
+  ]
+}
+
+rule "Client components should be explicitly marked" {
+  matches = ["src/app/**/*.client.tsx", "src/components/**/*.client.tsx"]
+  requires = ["'use client'"]
+}
+
+# Component Organization Rules
+rule "UI components should be properly typed" {
+  matches = "src/components/**/*.tsx"
+  requires = ["type Props", "interface Props", "React.FC<"]
+}
+
+rule "Feature components should use tRPC hooks for data fetching" {
+  matches = "src/components/**/features/**/*.client.tsx"
+  requires = ["api."]
+}
+
+# Hook Rules
+rule "Custom hooks should start with 'use'" {
+  matches = "src/hooks/**/*.ts"
+  requires = ["export function use", "export const use"]
+}
+
+rule "tRPC hooks should be in dedicated files" {
+  matches = "src/hooks/**/use*Query.ts"
+  requires = ["api."]
+}
+
+# API Client Rules
+rule "tRPC client configuration should be centralized" {
+  matches = "src/lib/api/trpc.ts"
+  requires = ["createTRPCNext"]
+}
+
+# Route Handler Rules
+rule "Route handlers should delegate to domain services" {
+  matches = "src/app/api/**/*.ts"
+  requires = ["src/lib/domains"]
+}
+
+# Test Rules for Frontend
+rule "Component tests should render the component" {
+  matches = "src/components/**/*.test.tsx"
+  requires = ["render(", "screen."]
+}
+
+rule "Hook tests should use renderHook" {
+  matches = "src/hooks/**/*.test.ts"
+  requires = ["renderHook("]
+}
+
+# Security Rules
+rule "No sensitive data in client components" {
+  matches = ["src/components/**/*.client.tsx", "src/app/**/*.client.tsx"]
+  disallows = [
+    "process.env.SECRET",
+    "process.env.API_KEY",
+    "process.env.PASSWORD"
+  ]
+}
+
+# Performance Rules
+rule "Avoid large dependencies in client components" {
+  matches = ["src/components/**/*.client.tsx", "src/app/**/*.client.tsx"]
+  disallows = [
+    "import.*lodash",
+    "import.*moment"
+  ]
+}

@@ -1,0 +1,136 @@
+---
+description: Testing infrastructure repositories
+globs: src/lib/infrastructure/domains/**/repositories/*.integration.test.ts
+alwaysApply: false
+---
+---
+description: Testing infrastructure repositories
+globs: src/lib/infrastructure/domains/**/repositories/*.integration.test.ts
+alwaysApply: false
+---
+# Infrastructure Repository Integration Testing Pattern
+
+## Test Structure and Organization
+- Create test files with naming pattern: `{repository-name}.integration.test.ts`
+- Place test files in the same directory as the repository implementation
+- Use Vitest for testing framework
+- Mark tests as integration tests using metadata
+- Structure tests using describe/it blocks for clear organization
+- Group tests by repository method
+
+## Test Setup
+- Connect to a real test database (not in-memory)
+- Create repository instance with actual database connection
+- Use fixed test IDs to ensure consistent testing
+- Clean up database before and after all tests
+- Reset test data before each test case
+- Include a database connection test to verify connectivity
+
+## Test Data Management
+- Create test data in `beforeAll` for shared entities (e.g., users)
+- Reset specific test data in `beforeEach` to ensure test isolation
+- Use descriptive test data names (e.g., "Integration Test Map")
+- Clean up all test data in `afterAll`
+- Use high ID numbers (e.g., 999999) to avoid conflicts with real data
+
+## Test Coverage Requirements
+- Test all repository methods
+- Include both success and error cases for each method
+- Test data retrieval, creation, updates, and deletion
+- Test relationships between entities
+- Test pagination functionality where applicable
+
+## Assertion Patterns
+- Verify database operations by checking both returned objects and database state
+- Use explicit equality checks with `toEqual` for object comparison
+- For error cases, use `await expect(promise).rejects.toThrow()`
+- Verify that created/updated entities persist by retrieving them again
+
+## Test Case Organization
+- Group tests by repository method using nested `describe` blocks
+- Name test cases descriptively using the "it should..." pattern
+- Test the main success path first, then edge cases and error cases
+- For CRUD operations, follow a consistent testing order:
+  1. Create
+  2. Get/Retrieve
+  3. Update
+  4. Delete
+
+## Example Structure
+```typescript
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
+import { EntityDrizzlePostgresRepository } from "./entity-drizzle-postgres-repository";
+import { db } from "~/server/db";
+import { entities, relatedEntities } from "~/server/db/schema";
+import { eq } from "drizzle-orm";
+
+describe("EntityDrizzlePostgresRepository Integration", () => {
+  // Mark as integration test
+  beforeAll(() => {
+    // @ts-ignore - Adding custom metadata for test filtering
+    describe.meta = { ...(describe.meta || {}), integration: true };
+  });
+
+  // Create repository instance with real DB
+  const repository = EntityDrizzlePostgresRepository(db);
+
+  // Test data with fixed IDs
+  const TEST_ID = 999999;
+  const TEST_RELATED_ID = "test-related-id";
+  
+  // Setup and cleanup
+  beforeAll(async () => {
+    // Create shared test data
+    await db.insert(relatedEntities).values({
+      id: TEST_RELATED_ID,
+      // other fields
+    });
+  });
+  
+  afterAll(async () => {
+    // Clean up all test data
+    await db.delete(entities).execute();
+    await db.delete(relatedEntities).execute();
+  });
+  
+  beforeEach(async () => {
+    // Reset specific test data
+    await db.delete(entities).where(eq(entities.id, TEST_ID));
+    await db.insert(entities).values({
+      id: TEST_ID,
+      name: "Test Entity",
+      relatedId: TEST_RELATED_ID,
+      // other fields
+    });
+  });
+  
+  describe("getOne", () => {
+    it("should retrieve an entity by ID", async () => {
+      // Test implementation
+    });
+    
+    it("should throw an error when entity doesn't exist", async () => {
+      // Test implementation
+    });
+  });
+  
+  // Additional method tests...
+  
+  describe("Database Connection Test", () => {
+    it("should connect to the test database", async () => {
+      const result = await db.execute(sql`SELECT current_database()`);
+      expect(result[0]?.current_database).toBeDefined();
+    });
+  });
+});
+```
+
+## Key Principles
+- Integration tests should use a real database
+- Tests should be independent and isolated
+- Clean up after tests to prevent test pollution
+- Use fixed test IDs to ensure consistent testing
+- Test both happy paths and error cases
+- Verify database operations by checking both returned objects and database state
+- Include a database connection test to verify connectivity
+- Mark tests as integration tests to allow filtering in CI/CD pipelines

@@ -1,0 +1,87 @@
+---
+description: Implementing domain actions
+globs: src/lib/domains/**/actions/*actions.ts
+alwaysApply: false
+---
+---
+description: Implementing domain actions
+globs: src/lib/domains/**/actions/*actions.ts
+alwaysApply: false
+---
+Rule Name: back-domain-actions.mdc
+Description: Domain actions implementation and usage pattern
+
+# Domain Actions Pattern
+
+## Actions Structure
+- Create an actions class named with the pattern: `{Entity}Actions`
+- Actions encapsulate core domain business logic and operations
+- Actions should depend on repositories but not on services
+- Actions work directly with domain aggregates and entities
+
+## Service-Actions Relationship
+- Services should instantiate actions in their constructor
+- Store actions as a private readonly property: `private readonly actions: EntityActions`
+- Services delegate complex business logic to actions
+- Actions should never be exposed outside the service
+
+## Actions Implementation
+- Actions should:
+  1. Accept repositories via constructor dependency injection
+  2. Provide methods that implement core domain operations
+  3. Work with domain objects (aggregates, entities) directly
+  4. Not handle presentation concerns or DTO transformations
+  5. Focus on domain invariants and business rules
+
+## Method Delegation Pattern
+- Services should:
+  - Validate and parse inputs before calling actions
+  - Call action methods with validated parameters
+  - Handle the transformation of domain objects returned by actions
+  - Not duplicate business logic that should be in actions
+
+## Example Structure
+```typescript
+// Domain Actions
+export class EntityActions {
+  constructor(private readonly repository: EntityRepository) {}
+  
+  async getOne(id: number): Promise<EntityAggregate> {
+    const entity = await this.repository.getById(id);
+    if (!entity) throw new Error("Entity not found");
+    return entity;
+  }
+  
+  async create(/* parameters */): Promise<EntityAggregate> {
+    // Implementation of business logic
+    // Create and persist domain objects
+    return newEntity;
+  }
+}
+
+// Service using Actions
+export class EntityService {
+  private readonly actions: EntityActions;
+
+  constructor(private readonly repository: EntityRepository) {
+    this.actions = new EntityActions(repository);
+  }
+  
+  async getOne(id: string): Promise<EntityContract> {
+    const numericId = EntityService.validateAndParseId(id);
+    return adapters.entity(await this.actions.getOne(numericId));
+  }
+}
+```
+
+## Responsibilities
+- Actions: Core domain logic, business rules, working with domain objects
+- Services: Input validation, orchestration, transformation to/from contracts
+- Both: Maintaining domain integrity and enforcing business rules
+
+## Key Principles
+- Actions contain reusable business logic
+- Services handle the boundary between application and domain
+- Keep a clear separation of concerns
+- Domain objects should only be manipulated by actions
+- Services translate between primitive types and domain objects

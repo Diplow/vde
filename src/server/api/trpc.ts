@@ -22,6 +22,8 @@ import { MapDrizzlePostgresRepository } from "~/lib/infrastructure/mapping/repos
 import { MapService } from "~/lib/domains/mapping/services/map-service";
 import { EventDrizzlePostgresRepository } from "~/lib/infrastructure/politics/repositories/event-drizzle-postgres-repository";
 import { EventService } from "~/lib/domains/politics/services";
+import { ContentDrizzlePostgresRepository } from "~/lib/infrastructure/ideas/repositories";
+import { ContentService } from "~/lib/domains/ideas/services";
 
 /**
  * 1. CONTEXT
@@ -211,6 +213,7 @@ export const mapServiceMiddleware = t.middleware(async ({ ctx, next }) => {
     },
   });
 });
+
 export const userServiceMiddleware = t.middleware(({ ctx, next }) =>
   next({
     ctx: {
@@ -219,11 +222,23 @@ export const userServiceMiddleware = t.middleware(({ ctx, next }) =>
     },
   }),
 );
+
 export const eventServiceMiddleware = t.middleware(({ ctx, next }) =>
   next({
     ctx: {
       ...ctx,
       eventService: new EventService(EventDrizzlePostgresRepository(ctx.db)),
+    },
+  }),
+);
+
+export const contentServiceMiddleware = t.middleware(({ ctx, next }) =>
+  next({
+    ctx: {
+      ...ctx,
+      contentService: new ContentService(
+        ContentDrizzlePostgresRepository(ctx.db),
+      ),
     },
   }),
 );
