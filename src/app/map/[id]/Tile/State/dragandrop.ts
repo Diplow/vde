@@ -49,15 +49,22 @@ export function useDragAndDrop({
     // Create a custom drag image that mimics the hex tile
     const dragImg = document.createElement("div");
 
+    // Apply a 4x scaling factor to scale 1 tiles to match scale 2 tiles
+    const scalingMultiplier = scale === 1 ? 4 : 1;
+    const adjustedBaseHexWidth = baseHexWidth * scalingMultiplier;
+    const adjustedBaseHexHeight = baseHexHeight * scalingMultiplier;
+
     // Calculate the size of the drag image - match original tile dimensions
     // Using the same scale factors as in the Tile component
     const scaleFactors = {
-      width: scale === 2 ? 3 : 3,
-      height: scale === 2 ? 3 : 2.5,
+      width: scale === 2 ? 4 : 3,
+      height: scale === 2 ? 4 : 2.5,
     };
 
-    const width = baseHexWidth * Math.pow(scaleFactors.width, scale - 1);
-    const height = baseHexHeight * Math.pow(scaleFactors.height, scale - 1);
+    const width =
+      adjustedBaseHexWidth * Math.pow(scaleFactors.width, scale - 1);
+    const height =
+      adjustedBaseHexHeight * Math.pow(scaleFactors.height, scale - 1);
 
     // Create an SVG element to draw the hex shape
     const svgNS = "http://www.w3.org/2000/svg";

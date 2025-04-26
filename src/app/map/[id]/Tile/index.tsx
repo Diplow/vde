@@ -38,18 +38,22 @@ export function Tile({
   // Check if this is the center tile (center tile has no parent)
   const isCenter = HexCoordSystem.getParentCoordFromId(coords) === undefined;
 
-  const baseHexWidth = state.data.scale.baseHexSize * Math.sqrt(3);
-  const baseHexHeight = state.data.scale.baseHexSize * 2;
+  // Apply a 4x scaling factor to scale 1 tiles to match scale 2 tiles
+  const scalingMultiplier = scale === 1 ? 4 : 1;
+  const baseHexWidth =
+    state.data.scale.baseHexSize * Math.sqrt(3) * scalingMultiplier;
+  const baseHexHeight = state.data.scale.baseHexSize * 2 * scalingMultiplier;
 
-  // New size multiplier for scale 2 (3 times larger than scale 1)
+  // Size multiplier for different scales
   const scaleFactors = {
-    width: scale === 2 ? 3 : 3,
-    height: scale === 2 ? 3 : 2.5,
+    width: scale === 2 ? 4 : 3,
+    height: scale === 2 ? 4 : 2.5,
   };
 
-  // Calculate effective size for responsive content
+  // Calculate effective size for responsive content, adjusting for scale 1 being larger now
   const effectiveSize =
-    state.data.scale.baseHexSize * Math.pow(scale === 2 ? 3 : 3, scale - 1);
+    state.data.scale.baseHexSize *
+    (scale === 1 ? 4 : Math.pow(scale === 2 ? 4 : 3, scale - 1));
 
   // Determine content display level based on effective size
   const contentDisplayLevel =
