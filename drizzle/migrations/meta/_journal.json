@@ -8,6 +8,13 @@
       "when": 1744465570750,
       "tag": "0000_fearless_post",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1747400022551,
+      "tag": "0001_bright_the_twelve",
+      "breakpoints": true
     }
   ]
 }

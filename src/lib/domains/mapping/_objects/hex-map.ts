@@ -1,6 +1,7 @@
 import {
   GenericAggregate,
   GenericAggregateConstructorArgs,
+  GenericHistory,
 } from "~/lib/domains/utils/generic-objects";
 import { type MapItemWithId } from "./map-item";
 import { HEXMAP_RADIUS, HEX_SIZE } from "../types/constants";
@@ -60,17 +61,36 @@ export const DEPTH_TO_RADIUS: Record<HexMapDepth, HexMapRadius> = {
 
 export type HexMapColors = typeof DEFAULT_HEXMAP_COLORS;
 
+export type HexMapRequiredAttributes = Pick<
+  Attrs,
+  "centerId" | "ownerId" | "colors" | "radius"
+>;
+
+const defaultAttributes = {
+  title: "Untitled Map",
+};
+
 export interface Attrs {
+  title?: string;
   centerId: number;
-  ownerId: number;
+  ownerId: string;
   colors: HexMapColors;
   radius: HexMapRadius;
 }
 
-export type ShallNotUpdate = {
-  centerId?: undefined;
-  ownerId?: undefined;
-};
+export interface CreateAttrs {
+  title?: string;
+  centerId: number;
+  ownerId: string;
+  colors: HexMapColors;
+  radius: HexMapRadius;
+}
+
+export interface UpdateAttrs {
+  title?: string;
+  colors?: HexMapColors;
+  radius?: HexMapRadius;
+}
 
 export interface RelatedItems {
   center: MapItemWithId | null;
@@ -81,11 +101,7 @@ export interface RelatedLists {
 }
 
 export interface MapConstructorArgs
-  extends GenericAggregateConstructorArgs<
-    Partial<Attrs> & { ownerId: number; centerId: number },
-    Partial<RelatedItems> & { center: MapItemWithId | null },
-    Partial<RelatedLists>
-  > {
+  extends GenericAggregateConstructorArgs<Attrs, RelatedItems, RelatedLists> {
   items: MapItemWithId[];
   center: MapItemWithId | null;
 }
@@ -107,7 +123,7 @@ export type HexMapIdr =
   | {
       attrs: {
         name: string;
-        ownerId: number;
+        ownerId: string;
       };
     };
 
@@ -116,43 +132,81 @@ export class HexMap extends GenericAggregate<
   RelatedItems,
   RelatedLists
 > {
-  readonly center: MapItemWithId;
-  readonly items: MapItemWithId[];
+  readonly objectName = "HexMap";
+
+  get createdAt(): Date {
+    return this.history.createdAt;
+  }
+  get updatedAt(): Date {
+    return this.history.updatedAt;
+  }
+
+  get title(): string {
+    return this.attrs.title ?? defaultAttributes.title;
+  }
+  get centerId(): number {
+    return this.attrs.centerId;
+  }
+  get ownerId(): string {
+    const oid = this.attrs.ownerId;
+    if (typeof oid !== "string" || oid.trim() === "") {
+      throw new Error(
+        "HexMap.ownerId getter: ownerId is unexpectedly not a valid string post-construction.",
+      );
+    }
+    return oid;
+  }
+  get colors(): HexMapColors {
+    return this.attrs.colors;
+  }
+  get radius(): HexMapRadius {
+    return this.attrs.radius;
+  }
+
+  get center(): MapItemWithId | null {
+    return this.relatedItems.center;
+  }
+  get items(): MapItemWithId[] {
+    return this.relatedLists.items;
+  }
 
   constructor(args: MapConstructorArgs) {
-    const { items, attrs, ...rest } = args;
-    const center = items.find(
-      (item) =>
-        item.attrs.coords.row === 0 &&
-        item.attrs.coords.col === 0 &&
-        item.attrs.coords.path.length === 0,
-    )!;
+    const { items, center, attrs: inputAttrs, id, history } = args;
+
     if (!center?.id) {
       throw new Error(MAPPING_ERRORS.INVALID_MAP_CENTER);
     }
-    if (!attrs?.ownerId) {
+
+    const ownerIdFromInput = inputAttrs?.ownerId;
+    if (typeof ownerIdFromInput !== "string" || !ownerIdFromInput.trim()) {
       throw new Error(MAPPING_ERRORS.MAP_OWNER_ID_REQUIRED);
     }
+
+    const finalAttrs: Attrs = {
+      title: inputAttrs?.title ?? defaultAttributes.title,
+      centerId: center.id,
+      ownerId: ownerIdFromInput,
+      colors: inputAttrs?.colors ?? DEFAULT_HEXMAP_COLORS,
+      radius: inputAttrs?.radius ?? HexMapRadius.XS,
+    };
+
     super({
-      ...rest,
-      attrs: {
-        ...attrs,
-        colors: attrs?.colors ?? DEFAULT_HEXMAP_COLORS,
-        centerId: center.id,
-        ownerId: attrs?.ownerId ?? 0,
-        radius: attrs?.radius ?? HexMapRadius.XS,
-      },
-      relatedLists: { items },
+      id,
+      history,
+      attrs: finalAttrs,
       relatedItems: { center },
+      relatedLists: { items },
     });
-    this.items = items;
-    this.center = center;
 
     HexMap.validate(this);
   }
 
   public static validate(map: HexMap) {
-    HexMap.validateCenter(map.center);
+    if (map.center) {
+      HexMap.validateCenter(map.center);
+    } else {
+      throw new Error(MAPPING_ERRORS.INVALID_MAP_CENTER);
+    }
   }
 
   public static validateDepth(depth: number) {
@@ -161,8 +215,8 @@ export class HexMap extends GenericAggregate<
     }
   }
 
-  public static validateCenter(center: MapItemWithId) {
-    if (center.attrs.coords.path.length !== 0) {
+  public static validateCenter(centerItem: MapItemWithId) {
+    if (centerItem.attrs.coords.path.length !== 0) {
       throw new Error(MAPPING_ERRORS.INVALID_MAP_CENTER);
     }
   }
@@ -173,4 +227,4 @@ export class HexMap extends GenericAggregate<
   }
 }
 
-export type MapWithId = HexMap & { id: number };
+export type MapWithId = HexMap & { readonly id: number };
