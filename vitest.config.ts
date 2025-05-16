@@ -5,7 +5,7 @@ import { resolve } from "path";
 export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
-    include: ["react", "react-dom"],
+    include: ["react", "react-dom", "@storybook/experimental-nextjs-vite"],
   },
   test: {
     environment: "jsdom",
