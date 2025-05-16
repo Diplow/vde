@@ -55,4 +55,4 @@ drizzle/meta/*
 .gitignore
 .vscode/*
 *storybook.log
-.cursor
+.cursor/rules/*
