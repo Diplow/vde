@@ -21,6 +21,10 @@ next-env.d.ts
 # production
 /build
 
+# youtube scripts
+src/lib/youtube/analysis
+src/lib/youtube/transcripts
+
 # misc
 .DS_Store
 *.pem
@@ -49,3 +53,6 @@ drizzle/meta/*
 .cursorignore
 .env.test
 .gitignore
+.vscode/*
+*storybook.log
+.cursor/rules/*
