@@ -49,33 +49,20 @@ if ! psql -h $DB_HOST -p $DB_PORT -U $DB_USER -c '\q' postgres 2>/dev/null; then
   exit 1
 fi
 
-# Check if the database exists
-if psql -h $DB_HOST -p $DB_PORT -U $DB_USER -lqt | cut -d \| -f 1 | grep -qw $DB_NAME; then
-  echo -e "${YELLOW}Database $DB_NAME already exists${NC}"
-else
-  echo -e "${GREEN}Creating database $DB_NAME${NC}"
-  psql -h $DB_HOST -p $DB_PORT -U $DB_USER -c "CREATE DATABASE $DB_NAME;"
-fi
+# Drop the database if it exists
+echo -e "${YELLOW}Dropping database $DB_NAME if it exists${NC}"
+psql -h $DB_HOST -p $DB_PORT -U $DB_USER -c "DROP DATABASE IF EXISTS $DB_NAME;"
 
-ENV=test pnpm run db:generate
-ENV=test pnpm run db:migrate
+# Create the database
+echo -e "${GREEN}Creating database $DB_NAME${NC}"
+psql -h $DB_HOST -p $DB_PORT -U $DB_USER -c "CREATE DATABASE $DB_NAME;"
 
-# Fix the circular dependency issue by temporarily modifying the schema/index.ts file
-echo -e "${BLUE}Fixing schema for migrations...${NC}"
-SCHEMA_FILE="src/server/db/schema/index.ts"
-SCHEMA_BACKUP="${SCHEMA_FILE}.bak"
+# Generate Drizzle schema
+echo -e "${GREEN}Generating Drizzle schema${NC}"
+NODE_ENV=test SKIP_ENV_VALIDATION=true pnpm run db:generate
 
-# Backup the original file
-cp $SCHEMA_FILE $SCHEMA_BACKUP
-
-# Modify the schema file to remove the circular dependency
-sed -i 's/export const db = drizzle(postgres(""), { schema });/\/\/ Temporarily commented out for migrations\n\/\/ export const db = drizzle(postgres(""), { schema });/' $SCHEMA_FILE
-
-# Run database migrations with environment variables set
-echo -e "${GREEN}Running database migrations${NC}"
-SKIP_ENV_VALIDATION=true DATABASE_URL=$TEST_DATABASE_URL pnpm drizzle-kit push:pg
-
-# Restore the original schema file
-mv $SCHEMA_BACKUP $SCHEMA_FILE
+# Run database migrations with a single approach (push instead of migrate)
+echo -e "${GREEN}Applying schema to the database${NC}"
+NODE_ENV=test SKIP_ENV_VALIDATION=true DATABASE_URL=$TEST_DATABASE_URL pnpm run db:push
 
 echo -e "${GREEN}Test database setup complete!${NC}" 

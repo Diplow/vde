@@ -4,6 +4,14 @@ import { resolve } from "path";
 
 export default defineConfig({
   plugins: [react()],
+  optimizeDeps: {
+    include: [
+      "react",
+      "react-dom",
+      "@storybook/experimental-nextjs-vite",
+      "@mdx-js/react",
+    ],
+  },
   test: {
     environment: "jsdom",
     globals: true,
