@@ -5,7 +5,7 @@ import { resolve } from "path";
 export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
-    exclude: ["react", "react-dom"],
+    include: ["react", "react-dom"],
   },
   test: {
     environment: "jsdom",
