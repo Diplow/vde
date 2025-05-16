@@ -5,6 +5,11 @@ import { baseItems } from "./_tables/base-items";
 // Assuming users table relations might be defined elsewhere
 // import { users } from "./_tables/users";
 
+// Import auth tables
+import { users } from "./users";
+import { accounts } from "./accounts";
+import { sessions } from "./sessions";
+
 /**
  * Relations for hex_maps table
  */
@@ -67,4 +72,26 @@ export const mapItemRelations = relations(mapItems, ({ one, many }) => ({
 export const baseItemRelations = relations(baseItems, ({ many }) => ({
   // One-to-many: BaseItem -> Referencing MapItems
   mapItems: many(mapItems),
+}));
+
+// Relations for Auth tables
+export const usersRelations = relations(users, ({ many }) => ({
+  accounts: many(accounts),
+  sessions: many(sessions),
+  // If users can own hexMaps, this could be uncommented and hexMaps imported
+  // hexMaps: many(hexMaps),
+}));
+
+export const accountsRelations = relations(accounts, ({ one }) => ({
+  user: one(users, {
+    fields: [accounts.userId],
+    references: [users.id],
+  }),
+}));
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  user: one(users, {
+    fields: [sessions.userId],
+    references: [users.id],
+  }),
 }));

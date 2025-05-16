@@ -1,12 +1,13 @@
 import {
   integer,
+  text,
   timestamp,
   jsonb,
   index,
   foreignKey,
 } from "drizzle-orm/pg-core";
 import { createTable } from "../_utils";
-// import { users } from "./users"; // Assuming users table exists
+import { users } from "../users"; // Assuming users table exists in parent directory
 import { mapItems } from "./map-items";
 import type {
   HexMapColors,
@@ -24,7 +25,7 @@ export const hexMaps = createTable(
   {
     id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
     centerId: integer("center_id").notNull(), // FK defined below
-    ownerId: integer("owner_id").notNull(), // FK defined below - assuming users table
+    ownerId: text("owner_id").notNull(), // Changed to text, FK defined below
     colors: jsonb("colors").$type<HexMapColors>().notNull(),
     radius: integer("radius").$type<HexMapRadius>().notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -36,10 +37,10 @@ export const hexMaps = createTable(
         columns: [table.centerId],
         foreignColumns: [mapItems.id],
       }).onDelete("restrict"), // Don't allow deleting the center item if it's part of a map
-      // ownerFk: foreignKey({
-      //   columns: [table.ownerId],
-      //   foreignColumns: [users.id], // Assumes users.id exists
-      // }).onDelete("cascade"), // Cascade delete maps if owner is deleted
+      ownerFk: foreignKey({
+        columns: [table.ownerId],
+        foreignColumns: [users.id], // Assumes users.id exists
+      }).onDelete("cascade"), // Cascade delete maps if owner is deleted
 
       centerIdx: index("hex_map_center_idx").on(table.centerId),
       ownerIdx: index("hex_map_owner_idx").on(table.ownerId),

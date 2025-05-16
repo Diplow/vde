@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "~/commons/trpc/react";
+import { AuthProvider } from "~/contexts/AuthContext";
 
 export const metadata: Metadata = {
   title: "VDE",
@@ -16,7 +17,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
       <body className="min-h-screen bg-gradient-to-br from-background via-background to-muted font-sans antialiased">
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+        <AuthProvider>
+          <TRPCReactProvider>{children}</TRPCReactProvider>
+        </AuthProvider>
       </body>
     </html>
   );
