@@ -115,6 +115,8 @@ export const DefaultScale1: Story = {
   args: {
     item: mockItem1,
     scale: 1,
+    allExpandedItemIds: [],
+    hasChildren: false,
   },
 };
 
@@ -123,6 +125,8 @@ export const DefaultScale2: Story = {
   args: {
     item: mockItem1,
     scale: 2,
+    allExpandedItemIds: [],
+    hasChildren: false,
   },
 };
 
@@ -131,6 +135,8 @@ export const DefaultScale3: Story = {
   args: {
     item: mockItem1,
     scale: 3,
+    allExpandedItemIds: [],
+    hasChildren: false,
   },
 };
 
@@ -139,6 +145,8 @@ export const Item2Scale3: Story = {
   args: {
     item: mockItem2,
     scale: 3,
+    allExpandedItemIds: [],
+    hasChildren: false,
   },
 };
 
@@ -147,6 +155,8 @@ export const Item2Scale1: Story = {
   args: {
     item: mockItem2,
     scale: 1,
+    allExpandedItemIds: [],
+    hasChildren: false,
   },
 };
 
@@ -155,6 +165,8 @@ export const Item3Scale3: Story = {
   args: {
     item: mockItem3,
     scale: 3,
+    allExpandedItemIds: [],
+    hasChildren: false,
   },
 };
 
@@ -163,5 +175,7 @@ export const Item3Scale2: Story = {
   args: {
     item: mockItem3, // mockItem3 has a 150 char title
     scale: 2,
+    allExpandedItemIds: [],
+    hasChildren: false,
   },
 };
