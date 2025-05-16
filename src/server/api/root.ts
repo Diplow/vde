@@ -1,9 +1,5 @@
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { mapRouter } from "~/server/api/routers/map";
-import { eventRouter } from "~/server/api/routers/event";
-import { mapItemsRouter } from "~/server/api/routers/map-items";
-import { contentRouter } from "~/server/api/routers/content";
-
 /**
  * This is the primary router for your server.
  *
@@ -11,9 +7,6 @@ import { contentRouter } from "~/server/api/routers/content";
  */
 export const appRouter = createTRPCRouter({
   map: mapRouter,
-  event: eventRouter,
-  mapItems: mapItemsRouter,
-  content: contentRouter,
 });
 
 // export type definition of API

@@ -1,2 +1,2 @@
-export * from "./map-service";
-export * from "./adapters";
+export * from "./hex-map";
+// export * from "./adapters";

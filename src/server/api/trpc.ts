@@ -9,22 +9,11 @@
 import { initTRPC } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
-import { auth } from "@clerk/nextjs/server";
-import { TRPCError } from "@trpc/server";
-
-import { db } from "~/server/db";
-import { ClerkUserRepository } from "~/lib/infrastructure/actors/repositories/users";
-import { users } from "~/server/db/schema/users";
-import { eq } from "drizzle-orm";
-
-import { UserService } from "~/lib/domains/actors/services";
-import { MapDrizzlePostgresRepository } from "~/lib/infrastructure/mapping/repositories/map-drizzle-postgres-repository";
-import { MapService } from "~/lib/domains/mapping/services/map-service";
-import { EventDrizzlePostgresRepository } from "~/lib/infrastructure/politics/repositories/event-drizzle-postgres-repository";
-import { EventService } from "~/lib/domains/politics/services";
-import { ContentDrizzlePostgresRepository } from "~/lib/infrastructure/ideas/repositories";
-import { ContentService } from "~/lib/domains/ideas/services";
-
+import { MapService } from "~/lib/domains/mapping/services/hex-map";
+import { db } from "../db";
+import { DbHexMapRepository } from "~/lib/domains/mapping/infrastructure/hex-map/db";
+import { DbMapItemRepository } from "~/lib/domains/mapping/infrastructure/map-item/db";
+import { DbBaseItemRepository } from "~/lib/domains/mapping/infrastructure/base-item/db";
 /**
  * 1. CONTEXT
  *
@@ -38,64 +27,16 @@ import { ContentService } from "~/lib/domains/ideas/services";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
-  const authData = await auth();
-  let dbUser = null;
-
-  // If user is authenticated with Clerk
-  if (authData?.userId) {
-    // Try to find the user in the database
-    dbUser = await db.query.users.findFirst({
-      where: eq(users.clerkId, authData.userId),
-    });
-
-    // If user doesn't exist in the database, create them
-    if (!dbUser && authData.userId) {
-      try {
-        // Get user details from Clerk
-        const clerk = await import("@clerk/nextjs/server").then(
-          (mod) => mod.clerkClient,
-        );
-        const clerkInstance = await clerk();
-        const clerkUser = await clerkInstance.users.getUser(authData.userId);
-
-        // Insert the user into the database
-        const [newUser] = await db
-          .insert(users)
-          .values({
-            clerkId: authData.userId,
-            email: clerkUser.emailAddresses[0]?.emailAddress,
-            firstName: clerkUser.firstName,
-            lastName: clerkUser.lastName,
-            imageUrl: clerkUser.imageUrl,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          })
-          .returning();
-
-        dbUser = newUser;
-        console.log(
-          `Created new user in database for Clerk ID: ${authData.userId}`,
-        );
-      } catch (error) {
-        console.error("Error creating user in database:", error);
-      }
-    }
-  }
-
   return {
-    db,
     headers: opts.headers,
-    auth: authData,
-    dbUser,
   };
 };
 
 /**
  * Inner context creator useful for testing - accepts db directly
  */
-export const createInnerTRPCContext = (opts: { db: typeof db }) => {
+export const createInnerTRPCContext = (opts: {}) => {
   return {
-    db: opts.db,
     headers: new Headers(),
   };
 };
@@ -179,66 +120,21 @@ export const publicProcedure = t.procedure.use(timingMiddleware);
  * This procedure ensures that the user is authenticated before executing.
  * If the user is not authenticated, it will throw an unauthorized error.
  */
-export const privateProcedure = t.procedure
-  .use(timingMiddleware)
-  .use(({ ctx, next }) => {
-    if (!ctx.auth?.userId) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "You must be logged in to access this resource",
-      });
-    }
-    return next({
-      ctx: {
-        ...ctx,
-        auth: {
-          ...ctx.auth,
-          userId: ctx.auth.userId,
-        },
-      },
-    });
-  });
 
 // Service middlewares
-export const mapServiceMiddleware = t.middleware(async ({ ctx, next }) => {
+export const mappingServiceMiddleware = t.middleware(async ({ ctx, next }) => {
   // Create a new context with the map service
-  const db = ctx.db;
-  const repository = MapDrizzlePostgresRepository(db);
-  const mapService = new MapService(repository);
+  const repositories = {
+    map: new DbHexMapRepository(db),
+    mapItem: new DbMapItemRepository(db),
+    baseItem: new DbBaseItemRepository(db),
+  };
+  const mappingService = new MapService(repositories);
 
   return next({
     ctx: {
       ...ctx,
-      mapService,
+      mappingService,
     },
   });
 });
-
-export const userServiceMiddleware = t.middleware(({ ctx, next }) =>
-  next({
-    ctx: {
-      ...ctx,
-      userService: new UserService(ClerkUserRepository()),
-    },
-  }),
-);
-
-export const eventServiceMiddleware = t.middleware(({ ctx, next }) =>
-  next({
-    ctx: {
-      ...ctx,
-      eventService: new EventService(EventDrizzlePostgresRepository(ctx.db)),
-    },
-  }),
-);
-
-export const contentServiceMiddleware = t.middleware(({ ctx, next }) =>
-  next({
-    ctx: {
-      ...ctx,
-      contentService: new ContentService(
-        ContentDrizzlePostgresRepository(ctx.db),
-      ),
-    },
-  }),
-);

@@ -1,39 +1,76 @@
-export type GenericEntityData = {
-  id: number | string;
+export type GenericHistory = {
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type GenericAttributes = {
   [key: string]: any;
 };
 
-export class GenericAggregate {
-  readonly data: GenericEntityData;
-  readonly relatedItems: {
-    [key: string]: GenericAggregate;
-  };
-  readonly relatedLists: {
-    [key: string]: Array<GenericAggregate>;
-  };
+export type GenericRelatedItems =
+  | {
+      [key: string]:
+        | (GenericAggregate<
+            GenericAttributes,
+            GenericRelatedItems,
+            GenericRelatedLists
+          > & { id: number })
+        | null;
+    }
+  | {};
 
-  constructor(
-    data: GenericEntityData,
-    relatedItems: {
-      [key: string]: GenericAggregate;
-    },
-    relatedLists: {
-      [key: string]: Array<GenericAggregate>;
-    },
-  ) {
-    this.data = data;
+export type GenericRelatedLists =
+  | {
+      [key: string]: Array<
+        GenericAggregate<
+          GenericAttributes,
+          GenericRelatedItems,
+          GenericRelatedLists
+        > & { id: number }
+      >;
+    }
+  | {};
+
+export type GenericAggregateConstructorArgs<
+  A extends GenericAttributes,
+  I extends GenericRelatedItems,
+  L extends GenericRelatedLists,
+> = {
+  id?: number;
+  history?: GenericHistory;
+  relatedItems?: I;
+  relatedLists?: L;
+  attrs?: A;
+};
+
+export class GenericAggregate<
+  A extends GenericAttributes,
+  I extends GenericRelatedItems,
+  L extends GenericRelatedLists,
+> {
+  readonly id: number | undefined;
+  readonly history: GenericHistory;
+  readonly relatedItems: I;
+  readonly relatedLists: L;
+  readonly attrs: A;
+
+  constructor({
+    id = undefined,
+    history = undefined,
+    relatedItems = {} as I,
+    relatedLists = {} as L,
+    attrs = {} as A,
+  }: GenericAggregateConstructorArgs<A, I, L>) {
+    this.id = id;
+    const now = new Date();
+    this.history = history ?? {
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.attrs = attrs;
     this.relatedItems = relatedItems;
     this.relatedLists = relatedLists;
   }
 }
 
-export class GenericEntity extends GenericAggregate {
-  readonly data: GenericEntityData;
-  readonly relatedItems = {};
-  readonly relatedLists = {};
-
-  constructor(data: GenericEntityData) {
-    super(data, {}, {});
-    this.data = data;
-  }
-}
+export type GenericAggregateType = typeof GenericAggregate;
