@@ -2,7 +2,7 @@
 
 import React, {
   useState,
-  KeyboardEvent as ReactKeyboardEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
   useEffect,
 } from "react";
 import { MinusIcon, PlusIcon } from "@heroicons/react/24/solid";

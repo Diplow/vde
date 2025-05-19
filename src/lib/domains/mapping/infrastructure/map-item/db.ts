@@ -66,9 +66,6 @@ function mapJoinedDbToDomain(
         col: dbMapItem.col,
         path: parsePathString(dbMapItem.path),
       },
-      size: dbMapItem.size,
-      color: dbMapItem.color,
-      lightness: dbMapItem.lightness,
       // ref attribute within attrs is derived, not directly passed here
       ref: {
         itemType: dbMapItem.refItemType,
@@ -314,9 +311,6 @@ export class DbMapItemRepository implements MapItemRepository {
         row: row,
         col: col,
         path: pathString,
-        size: attrs.size,
-        color: attrs.color,
-        lightness: attrs.lightness,
         refItemType: attrs.ref.itemType,
         refItemId: attrs.ref.itemId,
       })
@@ -370,9 +364,6 @@ export class DbMapItemRepository implements MapItemRepository {
       updateData.col = attrs.coords.col;
       updateData.path = pathToString(attrs.coords.path);
     }
-    if (attrs.size !== undefined) updateData.size = attrs.size;
-    if (attrs.color !== undefined) updateData.color = attrs.color;
-    if (attrs.lightness !== undefined) updateData.lightness = attrs.lightness;
     if (attrs.ref !== undefined) {
       updateData.refItemType = attrs.ref.itemType;
       updateData.refItemId = attrs.ref.itemId;

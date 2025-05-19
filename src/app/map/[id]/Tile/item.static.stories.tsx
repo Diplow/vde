@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { StaticItemTile } from "./item.static";
-import { HexTileData } from "../State/types"; // Assuming this path is correct
-import { HexCoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
+import type { HexTileData } from "../State/types"; // Assuming this path is correct
+import {
+  HexCoordSystem,
+  type HexCoord,
+} from "~/lib/domains/mapping/utils/hex-coordinates";
 import "src/styles/globals.css";
 
 // Helper function to generate placeholder text

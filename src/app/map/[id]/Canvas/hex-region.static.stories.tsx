@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { StaticHexRegion } from "./hex-region.static";
-import { HexTileData } from "../State/types";
+import type { HexTileData } from "../State/types";
 import { HexCoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 import "src/styles/globals.css";
 
@@ -19,7 +19,7 @@ const createMockItem = (
   coordId: string,
   name: string,
   color: string,
-  depth: number = 0,
+  depth = 0,
   parentId?: string,
 ): HexTileData => ({
   metadata: {
@@ -50,9 +50,6 @@ const centerCoord = "0,0";
 const nwCoord = HexCoordSystem.getChildCoordsFromId(centerCoord)[0]; // "0,0:NW"
 const neCoord = HexCoordSystem.getChildCoordsFromId(centerCoord)[1]; // "0,0:NE"
 const eCoord = HexCoordSystem.getChildCoordsFromId(centerCoord)[2]; // "0,0:E"
-const seCoord = HexCoordSystem.getChildCoordsFromId(centerCoord)[3]; // "0,0:SE"
-const swCoord = HexCoordSystem.getChildCoordsFromId(centerCoord)[4]; // "0,0:SW"
-const wCoord = HexCoordSystem.getChildCoordsFromId(centerCoord)[5]; // "0,0:W"
 
 const nw_nwCoord = HexCoordSystem.getChildCoordsFromId(nwCoord)[0]; // "0,0:NW,NW"
 
@@ -110,7 +107,7 @@ const meta: Meta<typeof StaticHexRegion> = {
     center: { control: "text" },
     mapItems: { control: "object" },
     baseHexSize: { control: { type: "number", min: 20, max: 100, step: 5 } },
-    expandedItems: { control: "object" }, // Array of strings
+    expandedItemIds: { control: "object" }, // Array of strings
   },
 };
 
@@ -124,7 +121,7 @@ export const SingleTileNoExpansion: Story = {
     center: centerCoord,
     mapItems: mockMapItemsSimple,
     baseHexSize: 50,
-    expandedItems: [],
+    expandedItemIds: [],
   },
 };
 
@@ -133,7 +130,7 @@ export const CenterTileMissing: Story = {
     center: "10,10", // A coordinate not in mapItems
     mapItems: mockMapItemsSimple,
     baseHexSize: 50,
-    expandedItems: [],
+    expandedItemIds: [],
   },
 };
 
@@ -142,7 +139,7 @@ export const OneLevelExpanded: Story = {
     center: centerCoord,
     mapItems: mockMapItemsOneLevel,
     baseHexSize: 50,
-    expandedItems: [centerCoord],
+    expandedItemIds: [centerCoord],
   },
 };
 
@@ -161,7 +158,7 @@ export const OneLevelExpandedWithMissingChildren: Story = {
       ),
     },
     baseHexSize: 50,
-    expandedItems: [centerCoord],
+    expandedItemIds: [centerCoord],
   },
 };
 
@@ -170,7 +167,7 @@ export const TwoLevelsExpanded: Story = {
     center: centerCoord,
     mapItems: mockMapItemsTwoLevels,
     baseHexSize: 50,
-    expandedItems: [centerCoord, nwCoord], // Expand center and its NW child
+    expandedItemIds: [centerCoord, nwCoord], // Expand center and its NW child
   },
 };
 
@@ -179,7 +176,7 @@ export const DifferentBaseSize: Story = {
     center: centerCoord,
     mapItems: mockMapItemsOneLevel,
     baseHexSize: 50,
-    expandedItems: [centerCoord],
+    expandedItemIds: [centerCoord],
   },
 };
 
@@ -188,6 +185,6 @@ export const NoItemsAtAll: Story = {
     center: centerCoord,
     mapItems: {},
     baseHexSize: 50,
-    expandedItems: [],
+    expandedItemIds: [],
   },
 };

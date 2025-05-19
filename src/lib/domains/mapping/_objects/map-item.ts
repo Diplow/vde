@@ -7,8 +7,6 @@ import {
   HexCoordSystem,
   HexDirection,
 } from "~/lib/domains/mapping/utils/hex-coordinates";
-import { HexSize } from "./hex-map";
-import type { HexColor, HexColorTint } from "../_objects/hex-map";
 import type { BaseItemWithId } from "./base-item";
 import { MAPPING_ERRORS } from "../types/errors";
 
@@ -25,9 +23,6 @@ export interface Attrs {
   originId: number | null; // The original mapItem this is a copy of.
   parentId: number | null; // The parent mapItem this is a copy of.
   coords: HexCoord;
-  size: HexSize;
-  color: HexColor;
-  lightness: HexColorTint;
   ref: {
     itemType: MapItemType;
     itemId: number;
@@ -51,11 +46,11 @@ export interface RelatedLists {
 
 export interface MapItemConstructorArgs
   extends GenericAggregateConstructorArgs<
-    Partial<Attrs> & { color: HexColor },
+    Partial<Attrs>,
     Partial<RelatedItems> & { ref: BaseItemWithId },
     Partial<RelatedLists>
   > {
-  attrs: Partial<Attrs> & { color: HexColor };
+  attrs: Partial<Attrs>;
   ref: BaseItemWithId;
   neighbors?: MapItemWithId[];
   parent?: MapItemWithId | null;
@@ -98,9 +93,6 @@ export class MapItem extends GenericAggregate<
         originId: attrs.originId ?? origin?.id ?? null,
         parentId: attrs.parentId ?? parent?.id ?? null,
         coords: attrs.coords ?? HexCoordSystem.getCenterCoord(),
-        size: attrs.size ?? "M",
-        color: attrs.color,
-        lightness: (attrs.coords?.path.length as HexColorTint) || 0,
         ref: attrs.ref ?? {
           itemType: MapItemType.BASE,
           itemId: ref.id,
@@ -147,7 +139,6 @@ export class MapItem extends GenericAggregate<
   public static validateNeighbors(item: MapItem) {
     MapItem.validateNeighborsCount(item);
     MapItem.validateNeighborDirections(item);
-    MapItem.validateNeighborColors(item);
   }
 
   private static validateNeighborsCount(item: MapItem) {
@@ -178,48 +169,6 @@ export class MapItem extends GenericAggregate<
     return item.parent === null;
   }
 
-  private static validateNeighborColors(item: MapItem) {
-    MapItem.validateCenterHasDifferentNeighborColor(item);
-    MapItem.validateNeighborHasSameColorAsParent(item);
-    MapItem.validateNeighborHasLighterTintThanParent(item);
-  }
-
-  private static validateCenterHasDifferentNeighborColor(item: MapItem) {
-    if (!MapItem.isCenter(item)) return;
-    const neighbors = item.neighbors;
-    const centerColor = item.attrs.color;
-    const colors = new Set<HexColor>();
-    for (const neighbor of neighbors) {
-      if (
-        neighbor.attrs.color === centerColor ||
-        colors.has(neighbor.attrs.color)
-      ) {
-        throw new Error(MAPPING_ERRORS.INVALID_NEIGHBOR_COLOR);
-      }
-      colors.add(neighbor.attrs.color);
-    }
-  }
-
-  private static validateNeighborHasSameColorAsParent(item: MapItem) {
-    if (MapItem.isCenter(item)) return;
-    const color = item.attrs.color;
-    for (const neighbor of item.neighbors) {
-      if (neighbor.attrs.color !== color) {
-        throw new Error("Invalid neighbor: must have the same color as parent");
-      }
-    }
-  }
-
-  private static validateNeighborHasLighterTintThanParent(item: MapItem) {
-    const lightness = item.attrs.lightness;
-    for (const neighbor of item.neighbors) {
-      if (neighbor.attrs.lightness !== lightness + 1) {
-        throw new Error(
-          "Invalid neighbor: must have a lighter lightness than parent",
-        );
-      }
-    }
-  }
   private static checkNeighborsDepth(item: MapItem) {
     const neighbors = item.neighbors;
     for (const neighbor of neighbors) {

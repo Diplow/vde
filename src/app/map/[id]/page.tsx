@@ -152,7 +152,6 @@ export const formatItems = (items: MapItemAPIContract[]) => {
   const itemsById = items.map(adapt).reduce(
     (acc, item) => {
       if (item.metadata.coordinates.path.indexOf(0) !== -1) {
-        console.log("item should not have a direction 0 in its path", { item });
         return acc;
       }
       acc[item.metadata.coordId] = {

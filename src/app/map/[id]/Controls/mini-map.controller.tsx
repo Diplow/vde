@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Maximize2, Minimize2 } from "lucide-react"; // Assuming lucide-react for icons
 import { StaticMiniMap } from "../Canvas/mini-map.static";
-import { HexTileData } from "../State/types";
-import { TileScale } from "../Tile/base.static"; // Import TileScale
+import type { HexTileData } from "../State/types";
+import type { TileScale } from "../Tile/base.static"; // Import TileScale
 
 interface MiniMapControllerProps {
   expandedItemIds: string[]; // Changed to minimapItemsData
@@ -23,7 +23,6 @@ interface ViewportData {
 }
 
 const MINIMAP_TILE_SIZE_APPROX = 80; // Approximate fixed size for the minimap container
-const MINIMAP_MAX_DEPTH = 3; // Max depth of items to render in minimap
 
 export function MiniMapController({
   expandedItemIds,
@@ -42,12 +41,9 @@ export function MiniMapController({
   // Default to 0 if not present or invalid, needs to be TileScale compatible.
   // Assuming the URL scale directly corresponds to a TileScale value.
   const mainMapGlobalScale = parseInt(
-    mainMapUrlScaleParam || "0",
+    mainMapUrlScaleParam ?? "0",
     10,
   ) as TileScale;
-  // A more robust solution might involve validation or mapping if URL scale isn't directly TileScale
-
-  console.log("[MiniMapController] Viewport Data:", viewportData); // Existing log
 
   const handleToggleMinimap = () => {
     setIsMinimapVisible((prev) => !prev);
@@ -58,19 +54,8 @@ export function MiniMapController({
       `[data-canvas-id="${currentMapCenterCoordId}"]`,
     );
 
-    const target = scrollableElement || document.documentElement;
+    const target = scrollableElement ?? document.documentElement;
     scrollableMapElementRef.current = target; // Store in ref
-
-    if (scrollableElement) {
-      console.log(
-        "[MiniMapController] Attaching scroll listener to:",
-        scrollableElement,
-      );
-    } else {
-      console.warn(
-        `[MiniMapController] Canvas element with data-canvas-id="${currentMapCenterCoordId}" not found. Falling back to document.documentElement for scroll events.`,
-      );
-    }
 
     const handleScrollOrResize = () => {
       // Use properties from the target
@@ -111,9 +96,9 @@ export function MiniMapController({
   // Effect to scroll the main map when the 'focus' URL parameter changes
   useEffect(() => {
     const focusCoordId = searchParams.get("focus");
-    const item = Object.values(minimapItemsData).filter(
+    const item = Object.values(minimapItemsData).find(
       (item: HexTileData) => item.metadata.dbId === focusCoordId,
-    )[0];
+    );
     if (focusCoordId) {
       // Timeout to allow DOM to update, especially after navigation
       setTimeout(() => {
@@ -135,7 +120,7 @@ export function MiniMapController({
     }
   }, [searchParams, minimapItemsData]); // Rerun when searchParams (and thus 'focus') changes
 
-  if (parseInt(mainMapUrlScaleParam || "0", 10) < 4) {
+  if (parseInt(mainMapUrlScaleParam ?? "0", 10) < 4) {
     return null;
   }
 

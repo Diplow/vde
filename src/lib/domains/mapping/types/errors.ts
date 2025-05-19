@@ -1,5 +1,6 @@
 export const MAPPING_ERRORS = {
   // HexMap errors
+  CENTER_REQUIRED: "Center is required for map creation",
   INVALID_ID: "Invalid ID: must be a positive number",
   INVALID_MAP_CENTER: "Invalid map center: must be at the origin 0,0",
   MAP_OWNER_ID_REQUIRED: "Map Owner ID is required",
@@ -26,7 +27,6 @@ export const MAPPING_ERRORS = {
     "Moving to a location with a different parent is not allowed",
   ITEM_NOT_FOUND: "The item to move was not found at the specified coordinates",
   CENTER_ITEM_NOT_ALLOWED: "Center item is not allowed to be moved",
-
   // HexCoordinates errors
   INVALID_HEX_ID: "Invalid hex ID",
 

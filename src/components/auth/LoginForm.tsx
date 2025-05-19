@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { authClient } from "~/lib/auth/auth-client";
 import { api } from "~/commons/trpc/react"; // For tRPC utils for cache invalidation
-// import { useRouter } from 'next/navigation'; // If manual redirection is needed
+// import { useRouter } from "next/navigation"; // No longer needed here
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -10,7 +10,12 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
 
   const trpcUtils = api.useUtils();
-  // const router = useRouter();
+  // const router = useRouter(); // No longer needed here
+  // Remove userMapQuery initialization as it's not used here anymore
+  // const userMapQuery = api.map.getUserMap.useQuery(undefined, {
+  // enabled: false,
+  // retry: false,
+  // });
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -22,42 +27,44 @@ export function LoginForm() {
         {
           email,
           password,
-          // callbackURL: '/map', // Optional redirect after successful login
-          // rememberMe: true, // Optional
         },
         {
-          onSuccess: (ctx) => {
-            console.log("Signed in successfully:", ctx.data);
-            // Invalidate session query to update AuthContext or other user state
+          onSuccess: () => {
+            // Invalidate session to trigger AuthContext update
+            // LoginPage will handle fetching map and redirection
             trpcUtils.auth.getSession.invalidate();
-            // better-auth might auto-redirect based on callbackURL or server settings.
-            // router.push('/map'); // Or rely on callbackURL / better-auth default
           },
           onError: (ctx) => {
-            console.error("Sign in error:", ctx.error);
+            console.error("Sign in error callback:", ctx.error);
             setError(
               ctx.error.message ||
                 "Failed to login. Please check your credentials.",
             );
           },
-          onSettled: () => {
-            setIsLoading(false);
-          },
         },
       );
 
+      // Handle error from authClient.signIn.email if it's returned in the result
       if (result && result.error) {
-        // This secondary check might be redundant if onError callback handles it well
         setError(
           result.error.message || "An unexpected error occurred during login.",
         );
-        setIsLoading(false);
+      } else if (result && !result.error) {
+        // Login was successful according to authClient.
+        // Auth state will update, and LoginPage will handle next steps.
+        // No explicit success message here unless desired, as page will react.
+      } else {
+        // Fallback if result is not as expected but no error was thrown or caught by onError
+        if (!error) {
+          // Avoid overwriting a more specific error from onError
+          setError("Login process did not complete as expected.");
+        }
       }
-      // If direct result handling is needed beyond callbacks:
-      // if (result.data) { /* ... */ }
     } catch (err: any) {
-      console.error("handleSubmit error:", err);
-      setError(err.message || "An unexpected error occurred.");
+      // Catches errors from authClient.signIn.email itself if it throws
+      console.error("handleSubmit main error:", err);
+      setError(err.message || "An unexpected server error occurred.");
+    } finally {
       setIsLoading(false);
     }
   };

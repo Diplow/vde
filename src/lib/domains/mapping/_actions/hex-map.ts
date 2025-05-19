@@ -17,15 +17,8 @@ import {
 import {
   HexCoord,
   HexCoordSystem,
-  HexDirection,
 } from "~/lib/domains/mapping/utils/hex-coordinates";
-import {
-  HexMapIdr,
-  MapWithId,
-  ShallNotUpdate as HexMapShallNotUpdate,
-  HexColor,
-  DEFAULT_HEXMAP_COLORS,
-} from "../_objects/hex-map";
+import { HexMapIdr, MapWithId, HexColor } from "../_objects/hex-map";
 import { ShallNotUpdate as MapItemShallNotUpdate } from "../_objects/map-item";
 import { MAPPING_ERRORS } from "../types/errors";
 
@@ -57,12 +50,10 @@ export class MapActions {
     coords?: HexCoord;
     mapId?: number;
   }) {
-    const map = mapId ? await this.maps.getOne(mapId) : null;
     const parent = await this.getParent(coords, mapId);
     const mapItem = this.instantiateNewMapItem({
       mapId,
       coords,
-      color: this.getColor(map, parent, coords),
       ref: await this.createRef(title, descr, url),
       parent,
     });
@@ -70,33 +61,17 @@ export class MapActions {
     return newMapItem;
   }
 
-  private getColor(
-    map: MapWithId | null,
-    parent: MapItemWithId | null,
-    coords: HexCoord,
-  ) {
-    if (!map) return DEFAULT_HEXMAP_COLORS[HexDirection.Center];
-    if (!parent) throw new Error(MAPPING_ERRORS.PARENT_REQUIRED);
-    if (MapItem.isCenter(parent)) {
-      const direction = HexCoordSystem.getDirection(coords);
-      return map.attrs.colors[direction];
-    }
-    return parent.attrs.color;
-  }
-
   private instantiateNewMapItem(args: {
     mapId?: number;
     coords: HexCoord;
-    color: HexColor;
     ref: BaseItemWithId;
     parent: MapItemWithId | null;
   }) {
-    const { mapId, coords, ref, parent, color } = args;
+    const { mapId, coords, ref, parent } = args;
     return new MapItem({
       attrs: {
         mapId,
         coords,
-        color,
       },
       ref,
       neighbors: [],
@@ -117,7 +92,7 @@ export class MapActions {
   }
 
   public async getByOwnerId(args: {
-    ownerId: number;
+    ownerId: string;
     limit?: number;
     offset?: number;
   }) {
@@ -131,36 +106,34 @@ export class MapActions {
 
   public async create(args: {
     center: MapItemWithId;
-    attrs: Partial<MapAttrs> & { ownerId: number };
-  }) {
-    const map = this.instantiateNewMap(args);
-    const mapWithId = await this.maps.create(map);
-    const centerWithMapId = await this.mapItems.update({
-      aggregate: map.center,
-      attrs: { mapId: mapWithId.id },
-    });
-    return { ...mapWithId, center: centerWithMapId };
-  }
-
-  private instantiateNewMap(args: {
-    center: MapItemWithId;
-    attrs: Partial<MapAttrs> & { ownerId: number };
+    attrs?: Partial<MapAttrs> & { ownerId: string };
   }) {
     const { center, attrs } = args;
-    return new HexMap({
+
+    if (
+      !attrs?.ownerId ||
+      typeof attrs.ownerId !== "string" ||
+      !attrs.ownerId.trim()
+    ) {
+      throw new Error("ownerId is required and must be a non-empty string");
+    }
+
+    const map = await this.maps.create({
+      relatedItems: {
+        center,
+      },
+      relatedLists: {
+        items: [center],
+      },
       attrs: {
         ...attrs,
         centerId: center.id,
       },
-      center,
-      items: [center],
     });
+    return map;
   }
 
-  public async update(args: {
-    idr: HexMapIdr;
-    attrs: Partial<MapAttrs> & HexMapShallNotUpdate;
-  }) {
+  public async update(args: { idr: HexMapIdr; attrs: Partial<MapAttrs> }) {
     const { idr, attrs } = args;
     return await this.maps.updateByIdr({
       idr,
@@ -446,13 +419,6 @@ export class MapActions {
       throw new Error(
         `Item with ID ${item.id} (mapId: ${item.attrs.mapId}) does not belong to map ${map.id}`,
       );
-    }
-    const newRadius = HexMap.minimumRadius(item);
-    if (newRadius > map.attrs.radius) {
-      await this.maps.update({
-        aggregate: map,
-        attrs: { radius: newRadius },
-      });
     }
     return await this.maps.addToRelatedList({
       aggregate: map,

@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 export type TileCursor =
   | "cursor-pointer"
@@ -41,7 +41,7 @@ export interface StaticBaseTileLayoutProps {
   cursor?: TileCursor;
   isFocusable?: boolean;
   baseHexSize?: number;
-  shallow?: boolean;
+  _shallow?: boolean;
 }
 
 export const StaticBaseTileLayout = ({
@@ -53,7 +53,7 @@ export const StaticBaseTileLayout = ({
   cursor = "cursor-pointer",
   isFocusable = false,
   baseHexSize = 50,
-  shallow = false,
+  _shallow = false,
 }: StaticBaseTileLayoutProps) => {
   // Calculate dimensions based on scale
   const width =

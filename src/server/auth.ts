@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { nextCookies } from "better-auth/next-js";
 import { db } from "~/server/db";
 import * as schema from "~/server/db/schema"; // Import all schemas
 
@@ -20,6 +21,8 @@ export const auth = betterAuth({
   },
   secret: process.env.AUTH_SECRET, // Needs to be added to .env
   basePath: "/api/auth", // Default, but good to be explicit
+
+  plugins: [nextCookies()],
 });
 
 // Note: better-auth core schema names are singular (user, account, session, verification).

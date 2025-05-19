@@ -2,11 +2,11 @@
 
 // REMOVE: import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
-import { HexTileData } from "../State/types";
+import type { HexTileData } from "../State/types";
 import {
   StaticBaseTileLayout,
-  TileColor,
-  TileScale,
+  type TileColor,
+  type TileScale,
   // REMOVE: TileCursor,
 } from "./base.static";
 import { StaticTileContent } from "./content.static";

@@ -1,24 +1,20 @@
 import { useState, useCallback } from "react";
 import { api } from "~/commons/trpc/react";
 import {
-  HexCoord,
   HexCoordSystem,
+  type HexCoord,
 } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { MapItemAPIContract } from "~/server/api/types/contracts";
-import { adapt, HexTileData } from "./types";
+import { adapt, type HexTileData } from "./types";
 
 export function useMutations({
   mapId,
   itemsById,
-  selection,
-  setSelection,
   updateItemExpansion,
   stateHelpers,
 }: {
   mapId: string;
   itemsById: Record<string, HexTileData>;
-  selection: string | null;
-  setSelection: React.Dispatch<React.SetStateAction<string | null>>;
   updateItemExpansion: (coordId: string, isExpanded: boolean) => void;
   stateHelpers: {
     addSingleItem: (item: HexTileData) => void;
@@ -71,7 +67,7 @@ export function useMutations({
       return { createdItem: adaptedItem };
     },
     onError: (err, _, context) => {
-      setItemCreationError(err.message);
+      setItemCreationError((err as any).message);
       if (context?.createdItem) {
         stateHelpers.deleteSingleItem(context.createdItem.metadata.coordId);
       }
@@ -91,9 +87,6 @@ export function useMutations({
       setItemRemovingError(null);
 
       stateHelpers.deleteSingleItem(itemToRemove.itemId);
-      if (selection === itemToRemove.itemId) {
-        setSelection(null);
-      }
 
       return { deletedItem: itemsById[itemToRemove.itemId] };
     },
@@ -127,7 +120,6 @@ export function useMutations({
           description: itemToUpdate.data.descr ?? "",
         },
       };
-      console.log("newItemData", newItemData);
       stateHelpers.updateSingleItem(itemToUpdate.itemId, newItemData);
 
       return { itemToUpdateOriginal };
@@ -221,8 +213,8 @@ export function useMutations({
       // Reload descendants of the moved items when operation is successful
       const oldCoordsStr = HexCoordSystem.createId(variables.oldCoords);
       const newCoordsStr = HexCoordSystem.createId(variables.newCoords);
-      reloadDescendants(oldCoordsStr);
-      reloadDescendants(newCoordsStr);
+      void reloadDescendants(oldCoordsStr);
+      void reloadDescendants(newCoordsStr);
     },
     onSettled: () => {
       setItemIsMoving(false);

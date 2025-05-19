@@ -12,7 +12,6 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 import { auth } from "~/server/auth";
 import { db } from "../db";
-import * as schema from "~/server/db/schema";
 import { MapService } from "~/lib/domains/mapping/services/hex-map";
 import { DbHexMapRepository } from "~/lib/domains/mapping/infrastructure/hex-map/db";
 import { DbMapItemRepository } from "~/lib/domains/mapping/infrastructure/map-item/db";
@@ -52,10 +51,22 @@ export function convertToHeaders(
 
 export const createContext = async (opts: CreateNextContextOptions) => {
   const { req, res } = opts;
-  const fetchHeaders = convertToHeaders(req.headers);
+
+  let sessionAPIAcceptableHeaders: Headers;
+
+  if (req.headers instanceof Headers) {
+    // If req.headers is already a Fetch API Headers object (e.g., coming from App Router adapter)
+    sessionAPIAcceptableHeaders = req.headers;
+  } else {
+    // Otherwise, assume it's IncomingHttpHeaders (e.g., from Pages Router or direct NextApiRequest)
+    // and convert it.
+    sessionAPIAcceptableHeaders = convertToHeaders(
+      req.headers as IncomingHttpHeaders,
+    );
+  }
 
   const sessionData = await auth.api.getSession({
-    headers: fetchHeaders,
+    headers: sessionAPIAcceptableHeaders,
     // `request` property removed as it's not accepted by getSession according to linter
   });
 

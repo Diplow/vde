@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { cn } from "~/lib/utils";
 import {
   PanelLeftOpen,
@@ -13,7 +13,7 @@ import {
   Lock,
   Telescope,
 } from "lucide-react";
-import { ActionMode } from "../State/interactionMode";
+import type { ActionMode } from "../State/interactionMode";
 
 // Define the cycle states
 type PanelCycleState = "collapsed" | "shortcuts" | "full";
@@ -79,7 +79,7 @@ export function ActionPanel({
   }, [panelState]);
 
   // Get next panel state in cycle
-  const getNextPanelState = (): PanelCycleState => {
+  const getNextPanelState = React.useCallback((): PanelCycleState => {
     switch (panelState) {
       case "collapsed":
         return "shortcuts";
@@ -90,58 +90,61 @@ export function ActionPanel({
       default:
         return "collapsed";
     }
-  };
+  }, [panelState]);
 
-  const actions: ActionItem[] = [
-    {
-      mode: "select",
-      label: "Select",
-      shortcut: "S",
-      icon: <MousePointer className="h-5 w-5" />,
-      description: "Select a tile by clicking on it",
-      cursor: "pointer",
-    },
-    {
-      mode: "expand",
-      label: "Expand/Collapse",
-      shortcut: "E",
-      icon: <Telescope className="h-5 w-5" />,
-      description: "Expand or collapse a tile by clicking on it (Ctrl+Click)",
-      cursor: "cell",
-    },
-    {
-      mode: "deepExpand",
-      label: "Deep Expand",
-      shortcut: "D",
-      icon: <Maximize2 className="h-5 w-5" />,
-      description: "Deep expand a tile by clicking on it",
-      cursor: "zoom-in",
-    },
-    {
-      mode: "edit",
-      label: "Create/Update",
-      shortcut: "C",
-      icon: <Edit className="h-5 w-5" />,
-      description: "Edit a tile or create a new one",
-      cursor: "text",
-    },
-    {
-      mode: "delete",
-      label: "Delete",
-      shortcut: "X",
-      icon: <Trash2 className="h-5 w-5" />,
-      description: "Delete a tile by clicking on it",
-      cursor: "not-allowed",
-    },
-    {
-      mode: "lock",
-      label: "Lock",
-      shortcut: "L",
-      icon: <Lock className="h-5 w-5" />,
-      description: "Lock the map to prevent editing",
-      cursor: "default",
-    },
-  ];
+  const actions: ActionItem[] = React.useMemo(
+    () => [
+      {
+        mode: "select",
+        label: "Select",
+        shortcut: "S",
+        icon: <MousePointer className="h-5 w-5" />,
+        description: "Select a tile by clicking on it",
+        cursor: "pointer",
+      },
+      {
+        mode: "expand",
+        label: "Expand/Collapse",
+        shortcut: "E",
+        icon: <Telescope className="h-5 w-5" />,
+        description: "Expand or collapse a tile by clicking on it (Ctrl+Click)",
+        cursor: "cell",
+      },
+      {
+        mode: "deepExpand",
+        label: "Deep Expand",
+        shortcut: "D",
+        icon: <Maximize2 className="h-5 w-5" />,
+        description: "Deep expand a tile by clicking on it",
+        cursor: "zoom-in",
+      },
+      {
+        mode: "edit",
+        label: "Create/Update",
+        shortcut: "C",
+        icon: <Edit className="h-5 w-5" />,
+        description: "Edit a tile or create a new one",
+        cursor: "text",
+      },
+      {
+        mode: "delete",
+        label: "Delete",
+        shortcut: "X",
+        icon: <Trash2 className="h-5 w-5" />,
+        description: "Delete a tile by clicking on it",
+        cursor: "not-allowed",
+      },
+      {
+        mode: "lock",
+        label: "Lock",
+        shortcut: "L",
+        icon: <Lock className="h-5 w-5" />,
+        description: "Lock the map to prevent editing",
+        cursor: "default",
+      },
+    ],
+    [],
+  );
 
   // Handle mode change
   const handleModeChange = (mode: ActionMode) => {
@@ -193,7 +196,7 @@ export function ActionPanel({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [panelState]);
+  }, [panelState, getNextPanelState]);
 
   // Determine the icon and tooltip for the toggle button based on the panel state
   const getToggleState = () => {

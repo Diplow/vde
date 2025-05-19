@@ -3,9 +3,11 @@ import {
   createTRPCRouter,
   publicProcedure,
   mappingServiceMiddleware,
+  protectedProcedure,
 } from "~/server/api/trpc";
 import { contractToApiAdapters } from "~/server/api/types/contracts";
 import { HexCoord } from "~/lib/domains/mapping/utils/hex-coordinates";
+import { TRPCError } from "@trpc/server";
 
 export const mapRouter = createTRPCRouter({
   getOne: publicProcedure
@@ -218,5 +220,62 @@ export const mapRouter = createTRPCRouter({
         itemId: input.itemId,
       });
       return descendants.map(contractToApiAdapters.mapItem);
+    }),
+
+  createDefaultMapForCurrentUser: protectedProcedure
+    .use(mappingServiceMiddleware)
+    .input(z.void())
+    .mutation(async ({ ctx }) => {
+      if (!ctx.user) {
+        // This should ideally not be reached due to protectedProcedure
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User not authenticated in createDefaultMapForCurrentUser.",
+        });
+      }
+      const user = ctx.user;
+      const userName = user.name || user.email || "User";
+
+      try {
+        const map = await ctx.mappingService.create({
+          title: `${userName}\'s Map`,
+          ownerId: user.id,
+        });
+        return { success: true, mapId: map.id };
+      } catch (error) {
+        console.error("Error creating default map for user:", user.id, error);
+        return { success: false, mapId: null, error: "Failed to create map" };
+      }
+    }),
+
+  getUserMap: protectedProcedure
+    .use(mappingServiceMiddleware)
+    .input(z.void())
+    .query(async ({ ctx }) => {
+      if (!ctx.user) {
+        // This should ideally not be reached due to protectedProcedure
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User not authenticated in getUserMap.",
+        });
+      }
+      const user = ctx.user;
+      try {
+        const maps = await ctx.mappingService.getByOwnerId(user.id, 1, 0);
+
+        if (maps && maps.length > 0) {
+          const userMap = maps[0];
+          if (userMap) {
+            return {
+              success: true,
+              map: { id: userMap.id, name: userMap.title },
+            };
+          }
+        }
+        return { success: false, map: null };
+      } catch (error) {
+        console.error("Error fetching map for user:", user.id, error);
+        return { success: false, map: null, error: "Failed to fetch user map" };
+      }
     }),
 });

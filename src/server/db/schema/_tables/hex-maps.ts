@@ -2,17 +2,12 @@ import {
   integer,
   text,
   timestamp,
-  jsonb,
   index,
   foreignKey,
 } from "drizzle-orm/pg-core";
 import { createTable } from "../_utils";
 import { users } from "../users"; // Assuming users table exists in parent directory
 import { mapItems } from "./map-items";
-import type {
-  HexMapColors,
-  HexMapRadius,
-} from "~/lib/domains/mapping/_objects/hex-map";
 
 // Remove old enums if they exist
 // export const ownerTypeEnum = pgEnum("owner_type", ["user", "organization"]);
@@ -26,8 +21,6 @@ export const hexMaps = createTable(
     id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
     centerId: integer("center_id").notNull(), // FK defined below
     ownerId: text("owner_id").notNull(), // Changed to text, FK defined below
-    colors: jsonb("colors").$type<HexMapColors>().notNull(),
-    radius: integer("radius").$type<HexMapRadius>().notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
@@ -48,6 +41,5 @@ export const hexMaps = createTable(
   },
 );
 
-// Remove or update old type definitions
-// export type HexMap = typeof maps.$inferSelect;
-// export type NewMap = typeof maps.$inferInsert;
+export type HexMap = typeof hexMaps.$inferSelect;
+export type NewHexMap = typeof hexMaps.$inferInsert;

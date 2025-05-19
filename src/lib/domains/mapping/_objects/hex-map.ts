@@ -1,10 +1,9 @@
 import {
   GenericAggregate,
   GenericAggregateConstructorArgs,
-  GenericHistory,
 } from "~/lib/domains/utils/generic-objects";
 import { type MapItemWithId } from "./map-item";
-import { HEXMAP_RADIUS, HEX_SIZE } from "../types/constants";
+import { HEX_SIZE } from "../types/constants";
 import { HexDirection } from "../utils/hex-coordinates";
 import { MAPPING_ERRORS } from "../types/errors";
 
@@ -43,28 +42,9 @@ export const DEFAULT_HEXMAP_COLORS: Record<HexDirection, HexColor> = {
   [HexDirection.West]: "rose",
 } as const;
 
-export enum HexMapRadius {
-  XS = 1,
-  S = 3,
-  M = 9,
-  L = 27,
-  XL = 81,
-}
-export const DEPTH_TO_RADIUS: Record<HexMapDepth, HexMapRadius> = {
-  0: HexMapRadius.XS,
-  1: HexMapRadius.XS,
-  2: HexMapRadius.S,
-  3: HexMapRadius.M,
-  4: HexMapRadius.L,
-  5: HexMapRadius.XL,
-} as const;
-
 export type HexMapColors = typeof DEFAULT_HEXMAP_COLORS;
 
-export type HexMapRequiredAttributes = Pick<
-  Attrs,
-  "centerId" | "ownerId" | "colors" | "radius"
->;
+export type HexMapRequiredAttributes = Pick<Attrs, "centerId" | "ownerId">;
 
 const defaultAttributes = {
   title: "Untitled Map",
@@ -74,22 +54,16 @@ export interface Attrs {
   title?: string;
   centerId: number;
   ownerId: string;
-  colors: HexMapColors;
-  radius: HexMapRadius;
 }
 
 export interface CreateAttrs {
   title?: string;
   centerId: number;
   ownerId: string;
-  colors: HexMapColors;
-  radius: HexMapRadius;
 }
 
 export interface UpdateAttrs {
   title?: string;
-  colors?: HexMapColors;
-  radius?: HexMapRadius;
 }
 
 export interface RelatedItems {
@@ -156,12 +130,6 @@ export class HexMap extends GenericAggregate<
     }
     return oid;
   }
-  get colors(): HexMapColors {
-    return this.attrs.colors;
-  }
-  get radius(): HexMapRadius {
-    return this.attrs.radius;
-  }
 
   get center(): MapItemWithId | null {
     return this.relatedItems.center;
@@ -186,8 +154,6 @@ export class HexMap extends GenericAggregate<
       title: inputAttrs?.title ?? defaultAttributes.title,
       centerId: center.id,
       ownerId: ownerIdFromInput,
-      colors: inputAttrs?.colors ?? DEFAULT_HEXMAP_COLORS,
-      radius: inputAttrs?.radius ?? HexMapRadius.XS,
     };
 
     super({
@@ -219,11 +185,6 @@ export class HexMap extends GenericAggregate<
     if (centerItem.attrs.coords.path.length !== 0) {
       throw new Error(MAPPING_ERRORS.INVALID_MAP_CENTER);
     }
-  }
-
-  public static minimumRadius(item: MapItemWithId) {
-    const depth = item.attrs.coords.path.length;
-    return DEPTH_TO_RADIUS[depth as HexMapDepth];
   }
 }
 

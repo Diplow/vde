@@ -4,9 +4,13 @@ import React, { useState } from "react";
 import { LoginForm } from "~/components/auth/LoginForm";
 import { RegisterForm } from "~/components/auth/RegisterForm";
 
+interface AuthTileProps {
+  initialView?: "login" | "register";
+}
+
 // This component will be dynamically imported
-export default function AuthTile() {
-  const [showLogin, setShowLogin] = useState(true);
+export default function AuthTile({ initialView = "login" }: AuthTileProps) {
+  const [showLogin, setShowLogin] = useState(initialView === "login");
 
   return (
     <div className="mx-auto my-8 max-w-md rounded-lg bg-white p-6 shadow-lg">

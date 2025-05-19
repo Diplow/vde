@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { authClient } from "~/lib/auth/auth-client";
 import { api } from "~/commons/trpc/react"; // For tRPC utils if needed for cache invalidation
-// import { useRouter } from 'next/navigation'; // If manual redirection is needed
+import { useRouter } from "next/navigation"; // If manual redirection is needed
 
 export function RegisterForm() {
   const [email, setEmail] = useState("");
@@ -11,7 +11,9 @@ export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
 
   const trpcUtils = api.useUtils();
-  // const router = useRouter();
+  const router = useRouter();
+  const createMapMutation =
+    api.map.createDefaultMapForCurrentUser.useMutation();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -22,47 +24,55 @@ export function RegisterForm() {
       const signUpData: {
         email: string;
         password: string;
-        name?: string;
+        name: string;
         callbackURL?: string;
       } = {
         email,
         password,
+        name: name || "",
         // callbackURL: '/map',
       };
 
-      if (name) {
-        signUpData.name = name;
-      }
+      await authClient.signUp.email(signUpData, {
+        onSuccess: async (ctx) => {
+          try {
+            await trpcUtils.auth.getSession.invalidate();
 
-      const result = await authClient.signUp.email(signUpData, {
-        onSuccess: (ctx) => {
-          console.log("Signed up successfully:", ctx.data);
-          trpcUtils.auth.getSession.invalidate();
-          // better-auth might auto-redirect based on callbackURL or server settings.
-          // If manual redirect is needed after signup (e.g., to a /check-email page or /login):
-          // router.push('/login');
+            const mapCreationResult = await createMapMutation.mutateAsync();
+
+            if (mapCreationResult.success && mapCreationResult.mapId) {
+              router.push(`/map/${mapCreationResult.mapId}`);
+            } else {
+              console.error(
+                "Map creation failed after signup:",
+                mapCreationResult.error,
+              );
+              setError(
+                mapCreationResult.error ||
+                  "Signup successful, but failed to create your map. Please try logging in or contact support.",
+              );
+              setIsLoading(false);
+            }
+          } catch (mutationError: any) {
+            console.error(
+              "Error during createDefaultMapForCurrentUser mutation:",
+              mutationError,
+            );
+            setError(
+              mutationError.message ||
+                "An error occurred while setting up your map.",
+            );
+            setIsLoading(false);
+          }
         },
         onError: (ctx) => {
           console.error("Sign up error:", ctx.error);
           setError(
             ctx.error.message || "Failed to register. Please try again.",
           );
-        },
-        onSettled: () => {
           setIsLoading(false);
         },
       });
-
-      if (result && result.error) {
-        // This secondary check might be redundant if onError callback handles it well
-        setError(
-          result.error.message ||
-            "An unexpected error occurred during registration.",
-        );
-        setIsLoading(false);
-      }
-      // If direct result handling is needed beyond callbacks:
-      // if (result.data) { /* ... */ }
     } catch (err: any) {
       console.error("handleSubmit error:", err);
       setError(err.message || "An unexpected error occurred.");

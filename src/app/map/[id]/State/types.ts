@@ -1,6 +1,9 @@
-import { MapItemAPIContract } from "~/server/api/types/contracts";
-import { HexCoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
-import type { ScaleState } from "./scale";
+import type { MapItemAPIContract } from "~/server/api/types/contracts";
+import {
+  HexCoordSystem,
+  type HexCoord,
+} from "~/lib/domains/mapping/utils/hex-coordinates";
+// import type { ScaleState } from "./scale"; // Commented out problematic import
 
 const adapt = (item: MapItemAPIContract) => {
   const coordinates = HexCoordSystem.parseId(item.coordinates);
@@ -33,4 +36,4 @@ const adapt = (item: MapItemAPIContract) => {
 type HexTileData = ReturnType<typeof adapt>;
 
 export { adapt };
-export type { ScaleState, HexTileData };
+export type { /* ScaleState, */ HexTileData }; // Commented out ScaleState from export
