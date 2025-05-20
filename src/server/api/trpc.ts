@@ -6,14 +6,18 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
+import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 import superjson from "superjson";
 import { ZodError } from "zod";
-import { MapService } from "~/lib/domains/mapping/services/hex-map";
+import { auth } from "~/server/auth";
 import { db } from "../db";
+import { MapService } from "~/lib/domains/mapping/services/hex-map";
 import { DbHexMapRepository } from "~/lib/domains/mapping/infrastructure/hex-map/db";
 import { DbMapItemRepository } from "~/lib/domains/mapping/infrastructure/map-item/db";
 import { DbBaseItemRepository } from "~/lib/domains/mapping/infrastructure/base-item/db";
+import type { IncomingHttpHeaders } from "http";
+
 /**
  * 1. CONTEXT
  *
@@ -26,9 +30,53 @@ import { DbBaseItemRepository } from "~/lib/domains/mapping/infrastructure/base-
  *
  * @see https://trpc.io/docs/server/context
  */
-export const createTRPCContext = async (opts: { headers: Headers }) => {
+
+// Helper to convert NextApiRequest headers to Fetch API Headers
+// This function will also be used by routers, so it's defined here.
+export function convertToHeaders(
+  incomingHeaders: IncomingHttpHeaders,
+): Headers {
+  const headers = new Headers();
+  for (const [key, value] of Object.entries(incomingHeaders)) {
+    if (value) {
+      if (Array.isArray(value)) {
+        value.forEach((v) => headers.append(key, v));
+      } else {
+        headers.append(key, value);
+      }
+    }
+  }
+  return headers;
+}
+
+export const createContext = async (opts: CreateNextContextOptions) => {
+  const { req, res } = opts;
+
+  let sessionAPIAcceptableHeaders: Headers;
+
+  if (req.headers instanceof Headers) {
+    // If req.headers is already a Fetch API Headers object (e.g., coming from App Router adapter)
+    sessionAPIAcceptableHeaders = req.headers;
+  } else {
+    // Otherwise, assume it's IncomingHttpHeaders (e.g., from Pages Router or direct NextApiRequest)
+    // and convert it.
+    sessionAPIAcceptableHeaders = convertToHeaders(
+      req.headers as IncomingHttpHeaders,
+    );
+  }
+
+  const sessionData = await auth.api.getSession({
+    headers: sessionAPIAcceptableHeaders,
+    // `request` property removed as it's not accepted by getSession according to linter
+  });
+
   return {
-    headers: opts.headers,
+    req,
+    res,
+    db,
+    session: sessionData ? sessionData.session : null,
+    user: sessionData ? sessionData.user : null,
+    headers: req.headers, // Keep original IncomingHttpHeaders for other parts of context if needed
   };
 };
 
@@ -38,6 +86,11 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
 export const createInnerTRPCContext = (opts: {}) => {
   return {
     headers: new Headers(),
+    db: db,
+    session: null,
+    user: null,
+    req: undefined as any,
+    res: undefined as any,
   };
 };
 
@@ -48,7 +101,7 @@ export const createInnerTRPCContext = (opts: {}) => {
  * ZodErrors so that you get typesafety on the frontend if your procedure fails due to validation
  * errors on the backend.
  */
-const t = initTRPC.context<typeof createTRPCContext>().create({
+const t = initTRPC.context<typeof createContext>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
     return {
@@ -114,23 +167,38 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * are logged in.
  */
 export const publicProcedure = t.procedure.use(timingMiddleware);
+
 /**
  * Protected (authenticated) procedure
  *
  * This procedure ensures that the user is authenticated before executing.
  * If the user is not authenticated, it will throw an unauthorized error.
  */
+export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
+  if (!ctx.session || !ctx.user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  return next({
+    ctx: {
+      // infers the `session` as non-nullable
+      session: { ...ctx.session }, // Spread to ensure non-nullable type if TS infers it
+      user: { ...ctx.user }, // Spread to ensure non-nullable type
+      db: ctx.db,
+      req: ctx.req,
+      res: ctx.res,
+      headers: ctx.headers, // Forward original headers
+    },
+  });
+});
 
 // Service middlewares
 export const mappingServiceMiddleware = t.middleware(async ({ ctx, next }) => {
-  // Create a new context with the map service
   const repositories = {
     map: new DbHexMapRepository(db),
     mapItem: new DbMapItemRepository(db),
     baseItem: new DbBaseItemRepository(db),
   };
   const mappingService = new MapService(repositories);
-
   return next({
     ctx: {
       ...ctx,

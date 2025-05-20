@@ -1,6 +1,6 @@
 import { getColorFromItem, StaticItemTile } from "../Tile/item.static";
-import { StaticBaseTileLayout, TileScale } from "../Tile/base.static";
-import { HexTileData } from "../State/types";
+import { StaticBaseTileLayout, type TileScale } from "../Tile/base.static";
+import type { HexTileData } from "../State/types";
 import { HexCoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 
 export interface StaticHexRegionProps {

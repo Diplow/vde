@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { cache } from "react";
 
 import { createCaller, type AppRouter } from "~/server/api/root";
-import { createTRPCContext } from "~/server/api/trpc";
+import { createContext as apiCreateContext } from "~/server/api/trpc";
 import { createQueryClient } from "./query-client";
 
 /**
@@ -16,8 +16,28 @@ const createContext = cache(async () => {
   const heads = new Headers(await headers());
   heads.set("x-trpc-source", "rsc");
 
-  return createTRPCContext({
-    headers: heads,
+  // AbortController is a global in modern Node.js and browsers
+  const controller = new AbortController();
+
+  return apiCreateContext({
+    req: { headers: heads } as any, // Mocking req object for RSC
+    res: undefined as any, // res is not available/needed in RSC context
+    info: {
+      accept: null,
+      type: "query",
+      isBatchCall: false,
+      calls: [
+        {
+          path: "rsc",
+          getRawInput: async () => undefined,
+          result: () => undefined,
+          procedure: null,
+        },
+      ],
+      connectionParams: null,
+      signal: controller.signal,
+      url: null,
+    },
   });
 });
 
@@ -26,5 +46,5 @@ const caller = createCaller(createContext);
 
 export const { trpc: api, HydrateClient } = createHydrationHelpers<AppRouter>(
   caller,
-  getQueryClient
+  getQueryClient,
 );

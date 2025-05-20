@@ -66,9 +66,6 @@ export class DbHexMapRepository implements MapRepository {
           col: centerDbItem.col,
           path: parsePathString(centerDbItem.path),
         },
-        size: centerDbItem.size,
-        color: centerDbItem.color,
-        lightness: centerDbItem.lightness,
         ref: {
           itemType: centerDbItem.refItemType,
           itemId: centerDbItem.refItemId,
@@ -98,9 +95,6 @@ export class DbHexMapRepository implements MapRepository {
             col: dbItem.col,
             path: parsePathString(dbItem.path),
           },
-          size: dbItem.size,
-          color: dbItem.color,
-          lightness: dbItem.lightness,
           ref: {
             itemType: dbItem.refItemType,
             itemId: dbItem.refItemId,
@@ -121,8 +115,6 @@ export class DbHexMapRepository implements MapRepository {
       attrs: {
         centerId: dbMap.centerId,
         ownerId: dbMap.ownerId,
-        colors: dbMap.colors,
-        radius: dbMap.radius,
       },
       center: centerItem as MapItemWithId,
       items: domainMapItemsList,
@@ -186,8 +178,6 @@ export class DbHexMapRepository implements MapRepository {
         .values({
           centerId: centerItemId,
           ownerId: attrs.ownerId,
-          colors: attrs.colors,
-          radius: attrs.radius,
           createdAt: new Date(),
           updatedAt: new Date(),
         })
@@ -299,12 +289,12 @@ export class DbHexMapRepository implements MapRepository {
     limit = 10,
     offset = 0,
   }: {
-    ownerId: number;
+    ownerId: string;
     limit?: number;
     offset?: number;
   }): Promise<MapWithId[]> {
     const results = await this.db.query.hexMaps.findMany({
-      where: eq(hexMaps.ownerId, ownerId), // Use imported table
+      where: eq(schemaImport.hexMaps.ownerId, ownerId),
       limit: limit,
       offset: offset,
       orderBy: (maps, { desc }) => [desc(maps.updatedAt)],

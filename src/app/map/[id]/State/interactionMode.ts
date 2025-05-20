@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import type { HexTileData } from "./types";
 
 // Define the action mode type
 export type ActionMode =
@@ -13,11 +14,8 @@ export type ActionMode =
 export const INTERACTION_MODE_KEY = "mapPanel.interactionMode";
 
 export type InteractionModeArgs = {
-  mapItems: Record<string, any>;
+  mapItems: Record<string, HexTileData>;
   actions: {
-    selection: {
-      select: (coord: string) => void;
-    };
     mutations: {
       setTileToMutate: (coord: string) => void;
       deleteItem: (params: { itemId: string }) => void;
@@ -34,7 +32,7 @@ export const useInteractionMode = ({
 }: InteractionModeArgs) => {
   // Use initialMode from parent (which comes from localStorage) or fall back to default
   const [interactionMode, setInternalMode] = useState<ActionMode>(
-    initialMode || "select",
+    initialMode ?? "select",
   );
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
@@ -57,8 +55,6 @@ export const useInteractionMode = ({
 
     // Additional logic based on the selected mode
     if (mode === "lock") {
-      // Implement lock functionality
-      console.log("Map locked for editing");
     }
   };
 
@@ -80,11 +76,9 @@ export const useInteractionMode = ({
   const handleTileClick = (coord: string) => {
     // Always use internal state for the current mode
     const currentMode = interactionMode;
-    const item = mapItems[coord];
 
     switch (currentMode) {
       case "select":
-        actions.selection.select(coord);
         break;
       case "expand":
         break;

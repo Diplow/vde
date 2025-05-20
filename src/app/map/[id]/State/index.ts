@@ -1,11 +1,11 @@
-import { MapItemAPIContract } from "~/server/api/types/contracts";
+import type { MapItemAPIContract } from "~/server/api/types/contracts";
 import { useInit } from "./init";
-import { useSelection } from "./selection";
 import { useMutations } from "./mutations";
+import type { HexTileData } from "./types";
 import {
   useInteractionMode,
-  InteractionModeArgs,
-  ActionMode,
+  type InteractionModeArgs,
+  type ActionMode,
   INTERACTION_MODE_KEY,
 } from "./interactionMode";
 import { useEffect, useState } from "react";
@@ -23,7 +23,7 @@ export const useMapCanvasState = (
     if (typeof window !== "undefined") {
       const storedMode = localStorage.getItem(
         INTERACTION_MODE_KEY,
-      ) as ActionMode;
+      ) as unknown as ActionMode;
       if (storedMode) {
         setInitialInteractionMode(storedMode);
       }
@@ -38,8 +38,6 @@ export const useMapCanvasState = (
     items,
   });
 
-  const { selection, setSelection, select } = useSelection();
-
   const {
     lifeCycle: mutationsLifeCycle,
     data: mutationsData,
@@ -47,8 +45,6 @@ export const useMapCanvasState = (
   } = useMutations({
     mapId: center.mapId,
     itemsById,
-    selection,
-    setSelection,
     updateItemExpansion: initActions.updateItemExpansion,
     stateHelpers: {
       addSingleItem: initActions.addSingleItem,
@@ -61,8 +57,7 @@ export const useMapCanvasState = (
   const interactionArgs: InteractionModeArgs = {
     mapItems: itemsById,
     actions: {
-      selection: { select },
-      mutations,
+      mutations: mutations,
     },
     initialMode: initialInteractionMode,
   };
@@ -78,13 +73,11 @@ export const useMapCanvasState = (
     },
     data: {
       mapItems: items,
-      selection: { selection },
       mutations: mutationsData,
       interactions: interactionData,
     },
     actions: {
-      selection: { select },
-      mutations,
+      mutations: mutations,
       interactions: interactionActions,
     },
   };
