@@ -1,4 +1,4 @@
-import { HexTileData } from "./types";
+import type { HexTileData } from "./types";
 
 type ItemsAction =
   | { type: "INIT_ITEMS"; payload: HexTileData[] }

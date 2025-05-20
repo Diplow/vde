@@ -1,4 +1,4 @@
-import { MapCanvasState } from "./index";
+import type { MapCanvasState } from "./index";
 
 export const scaleSVG = {
   path: "M50 0 L100 28.87 L100 86.6 L50 115.47 L0 86.6 L0 28.87Z",
@@ -17,19 +17,25 @@ export function initDragAndDropActions(
   const startDrag = (coords: string) => {
     if (state.data.mapItems[coords]) {
       // Update the item state to show it's being dragged
-      state.data.mapItems[coords].state.isDragged = true;
+      if (state.data.mapItems[coords].state) {
+        state.data.mapItems[coords].state.isDragged = true;
+      }
     }
   };
 
   const endDrag = (coords: string) => {
     if (state.data.mapItems[coords]) {
-      state.data.mapItems[coords].state.isDragged = false;
+      if (state.data.mapItems[coords].state) {
+        state.data.mapItems[coords].state.isDragged = false;
+      }
     }
   };
 
   const setDragOver = (coords: string, isDragOver: boolean) => {
     if (state.data.mapItems[coords]) {
-      state.data.mapItems[coords].state.isDragOver = isDragOver;
+      if (state.data.mapItems[coords].state) {
+        state.data.mapItems[coords].state.isDragOver = isDragOver;
+      }
     } else {
       // For empty tiles, we might need to handle this differently
       // Maybe create a separate state for empty tiles
@@ -38,7 +44,9 @@ export function initDragAndDropActions(
 
   const setHovering = (coords: string, isHovering: boolean) => {
     if (state.data.mapItems[coords]) {
-      state.data.mapItems[coords].state.isHovering = isHovering;
+      if (state.data.mapItems[coords].state) {
+        state.data.mapItems[coords].state.isHovering = isHovering;
+      }
     }
   };
 
@@ -50,12 +58,12 @@ export function initDragAndDropActions(
 
     // Reset the drag state for both source and target items
     // This ensures that any lingering drag states are cleared
-    if (state.data.mapItems[sourceCoord]) {
+    if (state.data.mapItems[sourceCoord]?.state) {
       state.data.mapItems[sourceCoord].state.isDragged = false;
       state.data.mapItems[sourceCoord].state.isDragOver = false;
     }
 
-    if (state.data.mapItems[targetCoord]) {
+    if (state.data.mapItems[targetCoord]?.state) {
       state.data.mapItems[targetCoord].state.isDragged = false;
       state.data.mapItems[targetCoord].state.isDragOver = false;
     }
@@ -67,7 +75,11 @@ export function initDragAndDropActions(
     setDragOver,
     setHovering,
     moveItem,
-    createDragImage: (coords: string, scale: number, effectiveSize: number) => {
+    createDragImage: (
+      coords: string,
+      _scale: number,
+      effectiveSize: number,
+    ) => {
       const item = state.data.mapItems[coords];
       if (!item) return null;
 
@@ -76,10 +88,10 @@ export function initDragAndDropActions(
 
       // Calculate the size of the drag image - match original tile dimensions
       // Using the same scale factors as in the Tile component
-      const scaleFactors = {
-        width: scale === 2 ? 4 : 3,
-        height: scale === 2 ? 4 : 2.5,
-      };
+      // const scaleFactors = {
+      //   width: scale === 2 ? 4 : 3,
+      //   height: scale === 2 ? 4 : 2.5,
+      // };
 
       const width = config.baseHexWidth;
       const height = config.baseHexHeight;
@@ -105,7 +117,7 @@ export function initDragAndDropActions(
 
       // Add a title overlay
       const titleOverlay = document.createElement("div");
-      titleOverlay.textContent = item.data.name || "Tile";
+      titleOverlay.textContent = item.data?.name || "Tile";
       titleOverlay.style.position = "absolute";
       titleOverlay.style.top = "50%";
       titleOverlay.style.left = "50%";

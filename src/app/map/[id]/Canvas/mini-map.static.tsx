@@ -1,5 +1,5 @@
-import { StaticBaseTileLayout, TileScale } from "../Tile/base.static";
-import { HexTileData } from "../State/types";
+import { StaticBaseTileLayout, type TileScale } from "../Tile/base.static";
+import type { HexTileData } from "../State/types";
 import { HexCoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 import { StaticMiniMapItemTile } from "../Tile/item-minimap.static";
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -77,7 +77,7 @@ export const StaticMiniMap = ({
     let rW = (viewportData.clientWidth * Mag_minimap) / Mag_main;
     let rH = (viewportData.clientHeight * Mag_minimap) / Mag_main;
     const mainMapScale = parseInt(
-      getScaleFromSearchParams(currentSearchParamsString) || "0",
+      getScaleFromSearchParams(currentSearchParamsString) ?? "0",
       10,
     );
     const offsetFactor = mainMapScale - 3;
@@ -345,7 +345,8 @@ const RenderChild = ({
     />
   );
 };
+
 function getScaleFromSearchParams(currentSearchParamsString: string): string {
-  const searchParams = new URLSearchParams(currentSearchParamsString);
-  return searchParams.get("scale") || "0";
+  const params = new URLSearchParams(currentSearchParamsString);
+  return params.get("scale") ?? "0";
 }

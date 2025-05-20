@@ -1,3 +1,5 @@
+import { NextRequest, NextResponse } from "next/server";
+
 export const config = {
   matcher: [
     // Skip Next.js internals and all static files, unless found in search params
@@ -6,3 +8,7 @@ export const config = {
     "/(api|trpc)(.*)",
   ],
 };
+
+export default function middleware(request: NextRequest) {
+  return NextResponse.next();
+}

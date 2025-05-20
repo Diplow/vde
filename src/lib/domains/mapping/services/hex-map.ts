@@ -46,7 +46,7 @@ export class MapService {
   ): Promise<MapContract[]> {
     const params = MapService.validatePaginationParameters(limit, offset);
     const maps = await this.actions.getByOwnerId({
-      ownerId: parseInt(ownerId),
+      ownerId: ownerId,
       limit: params.limit,
       offset: params.offset,
     });
@@ -69,7 +69,7 @@ export class MapService {
     const map = await this.actions.create({
       center: centerItem,
       attrs: {
-        ownerId: parseInt(ownerId),
+        ownerId,
       },
     });
     return adapt.map(map);

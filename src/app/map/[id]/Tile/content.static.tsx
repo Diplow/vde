@@ -1,4 +1,4 @@
-import { TileScale } from "./base.static";
+import type { TileScale } from "./base.static";
 
 interface StaticTileContentProps {
   data: {

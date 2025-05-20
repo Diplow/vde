@@ -20,7 +20,7 @@ export interface MapRepository
     limit,
     offset,
   }: {
-    ownerId: number;
+    ownerId: string;
     limit: number;
     offset: number;
   }): Promise<MapWithId[]>;

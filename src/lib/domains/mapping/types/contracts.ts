@@ -1,5 +1,4 @@
 import type { HexMap, MapItemWithId } from "../_objects";
-import { DEPTH_TINTS, type HexColorTint } from "../_objects/hex-map";
 import { HexCoordSystem } from "../utils/hex-coordinates";
 
 export const mapItemDomainToContractAdapter = (
@@ -14,7 +13,6 @@ export const mapItemDomainToContractAdapter = (
     descr: aggregate.ref.attrs.descr,
     url: aggregate.ref.attrs.link,
     depth: aggregate.attrs.coords.path.length,
-    color: `${aggregate.parent?.attrs.color || aggregate.attrs.color}-${DEPTH_TINTS[aggregate.attrs.coords.path.length as HexColorTint]}`,
     parentId: String(aggregate.attrs.parentId),
     neighborIds: aggregate.neighbors.map((neighbor) => String(neighbor.id)),
   };
@@ -31,13 +29,15 @@ const mapDomainToContractAdapter = (aggregate: HexMap) => {
     throw new Error("Cannot adapt map without an ID");
   }
   // Pass the map's ID when adapting the center item
+  if (!aggregate.center) {
+    throw new Error("Cannot adapt map without a center");
+  }
   const center = mapItemDomainToContractAdapter(aggregate.center, aggregate.id);
   return {
     id: String(aggregate.id),
     title: center.name,
     descr: center.descr,
-    radius: Number(aggregate.attrs.radius),
-    itemCount: aggregate.items.length,
+    itemCount: aggregate.items?.length || 1,
     center,
   };
 };

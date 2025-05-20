@@ -2,8 +2,8 @@
 
 // REMOVE: import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
-import { HexTileData } from "../State/types";
-import { StaticBaseTileLayout, TileScale } from "./base.static";
+import type { HexTileData } from "../State/types";
+import { StaticBaseTileLayout, type TileScale } from "./base.static";
 import { getColorFromItem } from "./item.static";
 
 interface StaticMiniMapItemTileProps {

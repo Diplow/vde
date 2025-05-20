@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useReducer } from "react";
-import { HexTileData } from "./types";
+import type { HexTileData } from "./types";
 import { itemsReducer } from "./items.reducer";
 
 export function useInit({ items }: { items: Record<string, HexTileData> }) {
@@ -16,7 +16,7 @@ export function useInit({ items }: { items: Record<string, HexTileData> }) {
         dispatch({ type: "ADD_ITEM", payload: { item } });
       }
     });
-  }, [items]);
+  }, [items, itemsById]);
 
   const updateSingleItem = useCallback(
     (coordId: string, newItem: HexTileData) => {

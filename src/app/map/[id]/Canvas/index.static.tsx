@@ -1,8 +1,8 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { StaticHexRegion } from "./hex-region.static";
-import { HexTileData } from "../State/types";
+import type { HexTileData } from "../State/types";
 import { MiniMapController, ScaleController } from "../Controls";
-import { TileScale } from "../Tile/base.static";
+import type { TileScale } from "../Tile/base.static";
 
 export interface StaticMapCanvasProps {
   center: string;

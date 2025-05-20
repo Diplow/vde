@@ -12,12 +12,6 @@ import { hexMaps } from "./hex-maps"; // Correct filename based on ls
 import { baseItems } from "./base-items";
 import { MapItemType } from "~/lib/domains/mapping/_objects/map-item"; // Import the enum
 
-import type {
-  HexSize,
-  HexColor,
-  HexColorTint,
-} from "~/lib/domains/mapping/_objects/hex-map";
-
 /**
  * HexMap items table schema
  */
@@ -31,9 +25,6 @@ export const mapItems = createTable(
     row: integer("row").notNull(),
     col: integer("col").notNull(),
     path: varchar("path", { length: 20 }).notNull().default(""), // Store path as string, e.g., "NESW"
-    size: varchar("size", { length: 2 }).$type<HexSize>().notNull(), // Store HexSize as varchar
-    color: varchar("color", { length: 10 }).$type<HexColor>().notNull(), // Store HexColor as varchar
-    lightness: integer("lightness").$type<HexColorTint>().notNull(), // Store HexColorTint as integer (0-5)
 
     // Reference to the underlying BaseItem (or potentially other types in future)
     refItemType: varchar("ref_item_type", { length: 10 })

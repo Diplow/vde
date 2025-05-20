@@ -18,7 +18,7 @@ export class MapMemoryRepository
   >
   implements MapRepository
 {
-  async getByOwnerId({ ownerId }: { ownerId: number }) {
+  async getByOwnerId({ ownerId }: { ownerId: string }) {
     return this.getByField({
       fields: {
         attrs: {

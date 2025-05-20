@@ -65,7 +65,6 @@ describe("MapService [Integration - DB]", () => {
         name: createArgs.title,
         descr: createArgs.descr,
         coords: "0,0",
-        color: "zinc-100",
       };
       expect(map).toMatchObject({
         id: expect.any(String),
@@ -104,7 +103,6 @@ describe("MapService [Integration - DB]", () => {
           name: created.title,
           descr: created.descr,
           coords: created.center.coords,
-          color: created.center.color,
         }),
       });
     });
