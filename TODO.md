@@ -1,8 +1,0 @@
-- [ ] have a page that list maps and enable map creation
-- [ ] have a page that enable map edition
-- [ ] define cursor rules for frontend development
-- [ ] minimalist user authentication
-- [ ] tests all the way
-- [ ] define cursor rules for each layer of test
-- [ ] minimalist map items (events, contents, authors)
-- [ ] deployement
