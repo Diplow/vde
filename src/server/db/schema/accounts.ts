@@ -1,21 +1,5 @@
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { users } from "./users"; // Import for foreign key
-// import { relations } from "drizzle-orm"; // Relations will be added later
-
-// Core Account schema from better-auth:
-// id: string (PK)
-// userId: string (FK to user)
-// accountId: string (ID from provider or userId for credentials)
-// providerId: string (e.g., "email", "github")
-// accessToken: string?
-// refreshToken: string?
-// accessTokenExpiresAt: Date?
-// refreshTokenExpiresAt: Date?
-// scope: string?
-// idToken: string?
-// password: string? (Hashed password for credentials)
-// createdAt: Date
-// updatedAt: Date
 
 export const accounts = pgTable("accounts", {
   id: text("id").primaryKey(), // better-auth generates string IDs
@@ -49,13 +33,6 @@ export const accounts = pgTable("accounts", {
     .defaultNow()
     .notNull(),
 });
-
-// export const accountsRelations = relations(accounts, ({ one }) => ({
-//   user: one(users, {
-//     fields: [accounts.userId],
-//     references: [users.id],
-//   }),
-// }));
 
 // Note: `accountId` and `providerId` likely form a composite unique constraint
 // for OAuth accounts, e.g., a user can only have one GitHub account linked.

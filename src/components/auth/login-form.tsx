@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { authClient } from "~/lib/auth/auth-client";
 import { api } from "~/commons/trpc/react"; // For tRPC utils for cache invalidation
-// import { useRouter } from "next/navigation"; // No longer needed here
+import { StaticLoginForm } from "./login-form.static";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -10,12 +10,6 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
 
   const trpcUtils = api.useUtils();
-  // const router = useRouter(); // No longer needed here
-  // Remove userMapQuery initialization as it's not used here anymore
-  // const userMapQuery = api.map.getUserMap.useQuery(undefined, {
-  // enabled: false,
-  // retry: false,
-  // });
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -70,53 +64,15 @@ export function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label
-          htmlFor="email-login"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Email address
-        </label>
-        <input
-          id="email-login"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-        />
-      </div>
-      <div>
-        <label
-          htmlFor="password-login"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Password
-        </label>
-        <input
-          id="password-login"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-        />
-      </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      <div>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-        >
-          {isLoading ? "Logging in..." : "Login"}
-        </button>
-      </div>
-    </form>
+    <StaticLoginForm
+      emailValue={email}
+      passwordValue={password}
+      error={error}
+      isLoading={isLoading}
+      onEmailChange={(e) => setEmail(e.target.value)}
+      onPasswordChange={(e) => setPassword(e.target.value)}
+      onSubmit={handleSubmit}
+      formAction="/api/auth/login-action"
+    />
   );
 }

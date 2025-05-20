@@ -1,16 +1,5 @@
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { users } from "./users"; // Import for foreign key
-// import { relations } from "drizzle-orm"; // Relations will be added later
-
-// Core Session schema from better-auth:
-// id: string (PK)
-// userId: string (FK to user)
-// token: string (Session token)
-// expiresAt: Date
-// ipAddress: string?
-// userAgent: string?
-// createdAt: Date
-// updatedAt: Date
 
 export const sessions = pgTable("sessions", {
   id: text("id").primaryKey(), // better-auth generates string IDs
@@ -31,10 +20,3 @@ export const sessions = pgTable("sessions", {
     .defaultNow()
     .notNull(),
 });
-
-// export const sessionsRelations = relations(sessions, ({ one }) => ({
-//   user: one(users, {
-//     fields: [sessions.userId],
-//     references: [users.id],
-//   }),
-// }));

@@ -27,9 +27,6 @@ The authentication system is built around `better-auth` and integrates with the 
 
   - This Next.js dynamic API route exposes the `better-auth` request handlers (`GET`, `POST`). All authentication-related HTTP requests (e.g., login, logout, OAuth callbacks) are processed here. It uses the `auth` instance configured in `src/server/auth.ts`
 
-- **Environment Setup (`src/lib/auth.ts`):**
-  - This file also sets up a `betterAuth` instance, primarily configuring email/password auth and the Drizzle adapter. It seems to be the instance used by the Next.js API route handler. Social provider configurations are commented out but can be enabled here.
-
 ### 2. Client-Side Configuration
 
 - **Auth Client (`src/lib/auth/auth-client.ts`):**
@@ -80,6 +77,7 @@ The authentication system is built around `better-auth` and integrates with the 
 - **User Navigation (`src/components/layout/UserNav.tsx` - as per plan):**
   - This component would display user information and a logout button.
   - Logout is handled using `authClient.signOut()`.
+  - (Note: `UserNav.tsx` does not exist yet. The `AuthTile` currently serves for login/registration, and further user navigation will be part of future UI development.)
 
 ### 6. Database Integration
 
@@ -96,6 +94,7 @@ The authentication system is built around `better-auth` and integrates with the 
     - `authClient.signUp.email` is called on the client-side.
     - `better-auth` handles user creation, password hashing, and potentially sends a verification email (depending on configuration).
     - The client's session is updated.
+    - After registration, the user's map is also created and the user is redirected to their map.
 
 2.  **Login:**
 
@@ -104,6 +103,7 @@ The authentication system is built around `better-auth` and integrates with the 
     - Alternatively, the `authRouter.login` tRPC procedure can be used, which internally calls `auth.api.signInEmail`.
     - `better-auth` verifies credentials and creates a session, typically setting HTTP-only cookies.
     - The client's session is updated.
+    - After login, the user is redirected to their map.
 
 3.  **Session Management:**
 
@@ -117,11 +117,11 @@ The authentication system is built around `better-auth` and integrates with the 
     - Alternatively, the `authRouter.logout` tRPC procedure calls `auth.api.signOut`.
     - `better-auth` invalidates the session and clears cookies.
     - The client's session is updated.
+    - (Note: Specific UI for logout button and post-logout redirection to be finalized.)
 
 ## Key Files
 
 - **Core `better-auth` Server Config:** `src/server/auth.ts`
-- **Next.js API Handler Config:** `src/lib/auth.ts`
 - **`better-auth` Client Config:** `src/lib/auth/auth-client.ts`
 - **API Route Handler:** `src/app/api/auth/[...all]/route.ts`
 - **tRPC Auth Router:** `src/server/api/routers/auth.ts`
@@ -130,6 +130,6 @@ The authentication system is built around `better-auth` and integrates with the 
 - **UI Forms:** `src/components/auth/LoginForm.tsx`, `src/components/auth/RegisterForm.tsx`
 - **Auth UI Tile:** `src/app/map/[id]/Tile/auth.dynamic.tsx`
 - **Database Schema:** `src/server/db/schema/users.ts`, `accounts.ts`, etc.
-- **Feature Plan:** `prompts/features/2025-05-16-better-auth.md` (for historical context and planning)
+- **Feature Plan:** `prompts/features/2025-05-16-better-auth.md`, `prompts/features/2025-05-18-homepage.md` (for historical context and planning)
 
 This setup provides a solid foundation for authentication, leveraging `better-auth` for core functionality while integrating smoothly with the project's tRPC and Next.js architecture.

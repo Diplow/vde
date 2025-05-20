@@ -2,10 +2,6 @@ import { relations } from "drizzle-orm";
 import { hexMaps } from "./_tables/hex-maps";
 import { mapItems } from "./_tables/map-items";
 import { baseItems } from "./_tables/base-items";
-// Assuming users table relations might be defined elsewhere
-// import { users } from "./_tables/users";
-
-// Import auth tables
 import { users } from "./users";
 import { accounts } from "./accounts";
 import { sessions } from "./sessions";
@@ -20,11 +16,10 @@ export const hexMapRelations = relations(hexMaps, ({ one, many }) => ({
     references: [mapItems.id],
   }),
 
-  // Assuming one-to-many: User -> HexMaps (owner)
-  // owner: one(users, {
-  //   fields: [hexMaps.ownerId],
-  //   references: [users.id],
-  // }),
+  owner: one(users, {
+    fields: [hexMaps.ownerId],
+    references: [users.id],
+  }),
 }));
 
 /**
@@ -78,8 +73,7 @@ export const baseItemRelations = relations(baseItems, ({ many }) => ({
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
   sessions: many(sessions),
-  // If users can own hexMaps, this could be uncommented and hexMaps imported
-  // hexMaps: many(hexMaps),
+  hexMaps: many(hexMaps),
 }));
 
 export const accountsRelations = relations(accounts, ({ one }) => ({

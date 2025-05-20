@@ -1,21 +1,23 @@
-"use client";
-
-import React, { useState } from "react";
-import { LoginForm } from "~/components/auth/login-form";
-import { RegisterForm } from "~/components/auth/register-form";
+import React from "react";
 import { StaticBaseTileLayout } from "./base.static";
+import { Button } from "~/components/ui/button"; // Assuming you have a Button component
 
-interface AuthTileProps {
-  initialView?: "login" | "register";
+interface StaticAuthTileProps {
+  showLogin: boolean;
+  onToggleView: () => void;
+  loginFormComponent: React.ReactNode;
+  registerFormComponent: React.ReactNode;
 }
 
-// This component will be dynamically imported
-export default function AuthTile({ initialView = "login" }: AuthTileProps) {
-  const [showLogin, setShowLogin] = useState(initialView === "login");
-
+export const StaticAuthTile = ({
+  showLogin,
+  onToggleView,
+  loginFormComponent,
+  registerFormComponent,
+}: StaticAuthTileProps) => {
   return (
-    <StaticBaseTileLayout coordId="auth" scale={3}>
-      <div className="mx-auto my-8 max-w-md rounded-lg bg-white p-6 shadow-lg">
+    <StaticBaseTileLayout coordId="auth-static" scale={3}>
+      <div className="mx-auto my-8 w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
         <div className="mb-6">
           <h2 className="text-center text-2xl font-bold text-gray-800">
             {showLogin ? "Welcome Back" : "Create Account"}
@@ -27,19 +29,20 @@ export default function AuthTile({ initialView = "login" }: AuthTileProps) {
           </p>
         </div>
 
-        {showLogin ? <LoginForm /> : <RegisterForm />}
+        {showLogin ? loginFormComponent : registerFormComponent}
 
         <div className="mt-6 text-center">
-          <button
-            onClick={() => setShowLogin(!showLogin)}
+          <Button
+            variant="link"
+            onClick={onToggleView}
             className="text-sm text-indigo-600 hover:text-indigo-500 focus:outline-none"
           >
             {showLogin
               ? "Need an account? Register"
               : "Already have an account? Login"}
-          </button>
+          </Button>
         </div>
       </div>
     </StaticBaseTileLayout>
   );
-}
+};

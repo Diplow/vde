@@ -1,9 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import { api } from "~/commons/trpc/server";
-import Loading from "./loading";
+//import Loading from "./loading";
 import { StaticMapCanvas } from "./Canvas/index.static";
 import { MapItemAPIContract } from "~/server/api/types/contracts";
-import { MiniMapController } from "./Controls/mini-map.controller";
 import { adapt, HexTileData } from "./State/types";
 import {
   HexCoord,
@@ -49,17 +48,12 @@ export default async function HexMapPage({
     safeGetPathnameAndSearchParams(searchParamsString, mapId);
 
   if (itemsError || !items) {
-    return <Loading />;
+    return <null; //<Loading />;>
   }
 
   const { scale, expandedItemIds, isDynamic, focus } = initMapParameters(
     searchParamsString,
     items,
-  );
-
-  // Prepare data for MiniMapController: get full item objects for expanded IDs
-  const minimapControllerItems = items.filter((item) =>
-    expandedItemIds.includes(item.id),
   );
 
   const mapItems = formatItems(items);

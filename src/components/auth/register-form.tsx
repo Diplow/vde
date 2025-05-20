@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { authClient } from "~/lib/auth/auth-client";
 import { api } from "~/commons/trpc/react"; // For tRPC utils if needed for cache invalidation
 import { useRouter } from "next/navigation"; // If manual redirection is needed
+import { StaticRegisterForm } from "./register-form.static";
 
 export function RegisterForm() {
   const [email, setEmail] = useState("");
@@ -81,70 +82,18 @@ export function RegisterForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label
-          htmlFor="name"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Name (Optional)
-        </label>
-        <input
-          id="name"
-          name="name"
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-        />
-      </div>
-      <div>
-        <label
-          htmlFor="email-register"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Email address
-        </label>
-        <input
-          id="email-register"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-        />
-      </div>
-      <div>
-        <label
-          htmlFor="password-register"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Password
-        </label>
-        <input
-          id="password-register"
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          required
-          minLength={8}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-        />
-      </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      <div>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-        >
-          {isLoading ? "Registering..." : "Register"}
-        </button>
-      </div>
-    </form>
+    <StaticRegisterForm
+      nameValue={name}
+      emailValue={email}
+      passwordValue={password}
+      error={error}
+      isLoading={isLoading}
+      onNameChange={(e) => setName(e.target.value)}
+      onEmailChange={(e) => setEmail(e.target.value)}
+      onPasswordChange={(e) => setPassword(e.target.value)}
+      onSubmit={handleSubmit}
+      // formAction can be set here for non-JS fallback
+      // e.g., formAction="/api/auth/register-action"
+    />
   );
 }

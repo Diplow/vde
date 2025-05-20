@@ -9,7 +9,7 @@ interface ProtectedPageWrapperProps {
 
 export function ProtectedPageWrapper({
   children,
-  redirectTo = "/map",
+  redirectTo = "/",
 }: ProtectedPageWrapperProps) {
   // Redirect to /map (or a generic auth page that handles login/register form display)
   // if trying to access a protected route unauthenticated.

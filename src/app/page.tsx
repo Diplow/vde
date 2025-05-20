@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "~/contexts/AuthContext";
@@ -8,6 +8,12 @@ import { api } from "~/commons/trpc/react";
 import { Button } from "~/components/ui/button";
 
 export default function HomePage() {
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
   const { user, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
 
@@ -17,13 +23,15 @@ export default function HomePage() {
   });
 
   useEffect(() => {
+    if (!hasMounted) return; // Don't run auth-dependent effects until mounted
     if (!isAuthLoading && user) {
       // User is authenticated, try to get their map
       getUserMapQuery.refetch();
     }
-  }, [user, isAuthLoading, getUserMapQuery]);
+  }, [user, isAuthLoading, getUserMapQuery, hasMounted]);
 
   useEffect(() => {
+    if (!hasMounted) return; // Don't run auth-dependent effects until mounted
     if (getUserMapQuery.isSuccess) {
       const data = getUserMapQuery.data;
       if (data?.success && data.map?.id) {
@@ -52,7 +60,17 @@ export default function HomePage() {
     getUserMapQuery.isError,
     getUserMapQuery.error,
     router,
+    hasMounted,
   ]);
+
+  if (!hasMounted) {
+    // Render the same content as the server would for an unauthenticated user
+    // This ensures the initial client render matches the server render.
+    return <UnauthenticatedView />;
+  }
+
+  // After this point, hasMounted is true.
+  // The component re-renders, and the logic below uses the actual client-side auth state.
 
   if (isAuthLoading || (user && getUserMapQuery.isFetching)) {
     return (
@@ -64,34 +82,7 @@ export default function HomePage() {
 
   if (!user) {
     // User is not authenticated, show Login/Signup options
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
-        <div className="rounded-lg bg-card p-8 text-center shadow-xl">
-          <h1 className="mb-6 text-3xl font-bold text-foreground">
-            Welcome to VDE
-          </h1>
-          <p className="mb-8 text-muted-foreground">
-            Join our community for deliberate people. Create and explore maps.
-          </p>
-          <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
-            <Link href="/login" passHref legacyBehavior>
-              <Button size="lg" className="w-full sm:w-auto">
-                Login
-              </Button>
-            </Link>
-            <Link href="/signup" passHref legacyBehavior>
-              <Button
-                variant="secondary"
-                size="lg"
-                className="w-full sm:w-auto"
-              >
-                Sign Up
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
+    return <UnauthenticatedView />;
   }
 
   // Authenticated user, but map status is being determined or there was an error client-side with the query
@@ -131,3 +122,28 @@ export default function HomePage() {
     </div>
   );
 }
+
+const UnauthenticatedView = () => (
+  <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
+    <div className="rounded-lg bg-card p-8 text-center shadow-xl">
+      <h1 className="mb-6 text-3xl font-bold text-foreground">
+        Welcome to VDE
+      </h1>
+      <p className="mb-8 text-muted-foreground">
+        Join our community for deliberate people. Create and explore maps.
+      </p>
+      <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
+        <Link href="/login" passHref legacyBehavior>
+          <Button size="lg" className="w-full sm:w-auto">
+            Login
+          </Button>
+        </Link>
+        <Link href="/signup" passHref legacyBehavior>
+          <Button variant="secondary" size="lg" className="w-full sm:w-auto">
+            Sign Up
+          </Button>
+        </Link>
+      </div>
+    </div>
+  </div>
+);
