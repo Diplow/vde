@@ -144,6 +144,13 @@ const UnauthenticatedView = () => (
           </Button>
         </Link>
       </div>
+      <div className="mt-6 border-t border-border pt-6">
+        <Link href="/test" passHref legacyBehavior>
+          <Button variant="outline" size="sm">
+            View Transition Test
+          </Button>
+        </Link>
+      </div>
     </div>
   </div>
 );

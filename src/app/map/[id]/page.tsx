@@ -1,79 +1,86 @@
 import { notFound, redirect } from "next/navigation";
 import { api } from "~/commons/trpc/server";
-//import Loading from "./loading";
 import { StaticMapCanvas } from "./Canvas/index.static";
 import { MapItemAPIContract } from "~/server/api/types/contracts";
 import { adapt, HexTileData } from "./State/types";
-import {
-  HexCoord,
-  HexDirection,
-} from "~/lib/domains/mapping/utils/hex-coordinates";
-import { DEFAULT_HEXMAP_COLORS } from "~/lib/domains/mapping/_objects/hex-map";
+import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 
 interface HexMapPageProps {
-  params: { id: string };
-  searchParams: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{
     scale?: string;
     expandedItems?: string;
     isDynamic?: string;
     focus?: string;
-  };
+  }>;
 }
 
 export default async function HexMapPage({
   params,
   searchParams,
 }: HexMapPageProps) {
-  const { id: mapId } = await params;
+  const { id: rootItemId } = await params;
   const searchParamsString = await searchParams;
 
-  const { data: center } = await getMapData(mapId);
+  const { data: rootItem } = await getRootItemData(rootItemId);
 
-  if (!center || !center.center) {
+  if (!rootItem) {
     return notFound();
   }
 
-  // Handle initial focus parameter
+  // Handle initial focus parameter - default to root item coordinates
   if (!searchParamsString.focus) {
-    const defaultFocus = center.center.coordinates;
-    const currentPath = `/map/${mapId}`;
-    const newSearchParams = new URLSearchParams(searchParamsString as any); // Cast to any to allow adding new params
+    const defaultFocus = rootItem.coordinates;
+    const currentPath = `/map/${rootItemId}`;
+    const newSearchParams = new URLSearchParams(searchParamsString as any);
     newSearchParams.set("focus", defaultFocus);
     return redirect(`${currentPath}?${newSearchParams.toString()}`);
   }
 
-  const { data: items, error: itemsError } = await getMapItems(mapId);
-
-  const { pathname, currentSearchParamsString: currentSearchParamsWithFocus } =
-    safeGetPathnameAndSearchParams(searchParamsString, mapId);
+  const { data: items, error: itemsError } = await getMapItems(rootItemId);
 
   if (itemsError || !items) {
-    return <null; //<Loading />;>
+    return null; // TODO: Re-enable Loading component when ready
   }
 
-  const { scale, expandedItemIds, isDynamic, focus } = initMapParameters(
+  const { scale, expandedItemIds } = initMapParameters(
     searchParamsString,
     items,
   );
 
   const mapItems = formatItems(items);
+
+  // Extract userId and groupId from root item coordinates for components that need them
+  const rootCoords = CoordSystem.parseId(rootItem.coordinates);
+
   return (
     <div className="relative flex h-full w-full flex-col">
       <StaticMapCanvas
-        center={center.center.coordinates}
+        center={rootItem.coordinates}
         items={mapItems}
         scale={scale}
         expandedItemIds={expandedItemIds}
-        pathname={pathname}
-        currentSearchParamsString={currentSearchParamsWithFocus}
+        rootItemId={parseInt(rootItemId)}
+        userId={rootCoords.userId}
+        groupId={rootCoords.groupId}
       />
     </div>
   );
 }
 
-async function getMapItems(mapId: string) {
+async function getMapItems(rootItemId: string) {
   try {
-    const items = await api.map.getItems({ mapId });
+    // First get the root item to extract userId and groupId
+    const rootItem = await api.map.getRootItemById({
+      mapItemId: parseInt(rootItemId),
+    });
+
+    const rootCoords = CoordSystem.parseId(rootItem.coordinates);
+
+    const items = await api.map.getItemsForRootItem({
+      userId: rootCoords.userId,
+      groupId: rootCoords.groupId,
+    });
     return { data: items, error: null };
   } catch (error) {
     console.error("Error loading map items:", error);
@@ -81,23 +88,25 @@ async function getMapItems(mapId: string) {
   }
 }
 
-async function getMapData(mapId: string) {
+async function getRootItemData(rootItemId: string) {
   try {
-    return {
-      data: await api.map.getOne({ id: mapId }),
-      error: null,
-    };
+    const rootItem = await api.map.getRootItemById({
+      mapItemId: parseInt(rootItemId),
+    });
+    return { data: rootItem, error: null };
   } catch (error) {
-    console.error("Error loading map:", error);
-    return {
-      data: null,
-      error,
-    };
+    console.error("Error loading root item:", error);
+    return { data: null, error };
   }
 }
 
 function initMapParameters(
-  searchParams: HexMapPageProps["searchParams"],
+  searchParams: {
+    scale?: string;
+    expandedItems?: string;
+    isDynamic?: string;
+    focus?: string;
+  },
   items: MapItemAPIContract[],
 ) {
   const expandedItemIdsFromUrl = searchParams.expandedItems
@@ -115,58 +124,16 @@ function initMapParameters(
   };
 }
 
-function safeGetPathnameAndSearchParams(
-  searchParams: HexMapPageProps["searchParams"],
-  mapId: string,
-) {
-  const pathname = `/map/${mapId}`;
-
-  // Safely construct currentSearchParamsString
-  const knownSearchParams: Record<string, string> = {};
-  if (searchParams.scale !== undefined) {
-    knownSearchParams.scale = searchParams.scale;
-  }
-  if (searchParams.expandedItems !== undefined) {
-    knownSearchParams.expandedItems = searchParams.expandedItems;
-  }
-  if (searchParams.isDynamic !== undefined) {
-    knownSearchParams.isDynamic = searchParams.isDynamic;
-  }
-  if (searchParams.focus !== undefined) {
-    knownSearchParams.focus = searchParams.focus;
-  }
-  const currentSearchParamsString = new URLSearchParams(
-    knownSearchParams,
-  ).toString();
-
-  return { pathname, currentSearchParamsString };
-}
-
-export const formatItems = (items: MapItemAPIContract[]) => {
+const formatItems = (items: MapItemAPIContract[]) => {
   const itemsById = items.map(adapt).reduce(
     (acc, item) => {
       if (item.metadata.coordinates.path.indexOf(0) !== -1) {
         return acc;
       }
-      acc[item.metadata.coordId] = {
-        ...item,
-        data: {
-          ...item.data,
-          color: getColor(item.metadata.coordinates),
-        },
-      };
+      acc[item.metadata.coordId] = item;
       return acc;
     },
     {} as Record<string, HexTileData>,
   );
   return itemsById;
 };
-
-function getColor(coordinates: HexCoord): string {
-  if (coordinates.path.length < 1) {
-    return "zinc-50";
-  }
-  return `${DEFAULT_HEXMAP_COLORS[coordinates.path[0] as HexDirection]}-${
-    100 + 100 * coordinates.path.length
-  }`;
-}

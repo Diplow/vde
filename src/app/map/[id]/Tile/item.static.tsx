@@ -11,10 +11,9 @@ interface StaticItemTileProps {
   item: HexTileData;
   scale?: TileScale;
   baseHexSize?: number;
-  pathname: string;
-  currentSearchParamsString: string;
   allExpandedItemIds: string[];
   hasChildren: boolean;
+  isCenter?: boolean;
 }
 
 export const getColorFromItem = (item: HexTileData): TileColor => {
@@ -29,21 +28,35 @@ export const StaticItemTile = ({
   item,
   scale = 1,
   baseHexSize = 50,
-  pathname,
-  currentSearchParamsString,
   allExpandedItemIds,
   hasChildren,
+  isCenter = false,
 }: StaticItemTileProps) => {
+  const tilePosition = isCenter ? "center" : "child";
+
+  // Create view transition name based on coordinate path
+  const pathString =
+    item.metadata.coordinates.path.length > 0
+      ? item.metadata.coordinates.path.join("-")
+      : "center";
+  const viewTransitionName = `item-tile-${pathString}`;
+
   return (
-    <div className="group relative">
-      {" "}
-      {/* Added group for hover effect and relative for absolute positioning of the button */}
+    <div className="group relative hover:z-10">
+      {/* Invisible hover area overlay to ensure full tile responds to hover */}
+      <div className="pointer-events-auto absolute inset-0 z-10" />
+
+      {/* Hexagon tile with full hover area */}
       <StaticBaseTileLayout
         coordId={item.metadata.coordId}
         scale={scale}
         color={getColorFromItem(item)}
         baseHexSize={baseHexSize}
         isFocusable={false} // Kept as false, focus will be on the button
+        viewTransitionName={viewTransitionName}
+        dataTileScale={scale.toString()}
+        dataTilePosition={tilePosition}
+        dataTilePath={pathString}
       >
         <StaticTileContent
           data={{
@@ -57,10 +70,9 @@ export const StaticItemTile = ({
       <TileButtons
         item={item}
         scale={scale}
-        pathname={pathname}
-        currentSearchParamsString={currentSearchParamsString}
         allExpandedItemIds={allExpandedItemIds}
         hasChildren={hasChildren}
+        isCenter={isCenter}
       />
     </div>
   );

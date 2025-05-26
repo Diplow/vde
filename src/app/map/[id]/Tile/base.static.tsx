@@ -42,6 +42,12 @@ export interface StaticBaseTileLayoutProps {
   isFocusable?: boolean;
   baseHexSize?: number;
   _shallow?: boolean;
+  viewTransitionName?: string;
+  dataTileScale?: string;
+  dataTilePosition?: string;
+  dataTilePath?: string;
+  dataNavigationDirection?: string;
+  dataFromHierarchy?: string;
 }
 
 export const StaticBaseTileLayout = ({
@@ -83,7 +89,7 @@ export const StaticBaseTileLayout = ({
         width: `${Math.round(width)}px`,
         height,
         transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-        position: "relative", // Keep relative for absolute positioning of children
+        position: "relative",
       }}
       data-tile-id={coordId}
     >
@@ -92,11 +98,10 @@ export const StaticBaseTileLayout = ({
         style={{
           width: "100%", // Ensure inner div takes full size of focusable parent
           height: "100%",
-          // zIndex: 20 - scale, // zIndex might be better on the root of this component or handled by parent
         }}
       >
         <svg
-          className={`absolute inset-0 h-full w-full ${cursor}`} // SVG is absolute to fill the focusable div
+          className={`absolute inset-0 h-full w-full ${cursor} pointer-events-none`} // SVG is absolute to fill the focusable div
           // style={{ zIndex: 20 - scale }} // SVG zIndex
           viewBox={svgViewBox}
           xmlns="http://www.w3.org/2000/svg"
@@ -110,7 +115,7 @@ export const StaticBaseTileLayout = ({
           />
         </svg>
         {/* Ensure children are rendered on top and can receive pointer events */}
-        <div className="pointer-events-auto absolute inset-0 z-10 flex items-center justify-center overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center overflow-hidden">
           {children}
         </div>
       </div>

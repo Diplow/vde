@@ -1,19 +1,24 @@
 import { useState, useCallback } from "react";
 import { api } from "~/commons/trpc/react";
 import {
-  HexCoordSystem,
+  CoordSystem,
   type HexCoord,
 } from "~/lib/domains/mapping/utils/hex-coordinates";
+import { MapItemType } from "~/lib/domains/mapping/_objects/map-item";
 import type { MapItemAPIContract } from "~/server/api/types/contracts";
 import { adapt, type HexTileData } from "./types";
 
 export function useMutations({
-  mapId,
+  rootItemId,
+  userId,
+  groupId,
   itemsById,
   updateItemExpansion,
   stateHelpers,
 }: {
-  mapId: string;
+  rootItemId: number;
+  userId: number;
+  groupId: number;
   itemsById: Record<string, HexTileData>;
   updateItemExpansion: (coordId: string, isExpanded: boolean) => void;
   stateHelpers: {
@@ -44,22 +49,21 @@ export function useMutations({
       setItemIsCreating(true);
       setItemCreationError(null);
 
-      const newItemId = HexCoordSystem.createId(newItemInput.coords);
-      const parentId = HexCoordSystem.getParentCoordFromId(newItemId);
+      const newItemId = CoordSystem.createId(newItemInput.coords);
+      const parentId = CoordSystem.getParentCoordFromId(newItemId);
       const parent = parentId ? itemsById[parentId] : undefined;
 
       const tempId = `temp-${Date.now()}`;
       const optimisticItem: MapItemAPIContract = {
         id: tempId,
-        mapId: mapId,
-        coordinates: HexCoordSystem.createId(newItemInput.coords),
+        coordinates: CoordSystem.createId(newItemInput.coords),
         name: newItemInput.title ?? "New Item",
         descr: newItemInput.descr ?? "",
-        depth: 0,
-        color: parent?.data.color ?? "",
+        depth: newItemInput.coords.path.length,
         url: newItemInput.url ?? "",
-        neighbors: HexCoordSystem.getChildCoordsFromId(newItemId),
-        parentId: parent?.metadata.dbId ?? "",
+        parentId: parent?.metadata.dbId ?? null,
+        itemType: MapItemType.BASE,
+        ownerId: userId.toString(),
       };
 
       const adaptedItem = adapt(optimisticItem);
@@ -82,13 +86,17 @@ export function useMutations({
 
   // Item Removal Mutation
   const removeItemMutation = api.map.removeItem.useMutation({
-    onMutate: async (itemToRemove) => {
+    onMutate: async (itemToRemove: { coords: HexCoord }) => {
       setItemIsRemoving(true);
       setItemRemovingError(null);
 
-      stateHelpers.deleteSingleItem(itemToRemove.itemId);
+      const coordId = CoordSystem.createId(itemToRemove.coords);
+      const item = itemsById[coordId];
+      if (item) {
+        stateHelpers.deleteSingleItem(coordId);
+      }
 
-      return { deletedItem: itemsById[itemToRemove.itemId] };
+      return { deletedItem: item };
     },
     onError: (err, _, context) => {
       setItemRemovingError(err.message);
@@ -104,33 +112,34 @@ export function useMutations({
 
   // Item Update Mutation
   const updateItemMutation = api.map.updateItem.useMutation({
-    onMutate: async (itemToUpdate) => {
+    onMutate: async (itemToUpdate: {
+      coords: HexCoord;
+      data: { title?: string; descr?: string; url?: string };
+    }) => {
       setItemIsUpdating(true);
       setItemUpdateError(null);
 
-      const itemToUpdateOriginal = itemsById[
-        itemToUpdate.itemId
-      ] as HexTileData;
+      const coordId = CoordSystem.createId(itemToUpdate.coords);
+      const itemToUpdateOriginal = itemsById[coordId] as HexTileData;
       const newItemData = {
         ...itemToUpdateOriginal,
         data: {
           ...itemToUpdateOriginal.data,
-          ...itemToUpdate.data,
-          name: itemToUpdate.data.title ?? "",
-          description: itemToUpdate.data.descr ?? "",
+          name: itemToUpdate.data.title ?? itemToUpdateOriginal.data.name,
+          description:
+            itemToUpdate.data.descr ?? itemToUpdateOriginal.data.description,
+          url: itemToUpdate.data.url ?? itemToUpdateOriginal.data.url,
         },
       };
-      stateHelpers.updateSingleItem(itemToUpdate.itemId, newItemData);
+      stateHelpers.updateSingleItem(coordId, newItemData);
 
       return { itemToUpdateOriginal };
     },
     onError: (err, updatedItem, context) => {
       setItemUpdateError(err.message);
       if (context?.itemToUpdateOriginal) {
-        stateHelpers.updateSingleItem(
-          updatedItem.itemId,
-          context.itemToUpdateOriginal,
-        );
+        const coordId = CoordSystem.createId(updatedItem.coords);
+        stateHelpers.updateSingleItem(coordId, context.itemToUpdateOriginal);
       }
     },
     onSettled: () => {
@@ -146,8 +155,8 @@ export function useMutations({
 
       // Optimistically update the UI
       // Find the items being moved
-      const oldCoordsStr = HexCoordSystem.createId(moveItemInput.oldCoords);
-      const newCoordsStr = HexCoordSystem.createId(moveItemInput.newCoords);
+      const oldCoordsStr = CoordSystem.createId(moveItemInput.oldCoords);
+      const newCoordsStr = CoordSystem.createId(moveItemInput.newCoords);
 
       const previousItems = {
         sourceItem: itemsById[oldCoordsStr],
@@ -160,7 +169,7 @@ export function useMutations({
           metadata: {
             ...previousItems.sourceItem.metadata,
             coordId: newCoordsStr,
-            parentId: HexCoordSystem.getParentCoordFromId(newCoordsStr),
+            parentId: CoordSystem.getParentCoordFromId(newCoordsStr),
           },
           state: {
             ...previousItems.sourceItem.state,
@@ -178,7 +187,7 @@ export function useMutations({
           metadata: {
             ...previousItems.targetItem.metadata,
             coordId: oldCoordsStr,
-            parentId: HexCoordSystem.getParentCoordFromId(oldCoordsStr),
+            parentId: CoordSystem.getParentCoordFromId(oldCoordsStr),
           },
           state: {
             ...previousItems.targetItem.state,
@@ -209,13 +218,6 @@ export function useMutations({
         }
       }
     },
-    onSuccess: (data, variables) => {
-      // Reload descendants of the moved items when operation is successful
-      const oldCoordsStr = HexCoordSystem.createId(variables.oldCoords);
-      const newCoordsStr = HexCoordSystem.createId(variables.newCoords);
-      void reloadDescendants(oldCoordsStr);
-      void reloadDescendants(newCoordsStr);
-    },
     onSettled: () => {
       setItemIsMoving(false);
     },
@@ -223,87 +225,90 @@ export function useMutations({
 
   /**
    * Reloads all descendants of an item
-   * @param coordId The coordinate ID of the item whose descendants should be reloaded
+   * @param itemId The database ID of the item whose descendants should be reloaded
    */
   const reloadDescendants = useCallback(
-    async (coordId: string) => {
+    async (itemId: string) => {
       try {
         // Fetch the descendants using the new API endpoint
         const descendants = await utils.map.getDescendants.fetch({
-          mapId,
-          itemId: coordId,
+          itemId: parseInt(itemId),
         });
 
         // Update each descendant in the state
-        descendants.forEach((item) => {
+        descendants.forEach((item: MapItemAPIContract) => {
           const adaptedItem = adapt(item);
           stateHelpers.updateSingleItem(item.coordinates, adaptedItem);
         });
       } catch (error) {
-        console.error(`Failed to reload descendants for ${coordId}:`, error);
+        console.error(`Failed to reload descendants for ${itemId}:`, error);
       }
     },
-    [mapId, utils.map.getDescendants, stateHelpers],
+    [utils.map.getDescendants, stateHelpers],
   );
 
   // Callback for creating an item
   const createItem = useCallback(
     (input: {
       coords: HexCoord;
+      parentId: number;
       title: string;
       descr: string;
       url: string;
     }) => {
       addItemMutation.mutate({
-        centerId: mapId, // Assuming centerId is the mapId based on API router
         coords: input.coords,
+        parentId: input.parentId,
         title: input.title,
         descr: input.descr,
         url: input.url,
       });
     },
-    [addItemMutation, mapId],
+    [addItemMutation],
   );
 
   // Callback for deleting an item
   const deleteItem = useCallback(
-    (input: { itemId: string }) => {
-      removeItemMutation.mutate({
-        itemId: input.itemId,
-        mapId: mapId,
-      });
+    (input: { coordId: string }) => {
+      const item = itemsById[input.coordId];
+      if (item) {
+        removeItemMutation.mutate({
+          coords: item.metadata.coordinates,
+        });
+      }
     },
-    [removeItemMutation, mapId],
+    [removeItemMutation, itemsById],
   );
 
   // Callback for updating an item
   const updateItem = useCallback(
     (input: {
-      itemId: string;
+      coordId: string;
       data: { title?: string; descr?: string; url?: string };
     }) => {
-      updateItemMutation.mutate({
-        itemId: input.itemId,
-        mapId: mapId,
-        data: input.data,
-      });
+      const item = itemsById[input.coordId];
+      if (item) {
+        updateItemMutation.mutate({
+          coords: item.metadata.coordinates,
+          data: input.data,
+        });
+      }
     },
-    [updateItemMutation, mapId],
+    [updateItemMutation, itemsById],
   );
 
   // Callback for moving an item
   const moveItem = useCallback(
     (input: { sourceCoord: string; targetCoord: string }) => {
-      const sourceCoords = HexCoordSystem.parseId(input.sourceCoord);
-      const targetCoords = HexCoordSystem.parseId(input.targetCoord);
+      const sourceCoords = CoordSystem.parseId(input.sourceCoord);
+      const targetCoords = CoordSystem.parseId(input.targetCoord);
 
       moveItemMutation.mutate({
-        mapId: mapId,
         oldCoords: sourceCoords,
         newCoords: targetCoords,
       });
     },
-    [moveItemMutation, mapId],
+    [moveItemMutation],
   );
 
   return {

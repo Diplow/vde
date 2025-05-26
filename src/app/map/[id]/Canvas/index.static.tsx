@@ -3,6 +3,7 @@ import { StaticHexRegion } from "./hex-region.static";
 import type { HexTileData } from "../State/types";
 import { MiniMapController, ScaleController } from "../Controls";
 import type { TileScale } from "../Tile/base.static";
+import { ParentHierarchy } from "../Controls/parent-hierarchy.static";
 
 export interface StaticMapCanvasProps {
   center: string;
@@ -11,8 +12,9 @@ export interface StaticMapCanvasProps {
   expandedItemIds?: string[];
   baseHexSize?: number;
   children?: ReactNode;
-  pathname: string;
-  currentSearchParamsString: string;
+  rootItemId: number;
+  userId: number;
+  groupId: number;
 }
 
 export const StaticMapCanvas = ({
@@ -22,8 +24,9 @@ export const StaticMapCanvas = ({
   expandedItemIds = [],
   baseHexSize = 50,
   children,
-  pathname,
-  currentSearchParamsString,
+  rootItemId,
+  userId,
+  groupId,
 }: StaticMapCanvasProps) => {
   return (
     <div className="relative flex h-full w-full flex-col">
@@ -31,14 +34,15 @@ export const StaticMapCanvas = ({
         data-canvas-id={center}
         className="pointer-events-auto grid flex-grow place-items-center overflow-auto p-4"
       >
+        {/* Parent Hierarchy Component */}
+        <ParentHierarchy centerCoordId={center} items={items} />
+
         <StaticHexRegion
           center={center}
           mapItems={items}
           baseHexSize={baseHexSize}
           expandedItemIds={expandedItemIds}
           scale={scale as TileScale}
-          pathname={pathname}
-          currentSearchParamsString={currentSearchParamsString}
         />
 
         {/* Optional children to render additional controls */}

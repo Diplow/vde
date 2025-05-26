@@ -1,7 +1,7 @@
 import { getColorFromItem, StaticItemTile } from "../Tile/item.static";
 import { StaticBaseTileLayout, type TileScale } from "../Tile/base.static";
 import type { HexTileData } from "../State/types";
-import { HexCoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
+import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 
 export interface StaticHexRegionProps {
   center: string;
@@ -9,8 +9,6 @@ export interface StaticHexRegionProps {
   baseHexSize?: number;
   expandedItemIds?: string[];
   scale?: TileScale;
-  pathname: string;
-  currentSearchParamsString: string;
 }
 
 export const StaticHexRegion = ({
@@ -19,8 +17,6 @@ export const StaticHexRegion = ({
   baseHexSize = 50,
   expandedItemIds = [],
   scale = 3,
-  pathname,
-  currentSearchParamsString,
 }: StaticHexRegionProps) => {
   const centerItem = mapItems[center];
 
@@ -39,7 +35,7 @@ export const StaticHexRegion = ({
   }
 
   // Calculate if centerItem has children
-  const centerItemChildCoordIds = HexCoordSystem.getChildCoordsFromId(
+  const centerItemChildCoordIds = CoordSystem.getChildCoordsFromId(
     centerItem.metadata.coordId,
   );
   const centerItemHasChildren = centerItemChildCoordIds.some(
@@ -52,15 +48,14 @@ export const StaticHexRegion = ({
         item={centerItem}
         scale={scale}
         baseHexSize={baseHexSize}
-        pathname={pathname}
-        currentSearchParamsString={currentSearchParamsString}
         allExpandedItemIds={expandedItemIds}
         hasChildren={centerItemHasChildren}
+        isCenter={true}
       />
     );
   }
 
-  const [NW, NE, E, SE, SW, W] = HexCoordSystem.getChildCoordsFromId(center);
+  const [NW, NE, E, SE, SW, W] = CoordSystem.getChildCoordsFromId(center);
 
   const marginTopValue =
     scale === 2 ? baseHexSize / 2 : (baseHexSize / 2) * Math.pow(3, scale - 2);
@@ -79,8 +74,6 @@ export const StaticHexRegion = ({
           mapItems={mapItems}
           expandedItemIds={expandedItemIds}
           scale={nextScale}
-          pathname={pathname}
-          currentSearchParamsString={currentSearchParamsString}
         />
         <RenderChild
           coords={NE}
@@ -88,8 +81,6 @@ export const StaticHexRegion = ({
           baseHexSize={baseHexSize}
           expandedItemIds={expandedItemIds}
           scale={nextScale}
-          pathname={pathname}
-          currentSearchParamsString={currentSearchParamsString}
         />
       </div>
       <div className="flex justify-center" style={marginTop}>
@@ -99,17 +90,14 @@ export const StaticHexRegion = ({
           mapItems={mapItems}
           expandedItemIds={expandedItemIds}
           scale={nextScale}
-          pathname={pathname}
-          currentSearchParamsString={currentSearchParamsString}
         />
         <div className="flex flex-col">
           <StaticItemTile
             item={centerItem}
             scale={nextScale}
-            pathname={pathname}
-            currentSearchParamsString={currentSearchParamsString}
             allExpandedItemIds={expandedItemIds}
             hasChildren={centerItemHasChildren}
+            isCenter={true}
           />
         </div>
         <RenderChild
@@ -118,8 +106,6 @@ export const StaticHexRegion = ({
           mapItems={mapItems}
           expandedItemIds={expandedItemIds}
           scale={nextScale}
-          pathname={pathname}
-          currentSearchParamsString={currentSearchParamsString}
         />
       </div>
       <div className="flex justify-center" style={marginTop}>
@@ -129,8 +115,6 @@ export const StaticHexRegion = ({
           mapItems={mapItems}
           expandedItemIds={expandedItemIds}
           scale={nextScale}
-          pathname={pathname}
-          currentSearchParamsString={currentSearchParamsString}
         />
         <RenderChild
           coords={SE}
@@ -138,8 +122,6 @@ export const StaticHexRegion = ({
           mapItems={mapItems}
           expandedItemIds={expandedItemIds}
           scale={nextScale}
-          pathname={pathname}
-          currentSearchParamsString={currentSearchParamsString}
         />
       </div>
     </div>
@@ -150,7 +132,7 @@ export const StaticHexRegion = ({
       scale={scale}
       color={getColorFromItem(centerItem)}
       coordId={center}
-      shallow={true}
+      _shallow={true}
     >
       <div
         className="scale-90 transform"
@@ -168,8 +150,6 @@ interface RenderChildProps {
   baseHexSize?: number;
   expandedItemIds?: string[];
   scale: TileScale;
-  pathname: string;
-  currentSearchParamsString: string;
 }
 
 const RenderChild = ({
@@ -178,8 +158,6 @@ const RenderChild = ({
   baseHexSize = 50,
   expandedItemIds = [],
   scale,
-  pathname,
-  currentSearchParamsString,
 }: RenderChildProps) => {
   const item = mapItems[coords];
   const isExpanded = item
@@ -197,7 +175,7 @@ const RenderChild = ({
   }
 
   // Calculate if the current child item has children
-  const childItemChildCoordIds = HexCoordSystem.getChildCoordsFromId(
+  const childItemChildCoordIds = CoordSystem.getChildCoordsFromId(
     item.metadata.coordId,
   );
   const itemHasChildren = childItemChildCoordIds.some(
@@ -211,8 +189,6 @@ const RenderChild = ({
         mapItems={mapItems}
         expandedItemIds={expandedItemIds}
         scale={scale}
-        pathname={pathname}
-        currentSearchParamsString={currentSearchParamsString}
       />
     );
   }
@@ -221,10 +197,9 @@ const RenderChild = ({
     <StaticItemTile
       item={item}
       scale={scale}
-      pathname={pathname}
-      currentSearchParamsString={currentSearchParamsString}
       allExpandedItemIds={expandedItemIds}
       hasChildren={itemHasChildren}
+      isCenter={false}
     />
   );
 };
