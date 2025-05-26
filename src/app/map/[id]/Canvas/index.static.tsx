@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { StaticHexRegion } from "./hex-region.static";
 import type { HexTileData } from "../State/types";
 import { MiniMapController, ScaleController } from "../Controls";
-import type { TileScale } from "../Tile/base.static";
+import type { TileScale } from "../Tile/Base/base.static";
 import { ParentHierarchy } from "../Controls/parent-hierarchy.static";
 import type { URLInfo } from "../types/url-info";
 
@@ -38,7 +38,11 @@ export const StaticMapCanvas = ({
         data-canvas-id={centerInfo.center}
         className="pointer-events-auto grid flex-grow place-items-center overflow-auto p-4"
       >
-        <ParentHierarchy centerCoordId={centerInfo.center} items={items} />
+        <ParentHierarchy
+          centerCoordId={centerInfo.center}
+          items={items}
+          urlInfo={urlInfo}
+        />
 
         <StaticHexRegion
           center={centerInfo.center}
@@ -46,6 +50,7 @@ export const StaticMapCanvas = ({
           baseHexSize={baseHexSize}
           expandedItemIds={expandedItemIds}
           scale={scale as TileScale}
+          urlInfo={urlInfo}
         />
 
         <ScaleController scale={scale} />

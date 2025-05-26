@@ -1,7 +1,7 @@
-import { StaticBaseTileLayout, type TileScale } from "../Tile/base.static";
+import { StaticBaseTileLayout, type TileScale } from "../Tile/Base/base.static";
 import type { HexTileData } from "../State/types";
 import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
-import { StaticMiniMapItemTile } from "../Tile/item-minimap.static";
+import { StaticMiniMapItemTile } from "../Tile/Item/item-minimap.static";
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { URLInfo } from "../types/url-info";
 

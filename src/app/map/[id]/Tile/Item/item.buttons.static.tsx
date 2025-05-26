@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { Maximize2, Minimize2, Crosshair } from "lucide-react";
 import type { HexTileData } from "../../State/types";

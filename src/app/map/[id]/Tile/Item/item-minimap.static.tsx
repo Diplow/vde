@@ -2,10 +2,10 @@
 
 // REMOVE: import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
-import type { HexTileData } from "../State/types";
-import { StaticBaseTileLayout, type TileScale } from "./base.static";
+import type { HexTileData } from "../../State/types";
+import { StaticBaseTileLayout, type TileScale } from "../Base/base.static";
 import { getColorFromItem } from "./item.static";
-import type { URLInfo } from "../types/url-info";
+import type { URLInfo } from "../../types/url-info";
 
 interface StaticMiniMapItemTileProps {
   item: HexTileData;
