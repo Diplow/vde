@@ -5,6 +5,7 @@ import { type MapItemAPIContract } from "~/server/api/types/contracts";
 import { adapt, type HexTileData } from "./State/types";
 import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 import { type URLInfo } from "./types/url-info";
+import Loading from "./loading";
 
 interface HexMapPageProps {
   params: Promise<{ id: string }>;
@@ -55,7 +56,7 @@ export default async function HexMapPage({
   );
 
   if (itemsError || !items) {
-    return null; // TODO: Re-enable Loading component when ready
+    return <Loading />;
   }
 
   const { scale, expandedItemIds } = initMapParameters(urlInfo, items);
