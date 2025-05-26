@@ -1,6 +1,6 @@
 import { StaticBaseTileLayout, type TileScale } from "../Tile/base.static";
 import type { HexTileData } from "../State/types";
-import { HexCoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
+import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 import { StaticMiniMapItemTile } from "../Tile/item-minimap.static";
 import { useState, useRef, useEffect, useCallback } from "react";
 
@@ -226,7 +226,7 @@ export const StaticMiniMap = ({
     );
   }
 
-  const [NW, NE, E, SE, SW, W] = HexCoordSystem.getChildCoordsFromId(center);
+  const [NW, NE, E, SE, SW, W] = CoordSystem.getChildCoordsFromId(center);
   const marginTopValue =
     scale === 2 ? baseHexSize / 2 : (baseHexSize / 2) * Math.pow(3, scale - 2);
   const marginTop = { marginTop: `-${marginTopValue}px` };

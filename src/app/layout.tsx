@@ -16,6 +16,9 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
+      <head>
+        <meta name="view-transition" content="same-origin" />
+      </head>
       <body className="min-h-screen bg-gradient-to-br from-background via-background to-muted font-sans antialiased">
         <AuthProvider>
           <TRPCReactProvider>{children}</TRPCReactProvider>

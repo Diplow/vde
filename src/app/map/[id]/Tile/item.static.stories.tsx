@@ -1,10 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { StaticItemTile } from "./item.static";
+import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { HexTileData } from "../State/types"; // Assuming this path is correct
-import {
-  HexCoordSystem,
-  type HexCoord,
-} from "~/lib/domains/mapping/utils/hex-coordinates";
 import "src/styles/globals.css";
 
 // Helper function to generate placeholder text
@@ -24,7 +21,7 @@ const mockItem1: HexTileData = {
     dbId: "db-item-1",
     coordId: "1,1",
     parentId: "0,0", // Example parent
-    coordinates: HexCoordSystem.parseId("1,1"),
+    coordinates: CoordSystem.parseId("1,1"),
     depth: 1,
   },
   data: {
@@ -48,7 +45,7 @@ const mockItem2: HexTileData = {
     dbId: "db-item-2",
     coordId: "2,2",
     parentId: "0,0", // Example parent
-    coordinates: HexCoordSystem.parseId("2,2"),
+    coordinates: CoordSystem.parseId("2,2"),
     depth: 1,
   },
   data: {
@@ -78,7 +75,7 @@ const mockItem3: HexTileData = {
     dbId: "db-item-3",
     coordId: "3,3",
     parentId: "0,0",
-    coordinates: HexCoordSystem.parseId("3,3"),
+    coordinates: CoordSystem.parseId("3,3"),
     depth: 1,
   },
   data: {
@@ -107,6 +104,7 @@ const meta: Meta<typeof StaticItemTile> = {
   argTypes: {
     item: { control: "object" }, // Keep control as object for simplicity
     scale: { control: { type: "range", min: 1, max: 3, step: 1 } },
+    isCenter: { control: "boolean" },
   },
 };
 
@@ -120,6 +118,7 @@ export const DefaultScale1: Story = {
     scale: 1,
     allExpandedItemIds: [],
     hasChildren: false,
+    isCenter: false,
   },
 };
 
@@ -130,6 +129,7 @@ export const DefaultScale2: Story = {
     scale: 2,
     allExpandedItemIds: [],
     hasChildren: false,
+    isCenter: false,
   },
 };
 
@@ -140,6 +140,7 @@ export const DefaultScale3: Story = {
     scale: 3,
     allExpandedItemIds: [],
     hasChildren: false,
+    isCenter: false,
   },
 };
 
@@ -150,6 +151,7 @@ export const Item2Scale3: Story = {
     scale: 3,
     allExpandedItemIds: [],
     hasChildren: false,
+    isCenter: false,
   },
 };
 
@@ -160,6 +162,7 @@ export const Item2Scale1: Story = {
     scale: 1,
     allExpandedItemIds: [],
     hasChildren: false,
+    isCenter: false,
   },
 };
 
@@ -170,6 +173,7 @@ export const Item3Scale3: Story = {
     scale: 3,
     allExpandedItemIds: [],
     hasChildren: false,
+    isCenter: false,
   },
 };
 
@@ -180,5 +184,17 @@ export const Item3Scale2: Story = {
     scale: 2,
     allExpandedItemIds: [],
     hasChildren: false,
+    isCenter: false,
+  },
+};
+
+// Story showing center tile behavior (no navigation button)
+export const CenterTile: Story = {
+  args: {
+    item: mockItem1,
+    scale: 3,
+    allExpandedItemIds: [],
+    hasChildren: true,
+    isCenter: true,
   },
 };
