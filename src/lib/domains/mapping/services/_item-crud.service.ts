@@ -5,7 +5,7 @@ import type {
 import { MapItemActions } from "~/lib/domains/mapping/_actions";
 import { adapt } from "~/lib/domains/mapping/types/contracts";
 import {
-  HexCoord,
+  type HexCoord,
   CoordSystem,
 } from "~/lib/domains/mapping/utils/hex-coordinates";
 import { MapItemType } from "../_objects";

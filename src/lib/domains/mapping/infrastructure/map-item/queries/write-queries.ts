@@ -1,6 +1,6 @@
 import { eq, SQL, sql, and } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import * as schemaImport from "~/server/db/schema";
+import type * as schemaImport from "~/server/db/schema";
 import { mapItems } from "~/server/db/schema";
 
 import type {

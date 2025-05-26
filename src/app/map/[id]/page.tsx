@@ -1,9 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 import { api } from "~/commons/trpc/server";
-import { StaticMapCanvas } from "./Canvas/index.static";
-import { MapItemAPIContract } from "~/server/api/types/contracts";
-import { adapt, HexTileData } from "./State/types";
+import { StaticMapCanvas, type CenterInfo } from "./Canvas/index.static";
+import { type MapItemAPIContract } from "~/server/api/types/contracts";
+import { adapt, type HexTileData } from "./State/types";
 import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
+import { type URLInfo } from "./types/url-info";
 
 interface HexMapPageProps {
   params: Promise<{ id: string }>;
@@ -22,47 +23,63 @@ export default async function HexMapPage({
   const { id: rootItemId } = await params;
   const searchParamsString = await searchParams;
 
-  const { data: rootItem } = await getRootItemData(rootItemId);
+  const urlInfo: URLInfo = {
+    pathname: `/map/${rootItemId}`,
+    searchParamsString: new URLSearchParams(
+      searchParamsString as any,
+    ).toString(),
+    rootItemId,
+    scale: searchParamsString.scale,
+    expandedItems: searchParamsString.expandedItems,
+    isDynamic: searchParamsString.isDynamic,
+    focus: searchParamsString.focus,
+  };
+
+  const { data: rootItem } = await getRootItemData(urlInfo.rootItemId);
 
   if (!rootItem) {
     return notFound();
   }
 
   // Handle initial focus parameter - default to root item coordinates
-  if (!searchParamsString.focus) {
+  if (!urlInfo.focus) {
     const defaultFocus = rootItem.coordinates;
-    const currentPath = `/map/${rootItemId}`;
+    const currentPath = `/map/${urlInfo.rootItemId}`;
     const newSearchParams = new URLSearchParams(searchParamsString as any);
     newSearchParams.set("focus", defaultFocus);
     return redirect(`${currentPath}?${newSearchParams.toString()}`);
   }
 
-  const { data: items, error: itemsError } = await getMapItems(rootItemId);
+  const { data: items, error: itemsError } = await getMapItems(
+    urlInfo.rootItemId,
+  );
 
   if (itemsError || !items) {
     return null; // TODO: Re-enable Loading component when ready
   }
 
-  const { scale, expandedItemIds } = initMapParameters(
-    searchParamsString,
-    items,
-  );
+  const { scale, expandedItemIds } = initMapParameters(urlInfo, items);
 
   const mapItems = formatItems(items);
 
   // Extract userId and groupId from root item coordinates for components that need them
   const rootCoords = CoordSystem.parseId(rootItem.coordinates);
 
+  const centerInfo: CenterInfo = {
+    center: rootItem.coordinates,
+    rootItemId: parseInt(urlInfo.rootItemId),
+    userId: rootCoords.userId,
+    groupId: rootCoords.groupId,
+  };
+
   return (
     <div className="relative flex h-full w-full flex-col">
       <StaticMapCanvas
-        center={rootItem.coordinates}
+        centerInfo={centerInfo}
         items={mapItems}
         scale={scale}
         expandedItemIds={expandedItemIds}
-        rootItemId={parseInt(rootItemId)}
-        userId={rootCoords.userId}
-        groupId={rootCoords.groupId}
+        urlInfo={urlInfo}
       />
     </div>
   );
@@ -100,34 +117,24 @@ async function getRootItemData(rootItemId: string) {
   }
 }
 
-function initMapParameters(
-  searchParams: {
-    scale?: string;
-    expandedItems?: string;
-    isDynamic?: string;
-    focus?: string;
-  },
-  items: MapItemAPIContract[],
-) {
-  const expandedItemIdsFromUrl = searchParams.expandedItems
-    ? searchParams.expandedItems.split(",")
+function initMapParameters(urlInfo: URLInfo, items: MapItemAPIContract[]) {
+  const expandedItemIdsFromUrl = urlInfo.expandedItems
+    ? urlInfo.expandedItems.split(",")
     : [];
   return {
-    scale: searchParams.scale ? parseInt(searchParams.scale) : 3,
+    scale: urlInfo.scale ? parseInt(urlInfo.scale) : 3,
     expandedItemIds: items
       .filter((item) => expandedItemIdsFromUrl.includes(item.id))
       .map((item) => item.id),
-    isDynamic: searchParams.isDynamic
-      ? searchParams.isDynamic === "true"
-      : false,
-    focus: searchParams.focus as string,
+    isDynamic: urlInfo.isDynamic ? urlInfo.isDynamic === "true" : false,
+    focus: urlInfo.focus!,
   };
 }
 
 const formatItems = (items: MapItemAPIContract[]) => {
   const itemsById = items.map(adapt).reduce(
     (acc, item) => {
-      if (item.metadata.coordinates.path.indexOf(0) !== -1) {
+      if (item.metadata.coordinates.path.includes(0)) {
         return acc;
       }
       acc[item.metadata.coordId] = item;

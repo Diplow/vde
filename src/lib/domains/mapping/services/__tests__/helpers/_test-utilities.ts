@@ -7,7 +7,7 @@ import type {
 } from "../../../_repositories";
 import { db } from "~/server/db";
 import { mapItems, baseItems } from "~/server/db/schema";
-import { HexCoord, HexDirection } from "../../../utils/hex-coordinates";
+import { type HexCoord, HexDirection } from "../../../utils/hex-coordinates";
 import { sql } from "drizzle-orm";
 
 export interface TestRepositories {
@@ -115,7 +115,7 @@ export async function _setupMapWithChild(
 }
 
 // Helper to ensure unique test parameters to avoid conflicts
-export function _createUniqueTestParams(baseUserId: number = 1): {
+export function _createUniqueTestParams(baseUserId = 1): {
   userId: number;
   groupId: number;
 } {

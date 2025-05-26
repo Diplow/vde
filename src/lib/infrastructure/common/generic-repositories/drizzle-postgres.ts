@@ -1,14 +1,14 @@
 import {
-  GenericAggregate,
-  GenericAttributes,
-  GenericHistory,
-  GenericRelatedItems,
-  GenericRelatedLists,
+  type GenericAggregate,
+  type GenericAttributes,
+  type GenericHistory,
+  type GenericRelatedItems,
+  type GenericRelatedLists,
 } from "~/lib/domains/utils/generic-objects";
-import { GenericRepository } from "~/lib/domains/utils/generic-repository";
-import { AnyPgTable, PgDatabase } from "drizzle-orm/pg-core";
-import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import * as schema from "~/lib/infrastructure/drizzle/schema"; // Assuming schema import
+import { type GenericRepository } from "~/lib/domains/utils/generic-repository";
+import { type AnyPgTable, PgDatabase } from "drizzle-orm/pg-core";
+import { type NodePgDatabase } from "drizzle-orm/node-postgres";
+import type * as schema from "~/lib/infrastructure/drizzle/schema"; // Assuming schema import
 
 // Type for aggregate constructor - similar to the memory one
 export type AggregateConstructor<

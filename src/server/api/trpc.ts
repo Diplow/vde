@@ -60,7 +60,7 @@ export const createContext = async (opts: CreateNextContextOptions) => {
     // Otherwise, assume it's IncomingHttpHeaders (e.g., from Pages Router or direct NextApiRequest)
     // and convert it.
     sessionAPIAcceptableHeaders = convertToHeaders(
-      req.headers as IncomingHttpHeaders,
+      req.headers,
     );
   }
 

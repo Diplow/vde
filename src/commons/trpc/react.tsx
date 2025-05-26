@@ -57,7 +57,6 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
           },
         }),
       ],
-      abortOnUnmount: true,
     }),
   );
 

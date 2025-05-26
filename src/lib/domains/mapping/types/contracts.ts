@@ -41,7 +41,7 @@ export const mapDomainToContractAdapter = (
     );
   }
 
-  const baseRef = rootItem.ref as BaseItemWithId;
+  const baseRef = rootItem.ref;
   const allItems = [rootItem, ...descendants];
 
   return {

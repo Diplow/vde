@@ -47,15 +47,21 @@ export const useMapCanvasState = (
     data: mutationsData,
     actions: mutations,
   } = useMutations({
-    rootItemId: parseInt(center.id),
-    userId: centerCoords.userId,
-    groupId: centerCoords.groupId,
-    itemsById,
-    updateItemExpansion: initActions.updateItemExpansion,
-    stateHelpers: {
-      addSingleItem: initActions.addSingleItem,
-      updateSingleItem: initActions.updateSingleItem,
-      deleteSingleItem: initActions.deleteSingleItem,
+    mapContext: {
+      rootItemId: parseInt(center.id),
+      userId: centerCoords.userId,
+      groupId: centerCoords.groupId,
+    },
+    stateData: {
+      itemsById,
+    },
+    stateActions: {
+      updateItemExpansion: initActions.updateItemExpansion,
+      stateHelpers: {
+        addSingleItem: initActions.addSingleItem,
+        updateSingleItem: initActions.updateSingleItem,
+        deleteSingleItem: initActions.deleteSingleItem,
+      },
     },
   });
 

@@ -4,8 +4,8 @@ import {
   type MapItemRelatedLists,
   type MapItemWithId,
 } from "~/lib/domains/mapping/_objects";
-import { GenericRepository } from "../../utils/generic-repository";
-import { HexCoord } from "../utils/hex-coordinates";
+import { type GenericRepository } from "../../utils/generic-repository";
+import { type HexCoord } from "../utils/hex-coordinates";
 
 export type MapItemIdr =
   | { id: number }

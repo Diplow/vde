@@ -9,6 +9,7 @@ This directory contains all the code related to displaying and interacting with 
 - **`loading.tsx`**: A simple component displayed while the map data is being fetched.
 - **`error.tsx`**: A client-side component that handles and displays errors that occur during data fetching or rendering of the map. It provides a "Retry" option.
 - **`not-found.tsx`**: A component displayed if the requested map ID does not correspond to an existing map.
+- **`constants.ts`**: Contains shared constants used across the map page, including `DEFAULT_HEXMAP_COLORS` for hexagon direction color mapping and hierarchy tile constants like `HIERARCHY_TILE_BASE_HEXSIZE` and `HIERARCHY_TILE_SCALE`.
 
 ## Subdirectories
 

@@ -3,6 +3,7 @@ import type { HexTileData } from "../State/types";
 import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 import { StaticMiniMapItemTile } from "../Tile/item-minimap.static";
 import { useState, useRef, useEffect, useCallback } from "react";
+import type { URLInfo } from "../types/url-info";
 
 interface ViewportData {
   scrollTop: number;
@@ -19,8 +20,7 @@ export interface StaticMiniMapProps {
   baseHexSize?: number;
   expandedItemIds?: string[];
   scale?: TileScale;
-  pathname: string;
-  currentSearchParamsString: string;
+  urlInfo: URLInfo;
   viewportData?: ViewportData | null;
   mainMapGlobalScale?: TileScale;
   onViewportDragTo?: (newScrollLeft: number, newScrollTop: number) => void;
@@ -33,8 +33,7 @@ export const StaticMiniMap = ({
   baseHexSize = 50,
   expandedItemIds = [],
   scale = 2,
-  pathname,
-  currentSearchParamsString,
+  urlInfo,
   viewportData,
   mainMapGlobalScale = 1,
   onViewportDragTo,
@@ -77,7 +76,7 @@ export const StaticMiniMap = ({
     let rW = (viewportData.clientWidth * Mag_minimap) / Mag_main;
     let rH = (viewportData.clientHeight * Mag_minimap) / Mag_main;
     const mainMapScale = parseInt(
-      getScaleFromSearchParams(currentSearchParamsString) ?? "0",
+      getScaleFromSearchParams(urlInfo.searchParamsString) ?? "0",
       10,
     );
     const offsetFactor = mainMapScale - 3;
@@ -220,8 +219,7 @@ export const StaticMiniMap = ({
         item={centerItem}
         scale={scale}
         baseHexSize={baseHexSize}
-        pathname={pathname}
-        currentSearchParamsString={currentSearchParamsString}
+        urlInfo={urlInfo}
       />
     );
   }
@@ -239,8 +237,7 @@ export const StaticMiniMap = ({
     mapItems,
     baseHexSize,
     expandedItemIds,
-    pathname,
-    currentSearchParamsString,
+    urlInfo,
   };
 
   const region = (
@@ -256,8 +253,7 @@ export const StaticMiniMap = ({
             item={centerItem}
             scale={nextScale}
             baseHexSize={baseHexSize}
-            pathname={pathname}
-            currentSearchParamsString={currentSearchParamsString}
+            urlInfo={urlInfo}
           />
         </div>
         <RenderChild coords={E} {...baseChildProps} scale={nextScale} />
@@ -274,7 +270,7 @@ export const StaticMiniMap = ({
       scale={scale}
       coordId={center}
       baseHexSize={baseHexSize}
-      shallow={true}
+      _shallow={true}
     >
       <div
         className="scale-90 transform"
@@ -293,8 +289,7 @@ interface RenderChildProps {
   baseHexSize?: number;
   expandedItemIds?: string[];
   scale: TileScale;
-  pathname: string;
-  currentSearchParamsString: string;
+  urlInfo: URLInfo;
 }
 
 const RenderChild = ({
@@ -303,8 +298,7 @@ const RenderChild = ({
   baseHexSize,
   expandedItemIds,
   scale,
-  pathname,
-  currentSearchParamsString,
+  urlInfo,
 }: RenderChildProps) => {
   const item = mapItems[coords];
   const isExpandedChild = item
@@ -329,8 +323,7 @@ const RenderChild = ({
         baseHexSize={baseHexSize}
         expandedItemIds={expandedItemIds}
         scale={scale}
-        pathname={pathname}
-        currentSearchParamsString={currentSearchParamsString}
+        urlInfo={urlInfo}
       />
     );
   }
@@ -340,8 +333,7 @@ const RenderChild = ({
       item={item}
       scale={scale}
       baseHexSize={baseHexSize}
-      pathname={pathname}
-      currentSearchParamsString={currentSearchParamsString}
+      urlInfo={urlInfo}
     />
   );
 };

@@ -42,12 +42,6 @@ export interface StaticBaseTileLayoutProps {
   isFocusable?: boolean;
   baseHexSize?: number;
   _shallow?: boolean;
-  viewTransitionName?: string;
-  dataTileScale?: string;
-  dataTilePosition?: string;
-  dataTilePath?: string;
-  dataNavigationDirection?: string;
-  dataFromHierarchy?: string;
 }
 
 export const StaticBaseTileLayout = ({
@@ -114,7 +108,7 @@ export const StaticBaseTileLayout = ({
             strokeLinejoin="round"
           />
         </svg>
-        {/* Ensure children are rendered on top and can receive pointer events */}
+
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center overflow-hidden">
           {children}
         </div>
