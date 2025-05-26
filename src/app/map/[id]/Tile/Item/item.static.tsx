@@ -1,11 +1,12 @@
-import type { HexTileData } from "../State/types";
+import type { HexTileData } from "../../State/types";
 import {
   StaticBaseTileLayout,
   type TileColor,
   type TileScale,
-} from "./base.static";
-import { StaticTileContent } from "./content.static";
+} from "../Base/base.static";
+import { StaticTileContent } from "../Base/content.static";
 import { TileButtons } from "./item.buttons.static";
+import type { URLInfo } from "../../types/url-info";
 
 interface StaticItemTileProps {
   item: HexTileData;
@@ -14,6 +15,7 @@ interface StaticItemTileProps {
   allExpandedItemIds: string[];
   hasChildren: boolean;
   isCenter?: boolean;
+  urlInfo: URLInfo;
 }
 
 export const getColorFromItem = (item: HexTileData): TileColor => {
@@ -31,16 +33,8 @@ export const StaticItemTile = ({
   allExpandedItemIds,
   hasChildren,
   isCenter = false,
+  urlInfo,
 }: StaticItemTileProps) => {
-  const tilePosition = isCenter ? "center" : "child";
-
-  // Create view transition name based on coordinate path
-  const pathString =
-    item.metadata.coordinates.path.length > 0
-      ? item.metadata.coordinates.path.join("-")
-      : "center";
-  const viewTransitionName = `item-tile-${pathString}`;
-
   return (
     <div className="group relative hover:z-10">
       {/* Invisible hover area overlay to ensure full tile responds to hover */}
@@ -52,11 +46,7 @@ export const StaticItemTile = ({
         scale={scale}
         color={getColorFromItem(item)}
         baseHexSize={baseHexSize}
-        isFocusable={false} // Kept as false, focus will be on the button
-        viewTransitionName={viewTransitionName}
-        dataTileScale={scale.toString()}
-        dataTilePosition={tilePosition}
-        dataTilePath={pathString}
+        isFocusable={false}
       >
         <StaticTileContent
           data={{
@@ -69,6 +59,7 @@ export const StaticItemTile = ({
       </StaticBaseTileLayout>
       <TileButtons
         item={item}
+        urlInfo={urlInfo}
         displayConfig={{
           scale,
           isCenter,

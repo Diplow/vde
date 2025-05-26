@@ -1,7 +1,8 @@
-import { getColorFromItem, StaticItemTile } from "../Tile/item.static";
-import { StaticBaseTileLayout, type TileScale } from "../Tile/base.static";
+import { getColorFromItem, StaticItemTile } from "../Tile/Item/item.static";
+import { StaticBaseTileLayout, type TileScale } from "../Tile/Base/base.static";
 import type { HexTileData } from "../State/types";
 import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
+import type { URLInfo } from "../types/url-info";
 
 export interface StaticHexRegionProps {
   center: string;
@@ -9,6 +10,7 @@ export interface StaticHexRegionProps {
   baseHexSize?: number;
   expandedItemIds?: string[];
   scale?: TileScale;
+  urlInfo: URLInfo;
 }
 
 export const StaticHexRegion = ({
@@ -17,6 +19,7 @@ export const StaticHexRegion = ({
   baseHexSize = 50,
   expandedItemIds = [],
   scale = 3,
+  urlInfo,
 }: StaticHexRegionProps) => {
   const centerItem = mapItems[center];
 
@@ -51,6 +54,7 @@ export const StaticHexRegion = ({
         allExpandedItemIds={expandedItemIds}
         hasChildren={centerItemHasChildren}
         isCenter={true}
+        urlInfo={urlInfo}
       />
     );
   }
@@ -74,6 +78,7 @@ export const StaticHexRegion = ({
           mapItems={mapItems}
           expandedItemIds={expandedItemIds}
           scale={nextScale}
+          urlInfo={urlInfo}
         />
         <RenderChild
           coords={NE}
@@ -81,6 +86,7 @@ export const StaticHexRegion = ({
           baseHexSize={baseHexSize}
           expandedItemIds={expandedItemIds}
           scale={nextScale}
+          urlInfo={urlInfo}
         />
       </div>
       <div className="flex justify-center" style={marginTop}>
@@ -90,6 +96,7 @@ export const StaticHexRegion = ({
           mapItems={mapItems}
           expandedItemIds={expandedItemIds}
           scale={nextScale}
+          urlInfo={urlInfo}
         />
         <div className="flex flex-col">
           <StaticItemTile
@@ -98,6 +105,7 @@ export const StaticHexRegion = ({
             allExpandedItemIds={expandedItemIds}
             hasChildren={centerItemHasChildren}
             isCenter={true}
+            urlInfo={urlInfo}
           />
         </div>
         <RenderChild
@@ -106,6 +114,7 @@ export const StaticHexRegion = ({
           mapItems={mapItems}
           expandedItemIds={expandedItemIds}
           scale={nextScale}
+          urlInfo={urlInfo}
         />
       </div>
       <div className="flex justify-center" style={marginTop}>
@@ -115,6 +124,7 @@ export const StaticHexRegion = ({
           mapItems={mapItems}
           expandedItemIds={expandedItemIds}
           scale={nextScale}
+          urlInfo={urlInfo}
         />
         <RenderChild
           coords={SE}
@@ -122,6 +132,7 @@ export const StaticHexRegion = ({
           mapItems={mapItems}
           expandedItemIds={expandedItemIds}
           scale={nextScale}
+          urlInfo={urlInfo}
         />
       </div>
     </div>
@@ -150,6 +161,7 @@ interface RenderChildProps {
   baseHexSize?: number;
   expandedItemIds?: string[];
   scale: TileScale;
+  urlInfo: URLInfo;
 }
 
 const RenderChild = ({
@@ -158,6 +170,7 @@ const RenderChild = ({
   baseHexSize = 50,
   expandedItemIds = [],
   scale,
+  urlInfo,
 }: RenderChildProps) => {
   const item = mapItems[coords];
   const isExpanded = item
@@ -189,6 +202,7 @@ const RenderChild = ({
         mapItems={mapItems}
         expandedItemIds={expandedItemIds}
         scale={scale}
+        urlInfo={urlInfo}
       />
     );
   }
@@ -200,6 +214,7 @@ const RenderChild = ({
       allExpandedItemIds={expandedItemIds}
       hasChildren={itemHasChildren}
       isCenter={false}
+      urlInfo={urlInfo}
     />
   );
 };

@@ -1,19 +1,22 @@
 import { ChevronDown } from "lucide-react";
 import type { HexTileData } from "../State/types";
-import { HierarchyTile } from "../Tile/hierarchy-tile.static";
+import { HierarchyTile } from "../Tile/Item/hierarchy-tile.static";
 import {
   _getParentHierarchy,
   _shouldShowHierarchy,
 } from "../State/hierarchy.utils";
+import type { URLInfo } from "../types/url-info";
 
 interface ParentHierarchyProps {
   centerCoordId: string;
   items: Record<string, HexTileData>;
+  urlInfo: URLInfo;
 }
 
 export const ParentHierarchy = ({
   centerCoordId,
   items,
+  urlInfo,
 }: ParentHierarchyProps) => {
   const hierarchy = _getParentHierarchy(centerCoordId, items);
 
@@ -33,6 +36,7 @@ export const ParentHierarchy = ({
               item={item}
               hierarchy={hierarchy}
               itemIndex={index}
+              urlInfo={urlInfo}
             />
             {index < hierarchy.length - 1 && (
               <ChevronDown size={16} className="flex-shrink-0 text-zinc-400" />
