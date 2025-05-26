@@ -14,6 +14,16 @@ export const MAPPING_ERRORS = {
   INVALID_NEIGHBOR_COLOR:
     "Invalid neighbor: must have the same color as parent",
   INVALID_NEIGHBOR_PATH: "Invalid neighbor: path must extend parent's path",
+  INVALID_NEIGHBOR_DIRECTION:
+    "Invalid neighbor: must have a unique direction from parent",
+
+  // MapItem validation errors
+  USER_ITEM_CANNOT_HAVE_PARENT: "USER type MapItem cannot have a parent.",
+  BASE_ITEM_MUST_HAVE_PARENT: "BASE type MapItem must have a parent.",
+  CHILD_COORDS_MUST_MATCH_PARENT:
+    "Child item's userId and groupId must match parent's.",
+  NULL_PARENT_MUST_BE_USER_TYPE:
+    "Items with parentId NULL must be of USER type.",
 
   // HexMap actions errors
   PARENT_REQUIRED: "Parent should be provided for non-center items",

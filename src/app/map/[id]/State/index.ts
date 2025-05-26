@@ -2,6 +2,7 @@ import type { MapItemAPIContract } from "~/server/api/types/contracts";
 import { useInit } from "./init";
 import { useMutations } from "./mutations";
 import type { HexTileData } from "./types";
+import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 import {
   useInteractionMode,
   type InteractionModeArgs,
@@ -38,18 +39,29 @@ export const useMapCanvasState = (
     items,
   });
 
+  // Extract userId and groupId from center coordinates
+  const centerCoords = CoordSystem.parseId(center.coordinates);
+
   const {
     lifeCycle: mutationsLifeCycle,
     data: mutationsData,
     actions: mutations,
   } = useMutations({
-    mapId: center.mapId,
-    itemsById,
-    updateItemExpansion: initActions.updateItemExpansion,
-    stateHelpers: {
-      addSingleItem: initActions.addSingleItem,
-      updateSingleItem: initActions.updateSingleItem,
-      deleteSingleItem: initActions.deleteSingleItem,
+    mapContext: {
+      rootItemId: parseInt(center.id),
+      userId: centerCoords.userId,
+      groupId: centerCoords.groupId,
+    },
+    stateData: {
+      itemsById,
+    },
+    stateActions: {
+      updateItemExpansion: initActions.updateItemExpansion,
+      stateHelpers: {
+        addSingleItem: initActions.addSingleItem,
+        updateSingleItem: initActions.updateSingleItem,
+        deleteSingleItem: initActions.deleteSingleItem,
+      },
     },
   });
 

@@ -14,24 +14,24 @@ export enum HexDirection {
 // Represents a hex's position in the hierarchy
 export interface HexCoord {
   // Base grid position
-  row: number;
-  col: number;
+  userId: number;
+  groupId: number;
   // Array of directions taken from root hex to reach this hex
   // Empty for base grid hexes
   path: HexDirection[];
 }
 
-export class HexCoordSystem {
-  static getCenterCoord(): HexCoord {
+export class CoordSystem {
+  static getCenterCoord(userId: number, groupId = 0): HexCoord {
     return {
-      row: 0,
-      col: 0,
+      userId,
+      groupId,
       path: [],
     };
   }
 
   static getScaleFromDepth(coordId: string, depth: number): number {
-    const coord = HexCoordSystem.parseId(coordId);
+    const coord = CoordSystem.parseId(coordId);
     return depth - coord.path.length + 1;
   }
 
@@ -40,24 +40,29 @@ export class HexCoordSystem {
   }
 
   static isCenterId(id: string): boolean {
-    return id.indexOf(":") === -1;
+    // Center ID will not contain ':' if path is empty,
+    // and path is the only part after ':'
+    return !id.includes(":") || id.endsWith(":");
   }
 
   static getDepthFromId(id: string): number {
-    const coord = HexCoordSystem.parseId(id);
+    const coord = CoordSystem.parseId(id);
     return coord.path.length;
   }
 
-  static getSiblingsFromId(coord: string): string[] {
-    const parent = HexCoordSystem.getParentCoordFromId(coord);
-    if (!parent) return [];
-    return HexCoordSystem.getChildCoordsFromId(parent).filter(
-      (c) => c !== coord,
+  static getSiblingsFromId(coordId: string): string[] {
+    const parentId = CoordSystem.getParentCoordFromId(coordId);
+    if (!parentId) {
+      return []; // If there's no parent, there are no siblings
+    }
+    // Now parentId is guaranteed to be a string
+    return CoordSystem.getChildCoordsFromId(parentId).filter(
+      (c) => c !== coordId,
     );
   }
 
   static areCoordsEqual(coord1: HexCoord, coord2: HexCoord): boolean {
-    return HexCoordSystem.createId(coord1) === HexCoordSystem.createId(coord2);
+    return CoordSystem.createId(coord1) === CoordSystem.createId(coord2);
   }
 
   static getDirection(coord: HexCoord): HexDirection {
@@ -65,30 +70,39 @@ export class HexCoordSystem {
   }
 
   static createId(coord: HexCoord): string {
-    const basePath = `${coord.row},${coord.col}`;
-    if (coord.path.length === 0) return basePath;
-    return `${basePath}:${coord.path.join(",")}`;
+    const base = `${coord.userId},${coord.groupId}`;
+    if (coord.path.length === 0) return base;
+    return `${base}:${coord.path.join(",")}`;
   }
 
   static parseId(id: string): HexCoord {
-    const [base, path] = id.split(":");
-    if (!base) throw new Error(MAPPING_ERRORS.INVALID_HEX_ID);
+    const parts = id.split(":");
+    const basePart = parts[0];
+    const pathPart = parts.length > 1 ? parts[1] : "";
 
-    const [row, col] = base.split(",").map(Number);
-    if (row === undefined || col === undefined)
-      throw new Error(MAPPING_ERRORS.INVALID_HEX_ID);
+    if (!basePart) throw new Error(MAPPING_ERRORS.INVALID_HEX_ID);
+
+    const [userIdStr, groupIdStr] = basePart.split(",");
+    const userId = parseInt(userIdStr ?? "0", 10);
+    const groupId = parseInt(groupIdStr ?? "0", 10);
+
+    if (isNaN(userId) || isNaN(groupId)) {
+      throw new Error(
+        MAPPING_ERRORS.INVALID_HEX_ID + " - Malformed userId or groupId",
+      );
+    }
 
     return {
-      row,
-      col,
-      path: path ? (path.split(",").map(Number) as HexDirection[]) : [],
+      userId,
+      groupId,
+      path: pathPart ? (pathPart.split(",").map(Number) as HexDirection[]) : [],
     };
   }
 
-  static getChildCoordsFromId(parent: string) {
-    const parentCoord = HexCoordSystem.parseId(parent);
-    return HexCoordSystem.getChildCoords(parentCoord).map((coord) =>
-      HexCoordSystem.createId(coord),
+  static getChildCoordsFromId(parentId: string) {
+    const parentCoord = CoordSystem.parseId(parentId);
+    return CoordSystem.getChildCoords(parentCoord).map((coord) =>
+      CoordSystem.createId(coord),
     ) as [string, string, string, string, string, string];
   }
 
@@ -105,17 +119,17 @@ export class HexCoordSystem {
   }
 
   static getParentCoordFromId(id: string): string | undefined {
-    const coord = HexCoordSystem.parseId(id);
-    const parent = HexCoordSystem.getParentCoord(coord);
+    const coord = CoordSystem.parseId(id);
+    const parent = CoordSystem.getParentCoord(coord);
     if (!parent) return undefined;
-    return HexCoordSystem.createId(parent);
+    return CoordSystem.createId(parent);
   }
 
   static getParentCoord(coord: HexCoord): HexCoord | null {
     if (coord.path.length === 0) return null;
     return {
-      row: coord.row,
-      col: coord.col,
+      userId: coord.userId,
+      groupId: coord.groupId,
       path: coord.path.slice(0, -1),
     };
   }
@@ -126,67 +140,10 @@ export class HexCoordSystem {
 
   static getNeighborCoord(coord: HexCoord, direction: HexDirection): HexCoord {
     return {
-      row: coord.row,
-      col: coord.col,
+      userId: coord.userId,
+      groupId: coord.groupId,
       path: [...coord.path, direction],
     }; // Return neighbor on the same path level
-  }
-
-  // Calculate actual position relative to parent hex
-  static getRelativePosition(
-    coord: HexCoord,
-    baseSize?: number,
-  ): { x: number; y: number } {
-    const hexSize = HexCoordSystem.getHexSize(baseSize);
-
-    // Get base grid position
-    let x = coord.col * 0.75 * hexSize;
-    let y = coord.row * 0.65 * hexSize;
-
-    // Offset odd rows
-    if (coord.row % 2) {
-      x += 24;
-    }
-
-    // Track parent positions to center the view
-    let parentX = x;
-    let parentY = y;
-
-    // For child hexes, translate to nearest grid positions
-    if (coord.path.length > 0) {
-      const lastDirection = coord.path[coord.path.length - 1];
-      switch (lastDirection) {
-        case HexDirection.Center:
-          break;
-        case HexDirection.NorthWest:
-          y -= 0.65 * hexSize;
-          x -= 0.375 * hexSize;
-          break;
-        case HexDirection.NorthEast:
-          y -= 0.65 * hexSize;
-          x += 0.375 * hexSize;
-          break;
-        case HexDirection.East:
-          x += 0.75 * hexSize;
-          break;
-        case HexDirection.SouthEast:
-          y += 0.65 * hexSize;
-          x += 0.375 * hexSize;
-          break;
-        case HexDirection.SouthWest:
-          y += 0.65 * hexSize;
-          x -= 0.375 * hexSize;
-          break;
-        case HexDirection.West:
-          x -= 0.75 * hexSize;
-          break;
-      }
-
-      x = x + parentX;
-      y = y + parentY;
-    }
-
-    return { x, y };
   }
 
   static getHexSize(baseSize?: number): number {
@@ -196,6 +153,8 @@ export class HexCoordSystem {
   static isAdjacent(coord1: HexCoord, coord2: HexCoord): boolean {
     // Check if two hexes share an edge
     if (coord1.path.length !== coord2.path.length) return false;
+    if (coord1.userId !== coord2.userId || coord1.groupId !== coord2.groupId)
+      return false;
 
     // Compare paths up to the last element
     for (let i = 0; i < coord1.path.length - 1; i++) {

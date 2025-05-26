@@ -1,6 +1,6 @@
 import {
   GenericAggregate,
-  GenericAggregateConstructorArgs,
+  type GenericAggregateConstructorArgs,
 } from "~/lib/domains/utils/generic-objects";
 
 // Course Entity (e.g., appetizer, main course, dessert)

@@ -1,7 +1,8 @@
+import React from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 import { StaticHexRegion } from "./hex-region.static";
 import type { HexTileData } from "../State/types";
-import { HexCoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
+import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 import "src/styles/globals.css";
 
 // Helper function to generate placeholder text (can be moved to a shared util if used elsewhere)
@@ -26,7 +27,7 @@ const createMockItem = (
     dbId: `db-item-${coordId.replace(",", "-")}`,
     coordId,
     parentId,
-    coordinates: HexCoordSystem.parseId(coordId),
+    coordinates: CoordSystem.parseId(coordId),
     depth,
   },
   data: {
@@ -47,11 +48,11 @@ const createMockItem = (
 
 // --- Mock Data ---
 const centerCoord = "0,0";
-const nwCoord = HexCoordSystem.getChildCoordsFromId(centerCoord)[0]; // "0,0:NW"
-const neCoord = HexCoordSystem.getChildCoordsFromId(centerCoord)[1]; // "0,0:NE"
-const eCoord = HexCoordSystem.getChildCoordsFromId(centerCoord)[2]; // "0,0:E"
+const nwCoord = CoordSystem.getChildCoordsFromId(centerCoord)[0]; // "0,0:NW"
+const neCoord = CoordSystem.getChildCoordsFromId(centerCoord)[1]; // "0,0:NE"
+const eCoord = CoordSystem.getChildCoordsFromId(centerCoord)[2]; // "0,0:E"
 
-const nw_nwCoord = HexCoordSystem.getChildCoordsFromId(nwCoord)[0]; // "0,0:NW,NW"
+const nw_nwCoord = CoordSystem.getChildCoordsFromId(nwCoord)[0]; // "0,0:NW,NW"
 
 const mockMapItemsSimple: Record<string, HexTileData> = {
   [centerCoord]: createMockItem(centerCoord, "Center Item", "amber-500", 0),
@@ -86,8 +87,8 @@ const mockMapItemsTwoLevels: Record<string, HexTileData> = {
     2,
     nwCoord,
   ),
-  [HexCoordSystem.getChildCoordsFromId(nwCoord)[1]]: createMockItem(
-    HexCoordSystem.getChildCoordsFromId(nwCoord)[1],
+  [CoordSystem.getChildCoordsFromId(nwCoord)[1]]: createMockItem(
+    CoordSystem.getChildCoordsFromId(nwCoord)[1],
     "NW's NE Child",
     "amber-500",
     2,

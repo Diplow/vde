@@ -2,51 +2,63 @@ import type { ReactNode } from "react";
 import { StaticHexRegion } from "./hex-region.static";
 import type { HexTileData } from "../State/types";
 import { MiniMapController, ScaleController } from "../Controls";
-import type { TileScale } from "../Tile/base.static";
+import type { TileScale } from "../Tile/Base/base.static";
+import { ParentHierarchy } from "../Controls/parent-hierarchy.static";
+import type { URLInfo } from "../types/url-info";
+
+export interface CenterInfo {
+  center: string;
+  rootItemId: number;
+  userId: number;
+  groupId: number;
+}
 
 export interface StaticMapCanvasProps {
-  center: string;
+  centerInfo: CenterInfo;
   items: Record<string, HexTileData>;
   scale?: number;
   expandedItemIds?: string[];
   baseHexSize?: number;
+  urlInfo: URLInfo;
   children?: ReactNode;
-  pathname: string;
-  currentSearchParamsString: string;
 }
 
 export const StaticMapCanvas = ({
-  center,
+  centerInfo,
   items,
   scale = 3,
   expandedItemIds = [],
   baseHexSize = 50,
+  urlInfo,
   children,
-  pathname,
-  currentSearchParamsString,
 }: StaticMapCanvasProps) => {
   return (
     <div className="relative flex h-full w-full flex-col">
       <div
-        data-canvas-id={center}
+        data-canvas-id={centerInfo.center}
         className="pointer-events-auto grid flex-grow place-items-center overflow-auto p-4"
       >
+        <ParentHierarchy
+          centerCoordId={centerInfo.center}
+          items={items}
+          urlInfo={urlInfo}
+        />
+
         <StaticHexRegion
-          center={center}
+          center={centerInfo.center}
           mapItems={items}
           baseHexSize={baseHexSize}
           expandedItemIds={expandedItemIds}
           scale={scale as TileScale}
-          pathname={pathname}
-          currentSearchParamsString={currentSearchParamsString}
+          urlInfo={urlInfo}
         />
 
-        {/* Optional children to render additional controls */}
         <ScaleController scale={scale} />
         <MiniMapController
           minimapItemsData={items}
           expandedItemIds={expandedItemIds}
-          currentMapCenterCoordId={center}
+          currentMapCenterCoordId={centerInfo.center}
+          urlInfo={urlInfo}
         />
         {children}
       </div>

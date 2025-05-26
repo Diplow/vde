@@ -6,7 +6,7 @@ export default {
   dialect: "postgresql",
   dbCredentials: {
     url:
-      (env.NODE_ENV !== "production"
+      (process.env.NODE_ENV === "test" || process.env.VITEST
         ? env.TEST_DATABASE_URL
         : env.DATABASE_URL) ||
       "postgres://postgres:postgres@localhost:5432/test_db",
