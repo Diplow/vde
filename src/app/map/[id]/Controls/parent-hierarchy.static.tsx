@@ -26,12 +26,11 @@ export const ParentHierarchy = ({
       <div className="flex flex-col items-center gap-2 rounded-lg bg-transparent px-3 py-4">
         {hierarchy.map((item, index) => (
           <div
-            key={item.metadata.coordId}
+            key={`hierarchy-${item.metadata.coordId}`}
             className="flex flex-col items-center gap-1"
           >
             <HierarchyTile
               item={item}
-              isLast={index === hierarchy.length - 1}
               hierarchy={hierarchy}
               itemIndex={index}
             />

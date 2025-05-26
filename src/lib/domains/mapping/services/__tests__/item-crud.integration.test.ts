@@ -1,6 +1,6 @@
 import { describe, beforeEach, it } from "vitest";
 import {
-  TestEnvironment,
+  type TestEnvironment,
   _cleanupDatabase,
   _createTestEnvironment,
   _setupBasicMap,

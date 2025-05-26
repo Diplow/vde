@@ -5,23 +5,22 @@ import Link from "next/link";
 import type { HexTileData } from "../State/types";
 import { StaticBaseTileLayout, type TileScale } from "./base.static";
 import { getColorFromItem } from "./item.static";
+import type { URLInfo } from "../types/url-info";
 
 interface StaticMiniMapItemTileProps {
   item: HexTileData;
   scale?: TileScale;
   baseHexSize?: number;
-  pathname: string;
-  currentSearchParamsString: string;
+  urlInfo: URLInfo;
 }
 
 export const StaticMiniMapItemTile = ({
   item,
   scale = 1,
   baseHexSize = 40,
-  pathname,
-  currentSearchParamsString,
+  urlInfo,
 }: StaticMiniMapItemTileProps) => {
-  const href = getHref(item, pathname, currentSearchParamsString);
+  const href = getHref(item, urlInfo);
   const ariaLabel = `Scroll to ${item.data.name}`;
 
   return (
@@ -46,13 +45,9 @@ export const StaticMiniMapItemTile = ({
   );
 };
 
-function getHref(
-  item: HexTileData,
-  pathname: string,
-  currentSearchParamsString: string,
-) {
+function getHref(item: HexTileData, urlInfo: URLInfo) {
   const itemId = item.metadata.dbId;
-  const newParams = new URLSearchParams(currentSearchParamsString);
+  const newParams = new URLSearchParams(urlInfo.searchParamsString);
   newParams.set("focus", itemId);
-  return `${pathname}?${newParams.toString()}`;
+  return `${urlInfo.pathname}?${newParams.toString()}`;
 }

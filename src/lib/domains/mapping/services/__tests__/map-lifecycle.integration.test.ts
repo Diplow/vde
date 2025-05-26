@@ -2,7 +2,7 @@ import { describe, beforeEach, it, expect } from "vitest";
 import { CoordSystem, HexDirection } from "../../utils/hex-coordinates";
 import { MapItemType } from "../../types/contracts";
 import {
-  TestEnvironment,
+  type TestEnvironment,
   _cleanupDatabase,
   _createTestEnvironment,
   _setupBasicMap,

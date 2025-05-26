@@ -8,17 +8,17 @@ import {
   type RelatedLists,
   MapItem,
   MapItemConstructorArgs,
-  MapItemType,
+  type MapItemType,
 } from "~/lib/domains/mapping/_objects/map-item";
 import { BaseItem } from "~/lib/domains/mapping/_objects/base-item";
 import {
-  HexDirection,
+  type HexDirection,
   CoordSystem,
 } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { MapItemRepository } from "~/lib/domains/mapping/_repositories";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import * as schemaImport from "~/server/db/schema";
-import { mapItems, baseItems } from "~/server/db/schema";
+import type * as schemaImport from "~/server/db/schema";
+import { type mapItems, type baseItems } from "~/server/db/schema";
 import type { BaseItemWithId } from "~/lib/domains/mapping/_objects/base-item";
 
 import { ReadQueries } from "./queries/read-queries";

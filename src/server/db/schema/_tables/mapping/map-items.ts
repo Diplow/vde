@@ -11,7 +11,7 @@ import {
 import { sql } from "drizzle-orm";
 import { createTable } from "../../_utils";
 import { baseItems } from "./base-items";
-import { MapItemType } from "~/lib/domains/mapping/_objects/map-item";
+import { type MapItemType } from "~/lib/domains/mapping/_objects/map-item";
 
 export const mapItems = createTable(
   "map_items",

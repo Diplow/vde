@@ -4,13 +4,13 @@ import type {
 } from "~/lib/domains/mapping/_repositories";
 import {
   BaseItem,
-  BaseItemAttrs,
-  BaseItemWithId,
+  type BaseItemAttrs,
+  type BaseItemWithId,
   MapItem,
-  MapItemWithId,
+  type MapItemWithId,
   MapItemType,
 } from "~/lib/domains/mapping/_objects";
-import { HexCoord } from "~/lib/domains/mapping/utils/hex-coordinates";
+import { type HexCoord } from "~/lib/domains/mapping/utils/hex-coordinates";
 
 export class MapItemCreationHelpers {
   constructor(

@@ -2,11 +2,11 @@ import type {
   BaseItemRepository,
   MapItemRepository,
 } from "~/lib/domains/mapping/_repositories";
-import { MapItemWithId, MapItemType } from "~/lib/domains/mapping/_objects";
+import { type MapItemWithId, MapItemType } from "~/lib/domains/mapping/_objects";
 import {
-  HexCoord,
+  type HexCoord,
   CoordSystem,
-  HexDirection,
+  type HexDirection,
 } from "~/lib/domains/mapping/utils/hex-coordinates";
 import { MAPPING_ERRORS } from "../types/errors";
 

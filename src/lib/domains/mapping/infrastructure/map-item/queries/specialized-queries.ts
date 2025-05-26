@@ -1,6 +1,6 @@
-import { eq, SQL, sql, and, like, gte } from "drizzle-orm";
+import { eq, type SQL, sql, and, like, gte } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import * as schemaImport from "~/server/db/schema";
+import type * as schemaImport from "~/server/db/schema";
 import { mapItems, baseItems } from "~/server/db/schema";
 
 import { MapItemType } from "~/lib/domains/mapping/_objects/map-item";

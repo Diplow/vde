@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { cn } from "~/lib/utils";
 import { Map, ChevronLeft, ChevronRight } from "lucide-react";
-import { useNavbar } from "../providers/navbar-state";
 
 export function Navbar() {
   const pathname = usePathname();
-  const { isCollapsed, setIsCollapsed } = useNavbar();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const navItems = [
     {

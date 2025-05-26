@@ -1,6 +1,6 @@
 import {
   GenericAggregate,
-  GenericAggregateConstructorArgs,
+  type GenericAggregateConstructorArgs,
 } from "../../utils/generic-objects";
 
 export interface Attrs {

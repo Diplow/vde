@@ -1,7 +1,7 @@
 import { describe, beforeEach, it, expect } from "vitest";
 import { HexDirection } from "../../utils/hex-coordinates";
 import {
-  TestEnvironment,
+  type TestEnvironment,
   _cleanupDatabase,
   _createTestEnvironment,
   _setupBasicMap,

@@ -3,9 +3,7 @@ export type GenericHistory = {
   updatedAt: Date;
 };
 
-export type GenericAttributes = {
-  [key: string]: any;
-};
+export type GenericAttributes = Record<string, any>;
 
 export type GenericRelatedItems =
   | {

@@ -10,7 +10,7 @@ import { createCaller } from "../src/server/api/root";
 import { createInnerTRPCContext } from "../src/server/api/trpc";
 import {
   HexCoord,
-  HexCoordSystem,
+  CoordSystem,
 } from "../src/lib/domains/mapping/utils/hex-coordinates";
 import type { AppRouter } from "../src/server/api/root";
 
@@ -39,7 +39,7 @@ async function buildHexMap(
   console.log(`Map created with ID: ${map.id}`);
 
   // Step 2: Get center coordinates
-  const centerCoord = HexCoordSystem.getCenterCoord();
+  const centerCoord = CoordSystem.getCenterCoord();
 
   // Add center item first
   // await addCenterItem(caller, map.id, centerCoord);
@@ -64,14 +64,14 @@ async function addCenterItem(
       centerId: mapId,
       coords: coord,
       title: "Center",
-      descr: `Center hex at ${HexCoordSystem.createId(coord)}`,
+      descr: `Center hex at ${CoordSystem.createId(coord)}`,
     });
 
-    console.log(`Added center item at ${HexCoordSystem.createId(coord)}`);
+    console.log(`Added center item at ${CoordSystem.createId(coord)}`);
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error(
-      `Error adding center item at ${HexCoordSystem.createId(coord)}:`,
+      `Error adding center item at ${CoordSystem.createId(coord)}:`,
       errorMessage,
     );
     throw error; // Re-throw to stop execution if center can't be added
@@ -91,24 +91,24 @@ async function addNeighborsRecursively(
   }
 
   // Get child coordinates for this parent
-  const childCoords = HexCoordSystem.getChildCoords(parentCoord);
+  const childCoords = CoordSystem.getChildCoords(parentCoord);
 
   // Add each child with reference to parent
   for (const childCoord of childCoords) {
     try {
-      const parentId = HexCoordSystem.createId(parentCoord);
+      const parentId = CoordSystem.createId(parentCoord);
 
       await caller.map.addItem({
         centerId: mapId,
         coords: childCoord,
         title: `Node at depth ${currentDepth}`,
-        descr: `Hex item at ${HexCoordSystem.createId(childCoord)}`,
+        descr: `Hex item at ${CoordSystem.createId(childCoord)}`,
         // Add parent reference here if needed by your API
         //parentId: parentId
       });
 
       console.log(
-        `Added item at ${HexCoordSystem.createId(childCoord)} (parent: ${parentId})`,
+        `Added item at ${CoordSystem.createId(childCoord)} (parent: ${parentId})`,
       );
 
       // Recursively add children for this node if we haven't reached max depth
@@ -125,7 +125,7 @@ async function addNeighborsRecursively(
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       console.error(
-        `Error adding item at ${HexCoordSystem.createId(childCoord)}:`,
+        `Error adding item at ${CoordSystem.createId(childCoord)}:`,
         errorMessage,
       );
       // Continue with other children even if one fails

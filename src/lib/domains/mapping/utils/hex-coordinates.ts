@@ -42,7 +42,7 @@ export class CoordSystem {
   static isCenterId(id: string): boolean {
     // Center ID will not contain ':' if path is empty,
     // and path is the only part after ':'
-    return id.indexOf(":") === -1 || id.endsWith(":");
+    return !id.includes(":") || id.endsWith(":");
   }
 
   static getDepthFromId(id: string): number {
@@ -56,7 +56,7 @@ export class CoordSystem {
       return []; // If there's no parent, there are no siblings
     }
     // Now parentId is guaranteed to be a string
-    return CoordSystem.getChildCoordsFromId(parentId as string).filter(
+    return CoordSystem.getChildCoordsFromId(parentId).filter(
       (c) => c !== coordId,
     );
   }

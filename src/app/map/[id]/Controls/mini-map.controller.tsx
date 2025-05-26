@@ -6,11 +6,13 @@ import { Maximize2, Minimize2 } from "lucide-react"; // Assuming lucide-react fo
 import { StaticMiniMap } from "../Canvas/mini-map.static";
 import type { HexTileData } from "../State/types";
 import type { TileScale } from "../Tile/base.static"; // Import TileScale
+import type { URLInfo } from "../types/url-info";
 
 interface MiniMapControllerProps {
   expandedItemIds: string[]; // Changed to minimapItemsData
   minimapItemsData: Record<string, HexTileData>; // Expecting actual item data for minimap
   currentMapCenterCoordId: string; // Might be useful later for default viewport of minimap
+  urlInfo: URLInfo;
 }
 
 interface ViewportData {
@@ -28,6 +30,7 @@ export function MiniMapController({
   expandedItemIds,
   minimapItemsData,
   currentMapCenterCoordId,
+  urlInfo,
 }: MiniMapControllerProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -149,8 +152,7 @@ export function MiniMapController({
               baseHexSize={50}
               expandedItemIds={expandedItemIds}
               scale={2}
-              pathname={pathname}
-              currentSearchParamsString={searchParams.toString()}
+              urlInfo={urlInfo}
               viewportData={viewportData}
               mainMapGlobalScale={mainMapGlobalScale}
               onViewportDragTo={handleViewportDragTo}

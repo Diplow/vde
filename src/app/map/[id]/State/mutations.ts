@@ -8,25 +8,33 @@ import { MapItemType } from "~/lib/domains/mapping/_objects/map-item";
 import type { MapItemAPIContract } from "~/server/api/types/contracts";
 import { adapt, type HexTileData } from "./types";
 
-export function useMutations({
-  rootItemId,
-  userId,
-  groupId,
-  itemsById,
-  updateItemExpansion,
-  stateHelpers,
-}: {
-  rootItemId: number;
-  userId: number;
-  groupId: number;
-  itemsById: Record<string, HexTileData>;
-  updateItemExpansion: (coordId: string, isExpanded: boolean) => void;
-  stateHelpers: {
-    addSingleItem: (item: HexTileData) => void;
-    updateSingleItem: (coordId: string, newItem: HexTileData) => void;
-    deleteSingleItem: (coordId: string) => void;
+interface MutationsConfig {
+  mapContext: {
+    rootItemId: number;
+    userId: number;
+    groupId: number;
   };
-}) {
+  stateData: {
+    itemsById: Record<string, HexTileData>;
+  };
+  stateActions: {
+    updateItemExpansion: (coordId: string, isExpanded: boolean) => void;
+    stateHelpers: {
+      addSingleItem: (item: HexTileData) => void;
+      updateSingleItem: (coordId: string, newItem: HexTileData) => void;
+      deleteSingleItem: (coordId: string) => void;
+    };
+  };
+}
+
+export function useMutations({
+  mapContext,
+  stateData,
+  stateActions,
+}: MutationsConfig) {
+  const { rootItemId, userId, groupId } = mapContext;
+  const { itemsById } = stateData;
+  const { updateItemExpansion, stateHelpers } = stateActions;
   const utils = api.useUtils();
   // Mutation states
   const [tileToMutate, setTileToMutate] = useState<string | null>(null);
@@ -120,7 +128,7 @@ export function useMutations({
       setItemUpdateError(null);
 
       const coordId = CoordSystem.createId(itemToUpdate.coords);
-      const itemToUpdateOriginal = itemsById[coordId] as HexTileData;
+      const itemToUpdateOriginal = itemsById[coordId]!;
       const newItemData = {
         ...itemToUpdateOriginal,
         data: {

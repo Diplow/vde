@@ -1,11 +1,11 @@
 import {
   GenericAggregate,
-  GenericAggregateConstructorArgs,
+  type GenericAggregateConstructorArgs,
 } from "~/lib/domains/utils/generic-objects";
 import {
-  HexCoord,
+  type HexCoord,
   CoordSystem,
-  HexDirection,
+  type HexDirection,
 } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { BaseItemWithId } from "./base-item";
 import { MAPPING_ERRORS } from "../types/errors";
@@ -87,11 +87,11 @@ export class MapItem extends GenericAggregate<
     // or ensure these are checked in validate() which is called after super()
     if (attrs.itemType === MapItemType.USER) {
       if (parent !== null || attrs.parentId !== null) {
-        throw new Error("USER type MapItem cannot have a parent.");
+        throw new Error(MAPPING_ERRORS.USER_ITEM_CANNOT_HAVE_PARENT);
       }
     } else if (parent === null && attrs.parentId === null) {
       // This implies it's a root item, which must be USER type
-      throw new Error("Non-USER type MapItem must have a parent.");
+      throw new Error(MAPPING_ERRORS.BASE_ITEM_MUST_HAVE_PARENT);
     }
 
     super({
@@ -135,12 +135,12 @@ export class MapItem extends GenericAggregate<
   public static validateParentChildRelationship(item: MapItem) {
     if (item.attrs.itemType === MapItemType.USER) {
       if (item.attrs.parentId !== null || item.parent !== null) {
-        throw new Error("USER type MapItem cannot have a parent.");
+        throw new Error(MAPPING_ERRORS.USER_ITEM_CANNOT_HAVE_PARENT);
       }
     } else {
       // For BASE type items (children)
       if (item.attrs.parentId === null && item.parent === null) {
-        throw new Error("BASE type MapItem must have a parent.");
+        throw new Error(MAPPING_ERRORS.BASE_ITEM_MUST_HAVE_PARENT);
       }
       if (item.parent) {
         // If parent object is available, check its coords
@@ -148,9 +148,7 @@ export class MapItem extends GenericAggregate<
           item.attrs.coords.userId !== item.parent.attrs.coords.userId ||
           item.attrs.coords.groupId !== item.parent.attrs.coords.groupId
         ) {
-          throw new Error(
-            "Child item's userId and groupId must match parent's.",
-          );
+          throw new Error(MAPPING_ERRORS.CHILD_COORDS_MUST_MATCH_PARENT);
         }
         const parentDepth = item.parent.attrs.coords.path.length;
         const itemDepth = item.attrs.coords.path.length;
@@ -164,7 +162,7 @@ export class MapItem extends GenericAggregate<
       item.attrs.parentId === null &&
       item.attrs.itemType !== MapItemType.USER
     ) {
-      throw new Error("Items with parentId NULL must be of USER type.");
+      throw new Error(MAPPING_ERRORS.NULL_PARENT_MUST_BE_USER_TYPE);
     }
   }
 
@@ -187,11 +185,9 @@ export class MapItem extends GenericAggregate<
     for (const neighbor of item.neighbors) {
       const direction = neighbor.attrs.coords.path[
         neighbor.attrs.coords.path.length - 1
-      ] as HexDirection;
+      ]!;
       if (occupiedDirections.has(direction)) {
-        throw new Error(
-          "Invalid neighbor: must have a unique direction from parent",
-        );
+        throw new Error(MAPPING_ERRORS.INVALID_NEIGHBOR_DIRECTION);
       }
       occupiedDirections.add(direction);
     }
@@ -211,7 +207,7 @@ export class MapItem extends GenericAggregate<
       const parentDepth = item.attrs.coords.path.length;
       const itemDepth = neighbor.attrs.coords.path.length;
       if (itemDepth !== parentDepth + 1) {
-        throw new Error("Invalid parent: must be one level deeper");
+        throw new Error(MAPPING_ERRORS.INVALID_PARENT_LEVEL);
       }
     }
   }
@@ -228,7 +224,7 @@ export class MapItem extends GenericAggregate<
       const neighborGroupId = neighbor.attrs.coords.groupId;
 
       if (neighborUserId !== itemUserId || neighborGroupId !== itemGroupId) {
-        throw new Error("Neighbor's userId and groupId must match parent's.");
+        throw new Error(MAPPING_ERRORS.CHILD_COORDS_MUST_MATCH_PARENT);
       }
 
       // A neighbor's path should be exactly one element longer than the item's path

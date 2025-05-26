@@ -18,7 +18,7 @@ export default function SignupPage() {
       } else {
         console.error("Map creation issue: ", data);
         setErrorMessage(
-          data.error ||
+          (data.success === false ? data.error : null) ||
             "Failed to create your map. Please try again or contact support.",
         );
       }

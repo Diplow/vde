@@ -69,10 +69,14 @@ export const StaticItemTile = ({
       </StaticBaseTileLayout>
       <TileButtons
         item={item}
-        scale={scale}
-        allExpandedItemIds={allExpandedItemIds}
-        hasChildren={hasChildren}
-        isCenter={isCenter}
+        displayConfig={{
+          scale,
+          isCenter,
+        }}
+        expansionState={{
+          allExpandedItemIds,
+          hasChildren,
+        }}
       />
     </div>
   );

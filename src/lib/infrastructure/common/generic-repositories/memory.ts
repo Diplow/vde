@@ -1,11 +1,11 @@
 import {
-  GenericAggregate,
-  GenericAttributes,
-  GenericHistory,
-  GenericRelatedItems,
-  GenericRelatedLists,
+  type GenericAggregate,
+  type GenericAttributes,
+  type GenericHistory,
+  type GenericRelatedItems,
+  type GenericRelatedLists,
 } from "~/lib/domains/utils/generic-objects";
-import { GenericRepository } from "~/lib/domains/utils/generic-repository";
+import { type GenericRepository } from "~/lib/domains/utils/generic-repository";
 
 type UniqueConstraint = {
   fields: string[];
@@ -55,14 +55,14 @@ export class GenericAggregateMemoryRepository<
   }>,
 > implements GenericRepository<A, I, L, T, AggregateIdrType>
 {
-  private aggregates: Map<number, T> = new Map();
-  private relatedItems: Map<number, I> = new Map();
-  private relatedLists: Map<number, L> = new Map();
-  private idCounter: number = 1;
+  private aggregates = new Map<number, T>();
+  private relatedItems = new Map<number, I>();
+  private relatedLists = new Map<number, L>();
+  private idCounter = 1;
   private aggregateConstructor: AggregateConstructor<A, I, L, T>;
   private uniqueConstraints: UniqueConstraint[] = [];
   private uniqueKeyMaps: UniqueKeyMap[] = [];
-  private aggregatesByUniqueConstraint: Map<string, Map<string, T>> = new Map();
+  private aggregatesByUniqueConstraint = new Map<string, Map<string, T>>();
 
   constructor(aggregateConstructor: AggregateConstructor<A, I, L, T>) {
     this.aggregateConstructor = aggregateConstructor;
@@ -87,10 +87,10 @@ export class GenericAggregateMemoryRepository<
   }
 
   private getValueByPath(obj: any, path: string): any {
-    return path.split(".").reduce((acc, part) => acc && acc[part], obj);
+    return path.split(".").reduce((acc, part) => acc?.[part], obj);
   }
 
-  private getUniqueKey(aggregate: T | Object, fields: string[]): string {
+  private getUniqueKey(aggregate: T | object, fields: string[]): string {
     return fields
       .map((field) => JSON.stringify(this.getValueByPath(aggregate, field)))
       .join("-");
@@ -172,7 +172,7 @@ export class GenericAggregateMemoryRepository<
         `Multiple aggregates with idr ${JSON.stringify(idr)} found`,
       );
     }
-    return aggregates[0] as T;
+    return aggregates[0]!;
   }
 
   async getMany({
@@ -251,7 +251,7 @@ export class GenericAggregateMemoryRepository<
     limit = 50,
     offset = 0,
   }: {
-    fields: Object;
+    fields: object;
     limit?: number;
     offset?: number;
   }): Promise<T[]> {
@@ -279,7 +279,7 @@ export class GenericAggregateMemoryRepository<
   }
 
   private matchesConstraint(
-    fields: Object,
+    fields: object,
     constraintFields: string[],
   ): boolean {
     return constraintFields.every((constraintField) => {
@@ -299,7 +299,7 @@ export class GenericAggregateMemoryRepository<
     });
   }
 
-  async getByUniqueConstraint(fields: Object): Promise<T[]> {
+  async getByUniqueConstraint(fields: object): Promise<T[]> {
     for (const constraint of this.uniqueConstraints) {
       // Check if the fields object matches this constraint's structure
       if (this.matchesConstraint(fields, constraint.fields)) {

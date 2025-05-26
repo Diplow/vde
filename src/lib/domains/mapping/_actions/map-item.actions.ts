@@ -3,13 +3,13 @@ import type {
   MapItemRepository,
 } from "~/lib/domains/mapping/_repositories";
 import {
-  BaseItemAttrs,
-  BaseItemWithId,
+  type BaseItemAttrs,
+  type BaseItemWithId,
   MapItemAttrs,
-  MapItemWithId,
+  type MapItemWithId,
   MapItemType,
 } from "~/lib/domains/mapping/_objects";
-import { HexCoord } from "~/lib/domains/mapping/utils/hex-coordinates";
+import { type HexCoord } from "~/lib/domains/mapping/utils/hex-coordinates";
 import { ShallNotUpdate as MapItemShallNotUpdate } from "../_objects/map-item";
 import type { MapItemIdr } from "../_repositories/map-item";
 import { MapItemCreationHelpers } from "./_map-item-creation-helpers";
