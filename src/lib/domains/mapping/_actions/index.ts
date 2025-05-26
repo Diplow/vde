@@ -1,1 +1,1 @@
-export { MapActions } from "./hex-map";
+export { MapItemActions } from "./map-item.actions";

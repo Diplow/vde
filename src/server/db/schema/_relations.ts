@@ -1,37 +1,15 @@
 import { relations } from "drizzle-orm";
-import { hexMaps } from "./_tables/hex-maps";
-import { mapItems } from "./_tables/map-items";
-import { baseItems } from "./_tables/base-items";
-import { users } from "./users";
-import { accounts } from "./accounts";
-import { sessions } from "./sessions";
-
-/**
- * Relations for hex_maps table
- */
-export const hexMapRelations = relations(hexMaps, ({ one, many }) => ({
-  // One-to-one: HexMap -> Center MapItem
-  center: one(mapItems, {
-    fields: [hexMaps.centerId],
-    references: [mapItems.id],
-  }),
-
-  owner: one(users, {
-    fields: [hexMaps.ownerId],
-    references: [users.id],
-  }),
-}));
+import { mapItems } from "./_tables/mapping/map-items";
+import { baseItems } from "./_tables/mapping/base-items";
+import { userMapping } from "./_tables/mapping/user-mapping";
+import { users } from "./_tables/auth/users";
+import { accounts } from "./_tables/auth/accounts";
+import { sessions } from "./_tables/auth/sessions";
 
 /**
  * Relations for map_items table
  */
 export const mapItemRelations = relations(mapItems, ({ one, many }) => ({
-  // Many-to-one: MapItem -> HexMap (which map it belongs to)
-  hexMap: one(hexMaps, {
-    fields: [mapItems.mapId], // centerId on mapItem links to the *map* id
-    references: [hexMaps.id],
-  }),
-
   // Many-to-one: MapItem -> BaseItem (referenced item)
   referencedItem: one(baseItems, {
     fields: [mapItems.refItemId],
@@ -69,11 +47,26 @@ export const baseItemRelations = relations(baseItems, ({ many }) => ({
   mapItems: many(mapItems),
 }));
 
+/**
+ * Relations for user_mapping table
+ */
+export const userMappingRelations = relations(userMapping, ({ one }) => ({
+  // Many-to-one: UserMapping -> User (auth user)
+  authUser: one(users, {
+    fields: [userMapping.authUserId],
+    references: [users.id],
+  }),
+}));
+
 // Relations for Auth tables
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ many, one }) => ({
   accounts: many(accounts),
   sessions: many(sessions),
-  hexMaps: many(hexMaps),
+  // One-to-one: User -> UserMapping (for mapping to integer IDs)
+  userMapping: one(userMapping, {
+    fields: [users.id],
+    references: [userMapping.authUserId],
+  }),
 }));
 
 export const accountsRelations = relations(accounts, ({ one }) => ({

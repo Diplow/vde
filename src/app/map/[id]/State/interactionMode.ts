@@ -18,7 +18,7 @@ export type InteractionModeArgs = {
   actions: {
     mutations: {
       setTileToMutate: (coord: string) => void;
-      deleteItem: (params: { itemId: string }) => void;
+      deleteItem: (params: { coordId: string }) => void;
     };
   };
   initialMode?: ActionMode;
@@ -61,7 +61,7 @@ export const useInteractionMode = ({
   const handleDeleteConfirm = () => {
     if (itemToDelete && mapItems[itemToDelete]) {
       actions.mutations.deleteItem({
-        itemId: mapItems[itemToDelete].metadata.coordId,
+        coordId: mapItems[itemToDelete].metadata.coordId,
       });
     }
     setItemToDelete(null);

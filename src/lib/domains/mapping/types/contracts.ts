@@ -1,44 +1,61 @@
-import type { HexMap, MapItemWithId } from "../_objects";
-import { HexCoordSystem } from "../utils/hex-coordinates";
+import type { MapItemWithId, BaseItemWithId } from "../_objects";
+import { MapItemType } from "../_objects";
+import { CoordSystem } from "../utils/hex-coordinates";
 
 export const mapItemDomainToContractAdapter = (
   aggregate: MapItemWithId,
-  mapId: string | number,
+  ownerId: number,
 ) => {
   return {
     id: String(aggregate.id),
-    mapId: String(mapId),
-    coords: HexCoordSystem.createId(aggregate.attrs.coords),
+    ownerId: String(ownerId),
+    coords: CoordSystem.createId(aggregate.attrs.coords),
     name: aggregate.ref.attrs.title,
     descr: aggregate.ref.attrs.descr,
     url: aggregate.ref.attrs.link,
+    itemType: aggregate.attrs.itemType,
     depth: aggregate.attrs.coords.path.length,
-    parentId: String(aggregate.attrs.parentId),
-    neighborIds: aggregate.neighbors.map((neighbor) => String(neighbor.id)),
+    parentId: aggregate.attrs.parentId
+      ? String(aggregate.attrs.parentId)
+      : null,
   };
 };
 
 export type MapItemContract = ReturnType<typeof mapItemDomainToContractAdapter>;
+export { MapItemType };
 
-export /**
- * Adapts a HexMap aggregate to a contract
+/**
+ * Adapts a root USER MapItem and its descendants to a MapContract.
+ * MapContract represents a view of a single "map" tree.
  */
-const mapDomainToContractAdapter = (aggregate: HexMap) => {
-  if (aggregate.id === undefined) {
-    // This shouldn't happen when adapting a persisted map
-    throw new Error("Cannot adapt map without an ID");
+export const mapDomainToContractAdapter = (
+  rootItem: MapItemWithId,
+  descendants: MapItemWithId[],
+) => {
+  if (rootItem.id === undefined) {
+    throw new Error("Cannot adapt map root item without an ID");
   }
-  // Pass the map's ID when adapting the center item
-  if (!aggregate.center) {
-    throw new Error("Cannot adapt map without a center");
+  if (rootItem.attrs.itemType !== MapItemType.USER) {
+    throw new Error(
+      "MapContract can only be created from a USER type root MapItem.",
+    );
   }
-  const center = mapItemDomainToContractAdapter(aggregate.center, aggregate.id);
+
+  const baseRef = rootItem.ref;
+  const allItems = [rootItem, ...descendants];
+
   return {
-    id: String(aggregate.id),
-    title: center.name,
-    descr: center.descr,
-    itemCount: aggregate.items?.length || 1,
-    center,
+    id: rootItem.id,
+    coords: rootItem.attrs.coords,
+    title: baseRef.attrs.title,
+    descr: baseRef.attrs.descr,
+    itemType: rootItem.attrs.itemType,
+    userId: rootItem.attrs.coords.userId,
+    groupId: rootItem.attrs.coords.groupId,
+    itemCount: allItems.length,
+    items: allItems.map((item) =>
+      mapItemDomainToContractAdapter(item, item.attrs.coords.userId),
+    ),
   };
 };
 

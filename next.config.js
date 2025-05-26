@@ -8,6 +8,9 @@ import "./src/env.js";
 const config = {
   reactStrictMode: true,
   pageExtensions: ["js", "jsx", "mdx", "ts", "tsx"],
+  experimental: {
+    viewTransition: true,
+  },
 };
 
 export default config;

@@ -46,10 +46,14 @@ export function RegisterForm() {
             } else {
               console.error(
                 "Map creation failed after signup:",
-                mapCreationResult.error,
+                mapCreationResult.success === false
+                  ? mapCreationResult.error
+                  : "Unknown error",
               );
               setError(
-                mapCreationResult.error ||
+                (mapCreationResult.success === false
+                  ? mapCreationResult.error
+                  : null) ||
                   "Signup successful, but failed to create your map. Please try logging in or contact support.",
               );
               setIsLoading(false);

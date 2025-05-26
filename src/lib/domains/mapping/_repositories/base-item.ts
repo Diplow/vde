@@ -1,11 +1,11 @@
 import {
-  BaseItemWithId,
+  type BaseItemWithId,
   type BaseItemAttrs,
   type BaseItemIdr,
   type BaseItemRelatedItems,
   type BaseItemRelatedLists,
 } from "~/lib/domains/mapping/_objects";
-import { GenericRepository } from "~/lib/domains/utils/generic-repository";
+import { type GenericRepository } from "~/lib/domains/utils/generic-repository";
 
 export interface BaseItemRepository
   extends GenericRepository<
