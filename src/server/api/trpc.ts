@@ -59,9 +59,7 @@ export const createContext = async (opts: CreateNextContextOptions) => {
   } else {
     // Otherwise, assume it's IncomingHttpHeaders (e.g., from Pages Router or direct NextApiRequest)
     // and convert it.
-    sessionAPIAcceptableHeaders = convertToHeaders(
-      req.headers,
-    );
+    sessionAPIAcceptableHeaders = convertToHeaders(req.headers);
   }
 
   const sessionData = await auth.api.getSession({

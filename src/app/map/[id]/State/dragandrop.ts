@@ -1,4 +1,4 @@
-import type { MapCanvasState } from "./index";
+import type { HexTileData } from "./types";
 
 export const scaleSVG = {
   path: "M50 0 L100 28.87 L100 86.6 L50 115.47 L0 86.6 L0 28.87Z",
@@ -10,31 +10,36 @@ export interface DragAndDropConfig {
   baseHexHeight: number;
 }
 
+interface DragAndDropState {
+  items: Record<string, HexTileData>;
+  moveItem: (params: { sourceCoord: string; targetCoord: string }) => void;
+}
+
 export function initDragAndDropActions(
-  state: MapCanvasState,
+  state: DragAndDropState,
   config: DragAndDropConfig,
 ) {
   const startDrag = (coords: string) => {
-    if (state.data.mapItems[coords]) {
+    if (state.items[coords]) {
       // Update the item state to show it's being dragged
-      if (state.data.mapItems[coords].state) {
-        state.data.mapItems[coords].state.isDragged = true;
+      if (state.items[coords].state) {
+        state.items[coords].state.isDragged = true;
       }
     }
   };
 
   const endDrag = (coords: string) => {
-    if (state.data.mapItems[coords]) {
-      if (state.data.mapItems[coords].state) {
-        state.data.mapItems[coords].state.isDragged = false;
+    if (state.items[coords]) {
+      if (state.items[coords].state) {
+        state.items[coords].state.isDragged = false;
       }
     }
   };
 
   const setDragOver = (coords: string, isDragOver: boolean) => {
-    if (state.data.mapItems[coords]) {
-      if (state.data.mapItems[coords].state) {
-        state.data.mapItems[coords].state.isDragOver = isDragOver;
+    if (state.items[coords]) {
+      if (state.items[coords].state) {
+        state.items[coords].state.isDragOver = isDragOver;
       }
     } else {
       // For empty tiles, we might need to handle this differently
@@ -43,29 +48,29 @@ export function initDragAndDropActions(
   };
 
   const setHovering = (coords: string, isHovering: boolean) => {
-    if (state.data.mapItems[coords]) {
-      if (state.data.mapItems[coords].state) {
-        state.data.mapItems[coords].state.isHovering = isHovering;
+    if (state.items[coords]) {
+      if (state.items[coords].state) {
+        state.items[coords].state.isHovering = isHovering;
       }
     }
   };
 
   const moveItem = (sourceCoord: string, targetCoord: string) => {
-    state.actions.mutations.moveItem({
+    state.moveItem({
       sourceCoord,
       targetCoord,
     });
 
     // Reset the drag state for both source and target items
     // This ensures that any lingering drag states are cleared
-    if (state.data.mapItems[sourceCoord]?.state) {
-      state.data.mapItems[sourceCoord].state.isDragged = false;
-      state.data.mapItems[sourceCoord].state.isDragOver = false;
+    if (state.items[sourceCoord]?.state) {
+      state.items[sourceCoord].state.isDragged = false;
+      state.items[sourceCoord].state.isDragOver = false;
     }
 
-    if (state.data.mapItems[targetCoord]?.state) {
-      state.data.mapItems[targetCoord].state.isDragged = false;
-      state.data.mapItems[targetCoord].state.isDragOver = false;
+    if (state.items[targetCoord]?.state) {
+      state.items[targetCoord].state.isDragged = false;
+      state.items[targetCoord].state.isDragOver = false;
     }
   };
 
@@ -80,7 +85,7 @@ export function initDragAndDropActions(
       _scale: number,
       effectiveSize: number,
     ) => {
-      const item = state.data.mapItems[coords];
+      const item = state.items[coords];
       if (!item) return null;
 
       // Create a custom drag image that mimics the hex tile

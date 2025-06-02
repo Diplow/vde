@@ -1,8 +1,8 @@
 import React from "react";
-import { StaticBaseTileLayout } from "./base.static";
+import { StaticBaseTileLayout } from "../Base/base.static";
 import { Button } from "~/components/ui/button"; // Assuming you have a Button component
 
-interface StaticAuthTileProps {
+export interface StaticAuthTileProps {
   showLogin: boolean;
   onToggleView: () => void;
   loginFormComponent: React.ReactNode;
@@ -46,3 +46,7 @@ export const StaticAuthTile = ({
     </StaticBaseTileLayout>
   );
 };
+
+// Alias for backward compatibility
+export const AuthTile = StaticAuthTile;
+export type AuthTileProps = StaticAuthTileProps;

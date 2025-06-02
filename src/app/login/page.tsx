@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "~/contexts/AuthContext";
-import AuthTile from "~/app/map/[id]/Tile/auth.dynamic";
+import AuthTile from "~/app/map/[id]/Tile/Auth/auth.dynamic";
 import { api } from "~/commons/trpc/react";
 
 export default function LoginPage() {
@@ -19,16 +19,7 @@ export default function LoginPage() {
   useEffect(() => {
     setPageError(null);
     if (!isAuthLoading && user) {
-      console.log(
-        "[LoginPage] Auth state updated. User present, auth not loading. Attempting to fetch user map.",
-        { userId: user.id, isAuthLoading },
-      );
       void getUserMapQuery.refetch();
-    } else {
-      console.log(
-        "[LoginPage] Auth state changed, but conditions for map fetch not met.",
-        { user: !!user, isAuthLoading },
-      );
     }
   }, [user, isAuthLoading, getUserMapQuery]);
 

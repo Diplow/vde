@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "~/contexts/AuthContext";
-import AuthTile from "~/app/map/[id]/Tile/auth.dynamic";
+import AuthTile from "~/app/map/[id]/Tile/Auth/auth.dynamic";
 import { api } from "~/commons/trpc/react";
 
 export default function SignupPage() {

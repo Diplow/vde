@@ -7,18 +7,18 @@ export type {
   TileStroke,
   TileCursor,
 } from "./Base/base.static";
-export { StaticTileContent } from "./Base/content.static";
-export type { StaticTileContentProps } from "./Base/content.static";
+export { StaticTileContent } from "./Item/content.static";
+export type { StaticTileContentProps } from "./Item/content.static";
 
 // Item components
 export { StaticItemTile } from "./Item/item.static";
 export type { StaticItemTileProps } from "./Item/item.static";
-export { TileButtons } from "./Item/item.buttons.static";
-export type { TileButtonsProps } from "./Item/item.buttons.static";
+export { TileButtons } from "./Item/Buttons/item.buttons.progressive";
+export type { TileButtonsProps } from "./Item/Buttons/item.buttons.progressive";
 export { StaticMiniMapItemTile } from "./Item/item-minimap.static";
 export type { StaticMiniMapItemTileProps } from "./Item/item-minimap.static";
-export { HierarchyTile } from "./Item/hierarchy-tile.static";
-export type { HierarchyTileProps } from "./Item/hierarchy-tile.static";
+export { HierarchyTile } from "./Hierarchy/hierarchy-tile.static";
+export type { HierarchyTileProps } from "./Hierarchy/hierarchy-tile.static";
 
 // Auth components
 export { AuthTile } from "./Auth/auth.static";

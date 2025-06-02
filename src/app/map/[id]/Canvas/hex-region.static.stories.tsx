@@ -1,8 +1,9 @@
-import React from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 import { StaticHexRegion } from "./hex-region.static";
 import type { HexTileData } from "../State/types";
+import { getColor } from "../State/types";
 import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
+import type { URLInfo } from "../types/url-info";
 import "src/styles/globals.css";
 
 // Helper function to generate placeholder text (can be moved to a shared util if used elsewhere)
@@ -19,31 +20,51 @@ const generateLoremIpsum = (length: number): string => {
 const createMockItem = (
   coordId: string,
   name: string,
-  color: string,
   depth = 0,
   parentId?: string,
-): HexTileData => ({
-  metadata: {
-    dbId: `db-item-${coordId.replace(",", "-")}`,
-    coordId,
-    parentId,
-    coordinates: CoordSystem.parseId(coordId),
-    depth,
-  },
-  data: {
-    name,
-    description: generateLoremIpsum(200),
-    url: `https://example.com/${name.toLowerCase().replace(/\s+/g, "-")}`,
-    color,
-  },
-  state: {
-    isDragged: false,
-    isHovered: false,
-    isSelected: false,
-    isExpanded: false,
-    isDragOver: false,
-    isHovering: false,
-  },
+): HexTileData => {
+  const coordinates = CoordSystem.parseId(coordId);
+  return {
+    metadata: {
+      dbId: `db-item-${coordId.replace(/[,:]/g, "-")}`,
+      coordId,
+      parentId,
+      coordinates,
+      depth,
+    },
+    data: {
+      name,
+      description: generateLoremIpsum(200),
+      url: `https://example.com/${name.toLowerCase().replace(/\s+/g, "-")}`,
+      color: getColor(coordinates),
+    },
+    state: {
+      isDragged: false,
+      isHovered: false,
+      isSelected: false,
+      isExpanded: false,
+      isDragOver: false,
+      isHovering: false,
+    },
+  };
+};
+
+// Mock URL info
+const createMockUrlInfo = (
+  scale?: string,
+  expandedItems?: string,
+  focus?: string,
+): URLInfo => ({
+  pathname: "/map/mock-item",
+  searchParamsString: new URLSearchParams({
+    ...(scale && { scale }),
+    ...(expandedItems && { expandedItems }),
+    ...(focus && { focus }),
+  }).toString(),
+  rootItemId: "mock-item",
+  scale,
+  expandedItems,
+  focus,
 });
 
 // --- Mock Data ---
@@ -55,42 +76,23 @@ const eCoord = CoordSystem.getChildCoordsFromId(centerCoord)[2]; // "0,0:E"
 const nw_nwCoord = CoordSystem.getChildCoordsFromId(nwCoord)[0]; // "0,0:NW,NW"
 
 const mockMapItemsSimple: Record<string, HexTileData> = {
-  [centerCoord]: createMockItem(centerCoord, "Center Item", "amber-500", 0),
+  [centerCoord]: createMockItem(centerCoord, "Center Item", 0),
 };
 
 const mockMapItemsOneLevel: Record<string, HexTileData> = {
-  [centerCoord]: createMockItem(centerCoord, "Center", "cyan-500", 0),
-  [nwCoord]: createMockItem(
-    nwCoord,
-    "North West Child",
-    "emerald-500",
-    1,
-    centerCoord,
-  ),
-  [neCoord]: createMockItem(
-    neCoord,
-    "North East Child",
-    "rose-500",
-    1,
-    centerCoord,
-  ),
-  [eCoord]: createMockItem(eCoord, "East Child", "fuchsia-500", 1, centerCoord),
+  [centerCoord]: createMockItem(centerCoord, "Center", 0),
+  [nwCoord]: createMockItem(nwCoord, "North West Child", 1, centerCoord),
+  [neCoord]: createMockItem(neCoord, "North East Child", 1, centerCoord),
+  [eCoord]: createMockItem(eCoord, "East Child", 1, centerCoord),
   // SE, SW, W are missing to test partial children
 };
 
 const mockMapItemsTwoLevels: Record<string, HexTileData> = {
   ...mockMapItemsOneLevel,
-  [nw_nwCoord]: createMockItem(
-    nw_nwCoord,
-    "NW's NW Child",
-    "rose-500",
-    2,
-    nwCoord,
-  ),
+  [nw_nwCoord]: createMockItem(nw_nwCoord, "NW's NW Child", 2, nwCoord),
   [CoordSystem.getChildCoordsFromId(nwCoord)[1]]: createMockItem(
     CoordSystem.getChildCoordsFromId(nwCoord)[1],
     "NW's NE Child",
-    "amber-500",
     2,
     nwCoord,
   ),
@@ -102,6 +104,11 @@ const meta: Meta<typeof StaticHexRegion> = {
   component: StaticHexRegion,
   parameters: {
     layout: "centered", // Or 'fullscreen' if it makes more sense
+    docs: {
+      description: {
+        component: `StaticHexRegion renders a hexagonal region of map tiles. It can recursively render child regions when items are expanded. Colors are automatically assigned based on coordinate structure using the getColor helper function.`,
+      },
+    },
   },
   tags: ["autodocs"],
   argTypes: {
@@ -109,6 +116,9 @@ const meta: Meta<typeof StaticHexRegion> = {
     mapItems: { control: "object" },
     baseHexSize: { control: { type: "number", min: 20, max: 100, step: 5 } },
     expandedItemIds: { control: "object" }, // Array of strings
+    scale: { control: { type: "range", min: 1, max: 6, step: 1 } },
+    urlInfo: { control: "object" },
+    interactive: { control: "boolean" },
   },
 };
 
@@ -123,6 +133,17 @@ export const SingleTileNoExpansion: Story = {
     mapItems: mockMapItemsSimple,
     baseHexSize: 50,
     expandedItemIds: [],
+    scale: 3,
+    urlInfo: createMockUrlInfo("3"),
+    interactive: true,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Single center tile with no expansion, showing basic tile rendering with automatic colors.",
+      },
+    },
   },
 };
 
@@ -132,6 +153,17 @@ export const CenterTileMissing: Story = {
     mapItems: mockMapItemsSimple,
     baseHexSize: 50,
     expandedItemIds: [],
+    scale: 3,
+    urlInfo: createMockUrlInfo("3"),
+    interactive: true,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Demonstrates graceful handling when the center tile is missing from the data.",
+      },
+    },
   },
 };
 
@@ -140,7 +172,18 @@ export const OneLevelExpanded: Story = {
     center: centerCoord,
     mapItems: mockMapItemsOneLevel,
     baseHexSize: 50,
-    expandedItemIds: [centerCoord],
+    expandedItemIds: [`db-item-${centerCoord.replace(/[,:]/g, "-")}`],
+    scale: 3,
+    urlInfo: createMockUrlInfo("3"),
+    interactive: true,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Center tile expanded to show first level children with automatic color assignments.",
+      },
+    },
   },
 };
 
@@ -149,17 +192,22 @@ export const OneLevelExpandedWithMissingChildren: Story = {
     center: centerCoord,
     mapItems: {
       // Only center and one child
-      [centerCoord]: createMockItem(centerCoord, "Center", "cyan-500", 0),
-      [nwCoord]: createMockItem(
-        nwCoord,
-        "North West Child",
-        "emerald-500",
-        1,
-        centerCoord,
-      ),
+      [centerCoord]: createMockItem(centerCoord, "Center", 0),
+      [nwCoord]: createMockItem(nwCoord, "North West Child", 1, centerCoord),
     },
     baseHexSize: 50,
-    expandedItemIds: [centerCoord],
+    expandedItemIds: [`db-item-${centerCoord.replace(/[,:]/g, "-")}`],
+    scale: 3,
+    urlInfo: createMockUrlInfo("3"),
+    interactive: true,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Expanded center with only some children present, showing partial child rendering.",
+      },
+    },
   },
 };
 
@@ -168,7 +216,21 @@ export const TwoLevelsExpanded: Story = {
     center: centerCoord,
     mapItems: mockMapItemsTwoLevels,
     baseHexSize: 50,
-    expandedItemIds: [centerCoord, nwCoord], // Expand center and its NW child
+    expandedItemIds: [
+      `db-item-${centerCoord.replace(/[,:]/g, "-")}`,
+      `db-item-${nwCoord.replace(/[,:]/g, "-")}`,
+    ], // Expand center and its NW child
+    scale: 3,
+    urlInfo: createMockUrlInfo("3"),
+    interactive: true,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Two levels of expansion showing recursive hexagonal regions with color depth progression.",
+      },
+    },
   },
 };
 
@@ -176,8 +238,19 @@ export const DifferentBaseSize: Story = {
   args: {
     center: centerCoord,
     mapItems: mockMapItemsOneLevel,
-    baseHexSize: 50,
-    expandedItemIds: [centerCoord],
+    baseHexSize: 80,
+    expandedItemIds: [`db-item-${centerCoord.replace(/[,:]/g, "-")}`],
+    scale: 3,
+    urlInfo: createMockUrlInfo("3"),
+    interactive: true,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Larger base hex size demonstration showing how tiles scale proportionally.",
+      },
+    },
   },
 };
 
@@ -187,5 +260,36 @@ export const NoItemsAtAll: Story = {
     mapItems: {},
     baseHexSize: 50,
     expandedItemIds: [],
+    scale: 3,
+    urlInfo: createMockUrlInfo("3"),
+    interactive: true,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Empty map items showing how the component handles completely missing data.",
+      },
+    },
+  },
+};
+
+export const NonInteractiveMode: Story = {
+  args: {
+    center: centerCoord,
+    mapItems: mockMapItemsOneLevel,
+    baseHexSize: 50,
+    expandedItemIds: [`db-item-${centerCoord.replace(/[,:]/g, "-")}`],
+    scale: 3,
+    urlInfo: createMockUrlInfo("3"),
+    interactive: false,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Interactive mode disabled (interactive={false}) hides all tile buttons, useful for loading states or read-only displays.",
+      },
+    },
   },
 };
