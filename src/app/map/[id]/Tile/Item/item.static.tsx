@@ -4,11 +4,11 @@ import {
   type TileColor,
   type TileScale,
 } from "../Base/base.static";
-import { StaticTileContent } from "../Base/content.static";
-import { TileButtons } from "./item.buttons.static";
+import { StaticTileContent } from "./content.static";
+import { TileButtons } from "./Buttons/item.buttons.progressive";
 import type { URLInfo } from "../../types/url-info";
 
-interface StaticItemTileProps {
+export interface StaticItemTileProps {
   item: HexTileData;
   scale?: TileScale;
   baseHexSize?: number;
@@ -16,6 +16,7 @@ interface StaticItemTileProps {
   hasChildren: boolean;
   isCenter?: boolean;
   urlInfo: URLInfo;
+  interactive?: boolean;
 }
 
 export const getColorFromItem = (item: HexTileData): TileColor => {
@@ -34,6 +35,7 @@ export const StaticItemTile = ({
   hasChildren,
   isCenter = false,
   urlInfo,
+  interactive = true,
 }: StaticItemTileProps) => {
   return (
     <div className="group relative hover:z-10">
@@ -57,18 +59,20 @@ export const StaticItemTile = ({
           scale={scale}
         />
       </StaticBaseTileLayout>
-      <TileButtons
-        item={item}
-        urlInfo={urlInfo}
-        displayConfig={{
-          scale,
-          isCenter,
-        }}
-        expansionState={{
-          allExpandedItemIds,
-          hasChildren,
-        }}
-      />
+      {interactive && (
+        <TileButtons
+          item={item}
+          urlInfo={urlInfo}
+          displayConfig={{
+            scale,
+            isCenter,
+          }}
+          expansionState={{
+            allExpandedItemIds,
+            hasChildren,
+          }}
+        />
+      )}
     </div>
   );
 };

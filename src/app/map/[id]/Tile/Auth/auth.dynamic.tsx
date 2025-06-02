@@ -3,9 +3,9 @@
 import React, { useState } from "react";
 import { LoginForm } from "~/components/auth/login-form";
 import { RegisterForm } from "~/components/auth/register-form";
-import { StaticBaseTileLayout } from "./base.static";
+import { StaticBaseTileLayout } from "../Base/base.static";
 
-interface AuthTileProps {
+export interface AuthTileProps {
   initialView?: "login" | "register";
 }
 
@@ -43,3 +43,7 @@ export default function AuthTile({ initialView = "login" }: AuthTileProps) {
     </StaticBaseTileLayout>
   );
 }
+
+// Named exports for index.ts
+export const DynamicAuthTile = AuthTile;
+export type DynamicAuthTileProps = AuthTileProps;

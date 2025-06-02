@@ -1,5 +1,6 @@
 import { getColorFromItem, StaticItemTile } from "../Tile/Item/item.static";
 import { StaticBaseTileLayout, type TileScale } from "../Tile/Base/base.static";
+import { ProgressiveEmptyTile } from "../Tile/Empty/empty.progressive";
 import type { HexTileData } from "../State/types";
 import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { URLInfo } from "../types/url-info";
@@ -11,6 +12,8 @@ export interface StaticHexRegionProps {
   expandedItemIds?: string[];
   scale?: TileScale;
   urlInfo: URLInfo;
+  interactive?: boolean;
+  currentUserId?: number;
 }
 
 export const StaticHexRegion = ({
@@ -20,6 +23,8 @@ export const StaticHexRegion = ({
   expandedItemIds = [],
   scale = 3,
   urlInfo,
+  interactive = true,
+  currentUserId,
 }: StaticHexRegionProps) => {
   const centerItem = mapItems[center];
 
@@ -28,11 +33,26 @@ export const StaticHexRegion = ({
     : false;
 
   if (!centerItem) {
+    // Find parent item for context
+    const parentCoords = center.split(":").slice(0, -1).join(":");
+    const parentItem = parentCoords ? mapItems[parentCoords] : undefined;
+
     return (
-      <StaticBaseTileLayout
+      <ProgressiveEmptyTile
         coordId={center}
         scale={scale}
         baseHexSize={baseHexSize}
+        urlInfo={urlInfo}
+        parentItem={
+          parentItem
+            ? {
+                id: parentItem.metadata.dbId,
+                name: parentItem.data.name,
+              }
+            : undefined
+        }
+        interactive={interactive}
+        currentUserId={currentUserId}
       />
     );
   }
@@ -53,8 +73,9 @@ export const StaticHexRegion = ({
         baseHexSize={baseHexSize}
         allExpandedItemIds={expandedItemIds}
         hasChildren={centerItemHasChildren}
-        isCenter={true}
+        isCenter={centerItem.metadata.dbId === urlInfo.rootItemId}
         urlInfo={urlInfo}
+        interactive={interactive}
       />
     );
   }
@@ -79,6 +100,8 @@ export const StaticHexRegion = ({
           expandedItemIds={expandedItemIds}
           scale={nextScale}
           urlInfo={urlInfo}
+          interactive={interactive}
+          currentUserId={currentUserId}
         />
         <RenderChild
           coords={NE}
@@ -87,6 +110,8 @@ export const StaticHexRegion = ({
           expandedItemIds={expandedItemIds}
           scale={nextScale}
           urlInfo={urlInfo}
+          interactive={interactive}
+          currentUserId={currentUserId}
         />
       </div>
       <div className="flex justify-center" style={marginTop}>
@@ -97,6 +122,8 @@ export const StaticHexRegion = ({
           expandedItemIds={expandedItemIds}
           scale={nextScale}
           urlInfo={urlInfo}
+          interactive={interactive}
+          currentUserId={currentUserId}
         />
         <div className="flex flex-col">
           <StaticItemTile
@@ -104,8 +131,9 @@ export const StaticHexRegion = ({
             scale={nextScale}
             allExpandedItemIds={expandedItemIds}
             hasChildren={centerItemHasChildren}
-            isCenter={true}
+            isCenter={centerItem.metadata.dbId === urlInfo.rootItemId}
             urlInfo={urlInfo}
+            interactive={interactive}
           />
         </div>
         <RenderChild
@@ -115,6 +143,8 @@ export const StaticHexRegion = ({
           expandedItemIds={expandedItemIds}
           scale={nextScale}
           urlInfo={urlInfo}
+          interactive={interactive}
+          currentUserId={currentUserId}
         />
       </div>
       <div className="flex justify-center" style={marginTop}>
@@ -125,6 +155,8 @@ export const StaticHexRegion = ({
           expandedItemIds={expandedItemIds}
           scale={nextScale}
           urlInfo={urlInfo}
+          interactive={interactive}
+          currentUserId={currentUserId}
         />
         <RenderChild
           coords={SE}
@@ -133,6 +165,8 @@ export const StaticHexRegion = ({
           expandedItemIds={expandedItemIds}
           scale={nextScale}
           urlInfo={urlInfo}
+          interactive={interactive}
+          currentUserId={currentUserId}
         />
       </div>
     </div>
@@ -162,6 +196,8 @@ interface RenderChildProps {
   expandedItemIds?: string[];
   scale: TileScale;
   urlInfo: URLInfo;
+  interactive?: boolean;
+  currentUserId?: number;
 }
 
 const RenderChild = ({
@@ -171,6 +207,8 @@ const RenderChild = ({
   expandedItemIds = [],
   scale,
   urlInfo,
+  interactive = true,
+  currentUserId,
 }: RenderChildProps) => {
   const item = mapItems[coords];
   const isExpanded = item
@@ -178,11 +216,32 @@ const RenderChild = ({
     : false;
 
   if (!item) {
+    // Find parent item for context
+    const parentCoords = CoordSystem.getParentCoord(
+      CoordSystem.parseId(coords),
+    );
+    if (!parentCoords) {
+      throw new Error("Failed to get parent coordinates");
+    }
+    const parentCoordsId = CoordSystem.createId(parentCoords);
+    const parentItem = parentCoordsId ? mapItems[parentCoordsId] : undefined;
+
     return (
-      <StaticBaseTileLayout
+      <ProgressiveEmptyTile
         coordId={coords}
         scale={scale}
         baseHexSize={baseHexSize}
+        urlInfo={urlInfo}
+        parentItem={
+          parentItem
+            ? {
+                id: parentItem.metadata.dbId,
+                name: parentItem.data.name,
+              }
+            : undefined
+        }
+        interactive={interactive}
+        currentUserId={currentUserId}
       />
     );
   }
@@ -203,6 +262,8 @@ const RenderChild = ({
         expandedItemIds={expandedItemIds}
         scale={scale}
         urlInfo={urlInfo}
+        interactive={interactive}
+        currentUserId={currentUserId}
       />
     );
   }
@@ -215,6 +276,7 @@ const RenderChild = ({
       hasChildren={itemHasChildren}
       isCenter={false}
       urlInfo={urlInfo}
+      interactive={interactive}
     />
   );
 };

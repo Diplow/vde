@@ -45,5 +45,5 @@ const adapt = (item: MapItemAPIContract) => {
 
 type HexTileData = ReturnType<typeof adapt>;
 
-export { adapt };
+export { adapt, getColor };
 export type { /* ScaleState, */ HexTileData }; // Commented out ScaleState from export

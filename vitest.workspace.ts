@@ -12,7 +12,9 @@ const dirname =
 
 // More info at: https://storybook.js.org/docs/writing-tests/test-addon
 export default defineWorkspace([
+  // Main test configuration - extending the base config
   "vitest.config.ts",
+  // Storybook test configuration for story tests
   {
     plugins: [
       // The plugin will run tests for the stories defined in your Storybook config

@@ -3,34 +3,11 @@ import { useInit } from "./init";
 import { useMutations } from "./mutations";
 import type { HexTileData } from "./types";
 import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
-import {
-  useInteractionMode,
-  type InteractionModeArgs,
-  type ActionMode,
-  INTERACTION_MODE_KEY,
-} from "./interactionMode";
-import { useEffect, useState } from "react";
 
 export const useMapCanvasState = (
   center: MapItemAPIContract,
   items: Record<string, HexTileData>,
 ) => {
-  // Get initial interaction mode from localStorage or fallback to "select"
-  const [initialInteractionMode, setInitialInteractionMode] =
-    useState<ActionMode>("select");
-
-  // Initialize from localStorage on first render
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedMode = localStorage.getItem(
-        INTERACTION_MODE_KEY,
-      ) as unknown as ActionMode;
-      if (storedMode) {
-        setInitialInteractionMode(storedMode);
-      }
-    }
-  }, []);
-
   const {
     data: { items: itemsById },
     lifeCycle,
@@ -65,19 +42,6 @@ export const useMapCanvasState = (
     },
   });
 
-  // Pass only required parts to the interaction hook
-  const interactionArgs: InteractionModeArgs = {
-    mapItems: itemsById,
-    actions: {
-      mutations: mutations,
-    },
-    initialMode: initialInteractionMode,
-  };
-
-  // Get interaction state and actions
-  const { data: interactionData, actions: interactionActions } =
-    useInteractionMode(interactionArgs);
-
   return {
     lifeCycle: {
       ...lifeCycle,
@@ -86,11 +50,9 @@ export const useMapCanvasState = (
     data: {
       mapItems: items,
       mutations: mutationsData,
-      interactions: interactionData,
     },
     actions: {
       mutations: mutations,
-      interactions: interactionActions,
     },
   };
 };
