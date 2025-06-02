@@ -13,7 +13,7 @@ dependencies:
     version: 2.2.0(react@18.3.1)
   '@hookform/resolvers':
     specifier: ^4.1.3
-    version: 4.1.3(react-hook-form@7.54.2)
+    version: 4.1.3(react-hook-form@7.57.0)
   '@mistralai/mistralai':
     specifier: ^1.5.2
     version: 1.5.2(zod@3.24.2)
@@ -87,8 +87,8 @@ dependencies:
     specifier: ^18.3.1
     version: 18.3.1(react@18.3.1)
   react-hook-form:
-    specifier: ^7.54.2
-    version: 7.54.2(react@18.3.1)
+    specifier: ^7.57.0
+    version: 7.57.0(react@18.3.1)
   server-only:
     specifier: ^0.0.1
     version: 0.0.1
@@ -1799,13 +1799,13 @@ packages:
     resolution: {integrity: sha512-lhqDEAvWixy3bZ+UOYbPwUbBkwBq5C1LAJ/xPC8Oi+lL54oyakv/npbA0aU2hgCsx/1NUd4IBvV03+aUBWxerw==}
     dev: false
 
-  /@hookform/resolvers@4.1.3(react-hook-form@7.54.2):
+  /@hookform/resolvers@4.1.3(react-hook-form@7.57.0):
     resolution: {integrity: sha512-Jsv6UOWYTrEFJ/01ZrnwVXs7KDvP8XIo115i++5PWvNkNvkrsTfGiLS6w+eJ57CYtUtDQalUWovCZDHFJ8u1VQ==}
     peerDependencies:
       react-hook-form: ^7.0.0
     dependencies:
       '@standard-schema/utils': 0.3.0
-      react-hook-form: 7.54.2(react@18.3.1)
+      react-hook-form: 7.57.0(react@18.3.1)
     dev: false
 
   /@humanfs/core@0.19.1:
@@ -8611,8 +8611,8 @@ packages:
       react: 18.3.1
       scheduler: 0.23.2
 
-  /react-hook-form@7.54.2(react@18.3.1):
-    resolution: {integrity: sha512-eHpAUgUjWbZocoQYUHposymRb4ZP6d0uwUnooL2uOybA9/3tPUvoAKqEWK1WaSiTxxOfTpffNZP7QwlnM3/gEg==}
+  /react-hook-form@7.57.0(react@18.3.1):
+    resolution: {integrity: sha512-RbEks3+cbvTP84l/VXGUZ+JMrKOS8ykQCRYdm5aYsxnDquL0vspsyNhGRO7pcH6hsZqWlPOjLye7rJqdtdAmlg==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
