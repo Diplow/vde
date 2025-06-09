@@ -63,8 +63,8 @@ dependencies:
     specifier: ^4.1.0
     version: 4.1.0
   dotenv:
-    specifier: ^16.4.7
-    version: 16.4.7
+    specifier: ^16.5.0
+    version: 16.5.0
   drizzle-orm:
     specifier: ^0.33.0
     version: 0.33.0(@types/react@18.3.18)(postgres@3.4.5)(react@18.3.1)
@@ -5536,7 +5536,7 @@ packages:
     hasBin: true
     dependencies:
       cross-spawn: 7.0.6
-      dotenv: 16.4.7
+      dotenv: 16.5.0
       dotenv-expand: 10.0.0
       minimist: 1.2.8
     dev: true
@@ -5546,8 +5546,8 @@ packages:
     engines: {node: '>=12'}
     dev: true
 
-  /dotenv@16.4.7:
-    resolution: {integrity: sha512-47qPchRCykZC03FhkYAhrvwU4xDBFIj1QPqaarj6mdM/hgUzfPHcpkHJOn3mJAufFeeAxAzeGsr5X0M4k6fLZQ==}
+  /dotenv@16.5.0:
+    resolution: {integrity: sha512-m/C+AwOAr9/W1UOIZUo232ejMNnJAJtYQjUbHoNTBNTJSvqzzDh7vnrei3o3r3m9blf6ZoDkvcw0VmozNRFJxg==}
     engines: {node: '>=12'}
 
   /drizzle-kit@0.24.2:
