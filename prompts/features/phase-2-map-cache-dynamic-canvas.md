@@ -334,7 +334,7 @@ export const cacheUtils = {
 
 ### 4. Progressive Enhancement Components
 
-**File:** `src/app/map/[id]/Canvas/loading-skeleton.tsx`
+**File:** `src/app/map/Canvas/loading-skeleton.tsx`
 
 ```typescript
 interface MapLoadingSkeletonProps {
@@ -413,8 +413,8 @@ export function MapErrorBoundary({ error, onRetry, className }: MapErrorBoundary
 
         {/* Fallback instructions */}
         <noscript>
-          <div className="mt-4 rounded border border-amber-200 bg-amber-50 p-3">
-            <p className="text-sm text-amber-800">
+          <div className="mt-4 rounded border border-yellow-200 bg-yellow-50 p-3">
+            <p className="text-sm text-yellow-800">
               JavaScript is required for interactive features.
               Please enable JavaScript or refresh the page.
             </p>

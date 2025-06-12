@@ -1,5 +1,5 @@
 export const MAPPING_ERRORS = {
-  // HexMap errors
+  // Map errors
   CENTER_REQUIRED: "Center is required for map creation",
   INVALID_ID: "Invalid ID: must be a positive number",
   INVALID_MAP_CENTER: "Invalid map center: must be at the origin 0,0",
@@ -25,7 +25,7 @@ export const MAPPING_ERRORS = {
   NULL_PARENT_MUST_BE_USER_TYPE:
     "Items with parentId NULL must be of USER type.",
 
-  // HexMap actions errors
+  // Map actions errors
   PARENT_REQUIRED: "Parent should be provided for non-center items",
   FAILED_PARENT_COORDS: "Failed to get parent coords",
   MAP_CENTER_ITEM: "Map item is the center of the map",

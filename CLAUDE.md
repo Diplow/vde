@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Project VDE (Visual Deliberation Environment) is a knowledge platform that enables users to create, organize, and share ideas through interactive hexagonal maps. It's like Wikipedia where each person maintains their own perspective, and trust emerges through references rather than centralized collaboration.
+Hexframe is a visual framework for building and sharing AI-powered systems through hierarchical hexagonal maps. It transforms complex AI interactions from "prompt engineering" into "context architecture" - allowing users to visually build, compose, and share structured AI workflows.
+
+Core philosophy: Where human intent meets AI capability through strategic mapping.
 
 ## Development Commands
 
@@ -18,133 +20,43 @@ pnpm typecheck    # TypeScript type checking
 
 ### Testing
 ```bash
-./run-tests.sh    # Run all tests (uses Vitest, not Jest)
-./run-tests.sh -w # Watch mode
-./run-tests.sh --ui # UI mode
+./scripts/run-tests.sh    # Run all tests (uses Vitest, not Jest)
+./scripts/run-tests.sh -w # Watch mode
+./scripts/run-tests.sh --ui # UI mode
 pnpm test:unit    # Unit tests only
 pnpm test:integration # Integration tests only
+pnpm test         # Always use pnpm test to run tests
 pnpm storybook    # Component development with Storybook
 ```
 
-### Database Management
+## Code Quality
+
+After completing any task, refactor for clarity following the workflow in `prompts/claude/REFACTOR_CLARITY.md`:
+
+1. **Pre-Refactoring Analysis**: Identify concepts and get user validation BEFORE refactoring
+2. **Apply Core Principles**:
+   - The Fundamental Rule: Function names explain WHAT, arguments explain WHAT'S NEEDED, body explains HOW
+   - Rule of 6: Max 6 files/folders per directory, max 6 functions per file, max 50 lines per function (flexible for low-level code)
+   - Single Level of Abstraction: Each level (folder/file/function) maintains consistent abstraction
+3. **Execute Independently**: Complete the entire refactoring after validation
+
+### E2E Testing (Offline UI Tests)
+
+E2E tests run in offline mode using localStorage-based caching. They verify UI behavior without server dependencies.
+
+#### Running E2E Tests
+
 ```bash
-pnpm db:generate  # Generate Drizzle migrations
-pnpm db:migrate   # Apply migrations
-pnpm db:push      # Push schema changes (development)
-pnpm db:studio    # Open Drizzle Studio UI
-pnpm db:populate  # Populate with test data
-./start-database.sh # Start local PostgreSQL
-./setup-test-db.sh  # Setup test database
+# Prerequisites: Dev server must be running
+pnpm dev                      # Start dev server on port 3000
+
+# Run tests
+pnpm test:e2e:ui             # Opens Playwright UI for interactive test debugging
+pnpm test:e2e                # Runs all E2E tests in terminal (offline mode)
+pnpm test:e2e:debug          # Debug mode with Playwright inspector
+pnpm test:e2e:headed         # Run tests with visible browser window
 ```
 
-### Code Quality
-```bash
-pnpm format:check # Check Prettier formatting
-pnpm format:write # Apply Prettier formatting
-```
+**Note**: Tests use offline mode with localStorage persistence. No server/database required beyond the dev server.
 
-## Architecture & Patterns
-
-### Progressive Enhancement Architecture
-The application has three distinct layers:
-
-1. **Static Layer** (`*.static.tsx`): Pure server-side components, URL-based state
-2. **Progressive Layer** (`*.progressive.tsx`): Bridge components adding client-side enhancements
-3. **Dynamic Layer** (`*.dynamic.tsx`): Full client-side interactivity with optimistic updates
-
-### Key Architectural Decisions
-
-- **URL-First State**: Most application state lives in URL parameters for shareability
-- **Progressive Enhancement**: Works without JavaScript, progressively adds features
-- **Region-Based Data Loading**: Efficient hexagonal map data loading with caching
-- **Domain-Driven Design**: Clear separation of domains (mapping, IAM) with repositories and services
-- **Type Safety**: End-to-end type safety with TypeScript, tRPC, and Drizzle ORM
-
-### Component Patterns
-
-```typescript
-// Static components (server-side only)
-export default function ItemStatic({ item }: { item: MapItem }) { }
-
-// Dynamic components (client-side enhanced)
-'use client'
-export default function ItemDynamic({ item }: { item: MapItem }) { }
-
-// Progressive components (enhancement bridge)
-export default function ItemProgressive({ children }: { children: React.ReactNode }) { }
-```
-
-### File Structure
-
-```
-/src/app/map/[id]/         # Main map application
-  /Cache/                  # Map cache system (State, Handlers, Services, Sync)
-  /Canvas/                 # Map rendering components
-  /Controls/               # UI controls and navigation
-  /Dialogs/               # Modal dialogs
-  /Tile/                  # Tile components (Auth, Base, Empty, Item, Hierarchy)
-  /State/                 # Application state management
-  
-/src/lib/domains/         # Domain logic
-  /mapping/               # Map domain (entities, services, repositories)
-  /IAM/                   # Identity and Access Management
-  
-/src/server/              # Backend
-  /api/                   # tRPC routers and services
-  /db/                    # Database schema and relations
-```
-
-### Testing Strategy
-
-- **Test Database**: Separate PostgreSQL instance for tests
-- **Sequential Execution**: Tests run sequentially to avoid database conflicts
-- **Integration Tests**: `*.integration.test.ts` files test full workflows
-- **Component Tests**: Use React Testing Library with Vitest
-- **Path Aliases**: Use `~/` for `./src/` in imports
-
-### Map Cache Architecture
-
-The map cache system (`/src/app/map/[id]/Cache/`) follows a clean architecture:
-
-1. **State**: Pure reducer-based state management with actions and selectors
-2. **Handlers**: Business logic for data fetching, mutations, and navigation
-3. **Services**: Infrastructure services for server communication and storage
-4. **Sync**: Synchronization engine for optimistic updates and conflict resolution
-
-### Important Notes
-
-- **Authentication**: Uses Better-Auth library with database sessions
-- **API Layer**: tRPC provides type-safe API calls between client and server
-- **Database**: PostgreSQL with Drizzle ORM, migrations in `/drizzle/migrations/`
-- **Environment Variables**: Required `.env` file (see `scripts/example.env`)
-- **Hexagonal Maps**: Core feature where ideas are represented as expandable hex tiles
-- **No Test Database Teardown**: Test database persists between runs for debugging
-
-## Documentation Files
-
-Important README files throughout the codebase that provide additional context:
-
-### Core Documentation
-- `/README.md` - Main project overview and getting started guide
-- `/THESIS.md` - Project thesis and philosophical foundation
-- `/src/app/map/[id]/ARCHITECTURE.md` - Detailed progressive enhancement architecture
-
-### Domain & Feature Documentation
-- `/src/lib/domains/README.md` - Domain-driven design overview
-- `/src/lib/domains/mapping/README.md` - Comprehensive mapping domain documentation
-- `/src/lib/domains/mapping/services/README.md` - Mapping services implementation details
-- `/src/app/map/[id]/README.md` - Map page component structure
-- `/src/app/map/[id]/Cache/README.md` - Map cache system architecture
-- `/src/app/map/[id]/Cache/Services/README.md` - Cache services documentation
-
-### Infrastructure Documentation
-- `/src/server/README.md` - Server architecture with tRPC and Drizzle
-- `/src/server/api/routers/README.md` - API router patterns and conventions
-- `/src/server/api/CACHING.md` - Server-side caching strategies
-- `/src/lib/auth/README.md` - Authentication system documentation
-- `/scripts/README.md` - Development and utility scripts
-
-### Implementation Plans
-- `/prompts/features/phase-*.md` - Phased implementation plans
-- `/prompts/features/2025-05-30-refactoring-map-cache*.md` - Cache refactoring documentation
-- Various feature files in `/prompts/features/` documenting specific implementations
+[Rest of the file remains unchanged]

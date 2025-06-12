@@ -11,6 +11,7 @@ export const authClient = createAuthClient({
     process.env.NEXT_PUBLIC_BETTER_AUTH_URL ||
     process.env.NEXT_PUBLIC_VERCEL_URL ||
     "http://localhost:3000",
+  basePath: "/api/auth", // Must match the server configuration
   // Client-side configuration if any based on better-auth documentation.
   // For example, if your backend is hosted on a different URL:
   // serverUrl: process.env.NEXT_PUBLIC_AUTH_SERVER_URL,

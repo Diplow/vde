@@ -9,9 +9,9 @@ import readline from "readline";
 
 // Colors for console output
 const colors = {
-  red: "\x1b[31m",
+  rose: "\x1b[31m",
   green: "\x1b[32m",
-  yellow: "\x1b[33m",
+  amber: "\x1b[33m",
   blue: "\x1b[34m",
   magenta: "\x1b[35m",
   cyan: "\x1b[36m",
@@ -21,11 +21,11 @@ const colors = {
 };
 
 const log = {
-  error: (msg: string) => console.log(`${colors.red}❌ ${msg}${colors.reset}`),
+  error: (msg: string) => console.log(`${colors.rose}❌ ${msg}${colors.reset}`),
   success: (msg: string) =>
     console.log(`${colors.green}✅ ${msg}${colors.reset}`),
   warning: (msg: string) =>
-    console.log(`${colors.yellow}⚠️  ${msg}${colors.reset}`),
+    console.log(`${colors.amber}⚠️  ${msg}${colors.reset}`),
   info: (msg: string) => console.log(`${colors.blue}ℹ️  ${msg}${colors.reset}`),
   step: (msg: string) => console.log(`${colors.cyan}🔄 ${msg}${colors.reset}`),
 };
@@ -38,7 +38,7 @@ async function askConfirmation(question: string): Promise<boolean> {
 
   return new Promise((resolve) => {
     rl.question(
-      `${colors.yellow}${question} (y/N): ${colors.reset}`,
+      `${colors.amber}${question} (y/N): ${colors.reset}`,
       (answer) => {
         rl.close();
         resolve(answer.toLowerCase() === "y" || answer.toLowerCase() === "yes");
@@ -226,7 +226,7 @@ async function recreateSchema() {
 
 async function main() {
   console.log(
-    `${colors.bright}${colors.red}🗑️  DATABASE DELETION SCRIPT${colors.reset}\n`,
+    `${colors.bright}${colors.rose}🗑️  DATABASE DELETION SCRIPT${colors.reset}\n`,
   );
 
   try {

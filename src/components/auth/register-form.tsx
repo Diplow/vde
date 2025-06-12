@@ -42,7 +42,7 @@ export function RegisterForm() {
             const mapCreationResult = await createMapMutation.mutateAsync();
 
             if (mapCreationResult.success && mapCreationResult.mapId) {
-              router.push(`/map/${mapCreationResult.mapId}`);
+              router.push(`/map?center=${mapCreationResult.mapId}`);
             } else {
               console.error(
                 "Map creation failed after signup:",
@@ -96,8 +96,8 @@ export function RegisterForm() {
       onEmailChange={(e) => setEmail(e.target.value)}
       onPasswordChange={(e) => setPassword(e.target.value)}
       onSubmit={handleSubmit}
-      // formAction can be set here for non-JS fallback
-      // e.g., formAction="/api/auth/register-action"
+      formAction="/api/auth/register-action"
+      // formAction is for non-JS fallback
     />
   );
 }
