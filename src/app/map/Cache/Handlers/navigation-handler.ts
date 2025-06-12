@@ -1,0 +1,271 @@
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import type { CacheAction, CacheState } from "../State/types";
+import { cacheActions } from "../State/actions";
+import type { DataOperations, NavigationOperations } from "./types";
+
+export interface NavigationHandlerConfig {
+  dispatch: React.Dispatch<CacheAction>;
+  state: CacheState;
+  dataHandler: DataOperations;
+  // For testing, we can inject these dependencies
+  router?: {
+    push: (url: string) => void;
+    replace: (url: string) => void;
+  };
+  searchParams?: URLSearchParams;
+  pathname?: string;
+}
+
+export interface NavigationResult {
+  success: boolean;
+  error?: Error;
+  centerUpdated?: boolean;
+  urlUpdated?: boolean;
+}
+
+export interface NavigationOptions {
+  pushToHistory?: boolean; // Whether to push to history (true) or replace (false)
+}
+
+export function createNavigationHandler(config: NavigationHandlerConfig) {
+  const { dispatch, state, dataHandler, router } = config;
+
+  const navigateToItem = async (
+    itemCoordId: string,
+    options: NavigationOptions = {},
+  ): Promise<NavigationResult> => {
+    const { pushToHistory = true } = options; // Default to true for normal navigation
+    try {
+      // 1. Check if we already have the item
+      const existingItem = state.itemsById[itemCoordId];
+      
+      // 2. Update the cache center first (this changes the view immediately)
+      dispatch(cacheActions.setCenter(itemCoordId));
+      
+      // 3. Only load region data if we don't have it or if it needs more depth
+      if (!existingItem || !state.regionMetadata[itemCoordId]) {
+        // Load the region data in the background (without showing loader)
+        dataHandler.prefetchRegion(itemCoordId).catch(error => {
+          console.error('[NAV] Background region load failed:', error);
+        });
+      } else {
+        console.log('[NAV] Item already in cache, skipping load');
+      }
+
+      // 3. Get the item from state (it should have been loaded by loadRegion)
+      const item = state.itemsById[itemCoordId];
+      
+      let urlUpdated = false;
+
+      // Debug logging for all environments during development
+      if (typeof window !== 'undefined') {
+        console.log('[NAV] navigateToItem:', {
+          itemCoordId,
+          itemFound: !!item,
+          itemDbId: item?.metadata?.dbId,
+          routerAvailable: !!router,
+          pushToHistory
+        });
+      }
+
+      // Skip URL updates for now - just update cache state
+      console.log('[NAV] Navigation completed without URL update');
+      urlUpdated = false;
+
+      return {
+        success: true,
+        centerUpdated: true,
+        urlUpdated,
+      };
+    } catch (error) {
+      const errorObj = error as Error;
+      dispatch(cacheActions.setError(errorObj));
+
+      return {
+        success: false,
+        error: errorObj,
+        centerUpdated: false,
+        urlUpdated: false,
+      };
+    }
+  };
+
+  const updateCenter = (centerCoordId: string): void => {
+    dispatch(cacheActions.setCenter(centerCoordId));
+  };
+
+  const updateURL = (centerItemId: string, expandedItems: string[]): void => {
+    if (router) {
+      const newUrl = buildMapUrl(centerItemId, expandedItems);
+      router.push(newUrl);
+    }
+  };
+
+  const prefetchForNavigation = async (itemCoordId: string): Promise<void> => {
+    // Prefetch without affecting current state
+    await dataHandler.prefetchRegion(itemCoordId);
+  };
+
+  const syncURLWithState = (): void => {
+    const centerItem = state.currentCenter
+      ? state.itemsById[state.currentCenter]
+      : null;
+
+    if (centerItem && router) {
+      const newUrl = buildMapUrl(
+        centerItem.metadata.dbId,
+        state.expandedItemIds,
+      );
+      router.replace(newUrl);
+    }
+  };
+
+  const navigateWithoutURL = async (
+    itemCoordId: string,
+  ): Promise<NavigationResult> => {
+    try {
+      // Load region if needed
+      await dataHandler.loadRegion(itemCoordId, state.cacheConfig.maxDepth);
+
+      // Update only cache center, not URL
+      dispatch(cacheActions.setCenter(itemCoordId));
+
+      return {
+        success: true,
+        centerUpdated: true,
+        urlUpdated: false,
+      };
+    } catch (error) {
+      const errorObj = error as Error;
+      dispatch(cacheActions.setError(errorObj));
+
+      return {
+        success: false,
+        error: errorObj,
+        centerUpdated: false,
+        urlUpdated: false,
+      };
+    }
+  };
+
+  const getMapContext = () => {
+    const currentPathname = "";
+    const currentSearchParams = new URLSearchParams();
+
+    // Extract center item ID from query params
+    const centerItemId = currentSearchParams.get("center") || "";
+
+    // Parse expanded items from query parameters
+    const expandedItemsParam = currentSearchParams.get("expandedItems");
+    const expandedItems = expandedItemsParam
+      ? expandedItemsParam.split(",").filter(Boolean)
+      : [];
+
+    return {
+      centerItemId,
+      expandedItems,
+      pathname: currentPathname,
+      searchParams: currentSearchParams,
+    };
+  };
+
+  const toggleItemExpansionWithURL = (itemId: string): void => {
+    if (!router) return;
+
+    const centerItem = state.currentCenter
+      ? state.itemsById[state.currentCenter]
+      : null;
+
+    if (!centerItem) return;
+
+    // Toggle the item in the expanded list
+    const currentExpanded = [...state.expandedItemIds];
+    const index = currentExpanded.indexOf(itemId);
+    
+    if (index > -1) {
+      currentExpanded.splice(index, 1);
+    } else {
+      currentExpanded.push(itemId);
+    }
+
+    // Update the cache state
+    dispatch(cacheActions.toggleItemExpansion(itemId));
+    
+    // Skip URL updates for now
+    console.log('[NAV] Expansion toggled without URL update');
+  };
+
+  return {
+    navigateToItem,
+    updateCenter,
+    updateURL,
+    prefetchForNavigation,
+    syncURLWithState,
+    navigateWithoutURL,
+    getMapContext,
+    toggleItemExpansionWithURL,
+  } as NavigationOperations;
+}
+
+// Helper function to build map URLs
+function buildMapUrl(centerItemId: string, expandedItems: string[]): string {
+  // Handle test environments where window.location.origin might be undefined
+  const origin =
+    typeof window !== "undefined" && window.location?.origin
+      ? window.location.origin
+      : "http://localhost:3000";
+
+  const url = new URL("/map", origin);
+  
+  // Center is now a query param
+  url.searchParams.set("center", centerItemId);
+
+  if (expandedItems.length > 0) {
+    url.searchParams.set("expandedItems", expandedItems.join(","));
+  }
+
+  return url.pathname + url.search;
+}
+
+// Hook-based factory for use in React components - with optional overrides
+export function useNavigationHandler(
+  dispatch: React.Dispatch<CacheAction>,
+  state: CacheState,
+  dataHandler: DataOperations,
+  mockRouter?: any,
+  mockSearchParams?: URLSearchParams,
+  mockPathname?: string,
+) {
+  // Only call hooks if we don't have mocked values
+  const router = mockRouter ?? useRouter();
+  const searchParams = mockSearchParams ?? useSearchParams();
+  const pathname = mockPathname ?? usePathname();
+
+  return createNavigationHandler({
+    dispatch,
+    state,
+    dataHandler,
+    router,
+    searchParams,
+    pathname,
+  });
+}
+
+// Factory function for testing with mocked dependencies
+export function createNavigationHandlerForTesting(
+  dispatch: React.Dispatch<CacheAction>,
+  state: CacheState,
+  dataHandler: DataOperations,
+  mockRouter?: { push: (url: string) => void; replace: (url: string) => void },
+  mockSearchParams?: URLSearchParams,
+  mockPathname?: string,
+) {
+  return createNavigationHandler({
+    dispatch,
+    state,
+    dataHandler,
+    router: mockRouter,
+    searchParams: mockSearchParams,
+    pathname: mockPathname,
+  });
+}

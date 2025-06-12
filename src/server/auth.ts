@@ -20,8 +20,10 @@ export const auth = betterAuth({
     enabled: true,
   },
   secret: process.env.AUTH_SECRET, // Needs to be added to .env
-  basePath: "/api/auth", // Default, but good to be explicit
-
+  basePath: "/api/auth", // Standard Next.js API route
+  trustedOrigins: process.env.NODE_ENV === "production" 
+    ? ["https://your-production-domain.com"] 
+    : ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002"],
   plugins: [nextCookies()],
 });
 

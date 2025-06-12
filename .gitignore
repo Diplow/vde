@@ -7,6 +7,10 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+/playwright/.cache/
+/tests/e2e/fixtures/.test-data.json
 
 # database
 /prisma/db.sqlite
@@ -46,6 +50,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 
+# dist
+/dist
+
 # idea files
 .idea
 .cursor/mcp.json
@@ -56,3 +63,6 @@ drizzle/meta/*
 .vscode/*
 *storybook.log
 .cursor/rules/*
+
+# storybook
+/storybook-static/

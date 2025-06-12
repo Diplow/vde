@@ -6,7 +6,7 @@ import { TRPCReactProvider } from "~/commons/trpc/react";
 import { AuthProvider } from "~/contexts/AuthContext";
 
 export const metadata: Metadata = {
-  title: "VDE",
+  title: "Hexframe",
   description: "A community for deliberate people",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
@@ -14,10 +14,19 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const isE2ETest = process.env.E2E_TEST === 'true';
+  
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
       <head>
         <meta name="view-transition" content="same-origin" />
+        {isE2ETest && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `window.__E2E_TEST__ = true;`,
+            }}
+          />
+        )}
       </head>
       <body className="min-h-screen bg-gradient-to-br from-background via-background to-muted font-sans antialiased">
         <AuthProvider>
