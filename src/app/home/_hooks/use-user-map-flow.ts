@@ -83,6 +83,13 @@ export function useUserMapFlow({ user, isAuthLoading }: UseUserMapFlowOptions): 
     if (getUserMapQuery.data) {
       const data = getUserMapQuery.data;
       
+      console.log('[DEBUG Home Page]', {
+        authUserId: user?.id,
+        authUserEmail: user?.email,
+        queryData: data,
+        mapId: data.map?.id,
+      });
+      
       if (data.success && data.map?.id) {
         setState("redirecting");
         router.push(`/map?center=${data.map.id}`);
