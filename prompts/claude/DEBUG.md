@@ -251,3 +251,108 @@ See `prompts/bugs/2025-06-09-edit-button-missing-on-tile.md` for a reference exa
 - Understanding architecture before investigating
 - Identifying and fixing outdated documentation
 - Focusing investigation based on architectural understanding
+
+## Git Workflow for Debugging
+
+### Branch Management
+1. **Create Debug Branch**: Based on develop or current feature branch
+   ```bash
+   # From develop branch (most common)
+   git checkout develop
+   git pull origin develop
+   git checkout -b fix/explicit-description-of-issue
+   
+   # OR from a feature branch if fixing a bug in that feature
+   git checkout feature/current-feature
+   git pull origin feature/current-feature
+   git checkout -b fix/issue-in-feature
+   
+   # Examples:
+   # fix/edit-button-not-showing-on-owned-tiles
+   # fix/database-connection-timeout
+   # fix/test-flakiness-in-auth-flow
+   ```
+
+2. **Keep Commits Focused**: One commit per logical fix
+   ```bash
+   # Stage only files related to the fix
+   git add src/components/ItemButtons.tsx
+   git add tests/e2e/scenarios/edit-button.spec.ts
+   
+   # Clear commit message explaining what and why
+   git commit -m "fix: show edit button for owned tiles
+
+   The permission check was incorrectly comparing user.id as number
+   with item.createdBy as string, causing the edit button to never
+   appear. Fixed by ensuring consistent string comparison.
+   
+   Added E2E test to prevent regression."
+   ```
+
+3. **Separate Concerns**: If you find unrelated issues while debugging
+   ```bash
+   # Stash your debug work
+   git stash
+   
+   # Fix the unrelated issue on a separate branch
+   git checkout -b fix/unrelated-linting-errors
+   # ... make fixes ...
+   git commit -m "chore: fix linting errors in ItemButtons component"
+   
+   # Return to your debug work
+   git checkout fix/original-issue
+   git stash pop
+   ```
+
+### Commit Guidelines for Bug Fixes
+- **fix**: For bug fixes that users would notice
+- **test**: For adding missing test coverage
+- **chore**: For cleanup like fixing lints, removing debug code
+
+### Before Committing
+1. **Remove Debug Code**: Search and remove temporary debugging
+   ```bash
+   # Check for debug console logs
+   grep -r "\[DEBUG" src/
+   grep -r "console.log" src/
+   
+   # Check for debug test IDs
+   grep -r "debug-" src/
+   ```
+
+2. **Verify Tests Pass**
+   ```bash
+   pnpm lint
+   pnpm typecheck
+   pnpm test
+   pnpm test:e2e
+   ```
+
+3. **Review Changes**: Ensure only relevant changes are included
+   ```bash
+   git diff --staged
+   ```
+
+### Creating Pull Request
+1. **Push Branch**: Push your fix branch to GitHub
+   ```bash
+   git push origin fix/explicit-description-of-issue
+   ```
+
+2. **Create PR**: Open pull request to base branch (develop or feature)
+   ```bash
+   # Using GitHub CLI
+   gh pr create --base develop --title "Fix: [Brief description]" \
+     --body-file prompts/bugs/YYYY-MM-DD-explicit-title.md
+   
+   # Or manually on GitHub, using the debug session file content as PR description
+   ```
+
+3. **PR Description**: Copy content from your debug session file
+   - The entire content of `prompts/bugs/YYYY-MM-DD-explicit-title.md` becomes the PR description
+   - This includes:
+     - Issue description and reproduction steps
+     - Investigation log and hypothesis
+     - Root cause analysis
+     - Fix applied and verification
+     - Tests added to prevent regression
