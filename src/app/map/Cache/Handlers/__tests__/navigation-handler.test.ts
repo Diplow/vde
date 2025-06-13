@@ -71,7 +71,7 @@ describe("Navigation Handler", () => {
     };
     config = {
       dispatch: mockDispatch,
-      state: mockState,
+      getState: () => mockState,
       dataHandler: mockDataHandler,
       router: mockRouter,
       searchParams: new URLSearchParams("center=123&expandedItems=1,2"),
@@ -90,7 +90,7 @@ describe("Navigation Handler", () => {
         ...mockState,
         itemsById: {},
       };
-      config.state = stateWithoutItem;
+      config.getState = () => stateWithoutItem;
       
       const handler = createNavigationHandler(config);
 
@@ -111,7 +111,7 @@ describe("Navigation Handler", () => {
         ...mockState,
         itemsById: {},
       };
-      config.state = stateWithoutItem;
+      config.getState = () => stateWithoutItem;
       
       const handler = createNavigationHandler(config);
 
@@ -131,7 +131,7 @@ describe("Navigation Handler", () => {
         ...mockState,
         itemsById: {},
       };
-      config.state = stateWithoutItem;
+      config.getState = () => stateWithoutItem;
       
       const handler = createNavigationHandler(config);
 
@@ -154,7 +154,7 @@ describe("Navigation Handler", () => {
 
       const handler = createNavigationHandler({
         ...config,
-        state: stateWithoutItem,
+        getState: () => stateWithoutItem,
       });
 
       const result = await handler.navigateToItem("1,2");
@@ -176,7 +176,7 @@ describe("Navigation Handler", () => {
         ...mockState,
         itemsById: {},
       };
-      config.state = stateWithoutItem;
+      config.getState = () => stateWithoutItem;
 
       const handler = createNavigationHandler(config);
 
@@ -350,7 +350,7 @@ describe("Navigation Handler", () => {
 
       const handler = createNavigationHandlerForTesting(
         mockDispatch,
-        mockState,
+        () => mockState,
         mockDataHandler,
         mockTestRouter,
         mockTestSearchParams,
@@ -374,7 +374,7 @@ describe("Navigation Handler", () => {
     test("works without mocked dependencies", () => {
       const handler = createNavigationHandlerForTesting(
         mockDispatch,
-        mockState,
+        () => mockState,
         mockDataHandler,
       );
 
@@ -420,7 +420,7 @@ describe("Navigation Handler", () => {
 
       const handler = createNavigationHandler({
         ...config,
-        state: stateWithEmptyExpanded,
+        getState: () => stateWithEmptyExpanded,
       });
 
       handler.toggleItemExpansionWithURL("5");
@@ -453,7 +453,7 @@ describe("Navigation Handler", () => {
 
       const handler = createNavigationHandler({
         ...config,
-        state: stateWithoutCenter,
+        getState: () => stateWithoutCenter,
       });
 
       handler.toggleItemExpansionWithURL("1");
@@ -472,7 +472,7 @@ describe("Navigation Handler", () => {
 
       const handler = createNavigationHandler({
         ...config,
-        state: stateWithMissingItem,
+        getState: () => stateWithMissingItem,
       });
 
       handler.toggleItemExpansionWithURL("1");
@@ -490,7 +490,7 @@ describe("Navigation Handler", () => {
 
       const handler = createNavigationHandler({
         ...config,
-        state: stateWithMultipleExpanded,
+        getState: () => stateWithMultipleExpanded,
       });
 
       handler.toggleItemExpansionWithURL("2");
@@ -510,7 +510,7 @@ describe("Navigation Handler", () => {
 
       const handler = createNavigationHandler({
         ...config,
-        state: stateWithSingleExpanded,
+        getState: () => stateWithSingleExpanded,
       });
 
       handler.toggleItemExpansionWithURL("1");

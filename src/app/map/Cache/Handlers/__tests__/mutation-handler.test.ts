@@ -77,7 +77,7 @@ describe("Mutation Handler", () => {
     config = {
       dispatch: mockDispatch,
       services: mockServices,
-      state: mockState,
+      getState: () => mockState,
       dataHandler: mockDataHandler,
     };
   });
@@ -151,7 +151,7 @@ describe("Mutation Handler", () => {
 
       const handler = createMutationHandler({
         ...config,
-        state: noOptimisticState,
+        getState: () => noOptimisticState,
       });
       const itemData = { name: "New Item" };
 
@@ -313,7 +313,7 @@ describe("Mutation Handler", () => {
     test("createMutationHandlerForCache works without server service", async () => {
       const handler = createMutationHandlerForCache(
         mockDispatch,
-        mockState,
+        () => mockState,
         mockDataHandler,
       );
 
@@ -336,7 +336,7 @@ describe("Mutation Handler", () => {
     test("simplified factory focuses on cache coordination", async () => {
       const handler = createMutationHandlerForCache(
         mockDispatch,
-        mockState,
+        () => mockState,
         mockDataHandler,
       );
 

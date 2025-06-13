@@ -10,7 +10,7 @@ export type MutationHandlerServices = Record<string, never>;
 export interface MutationHandlerConfig {
   dispatch: React.Dispatch<CacheAction>;
   services: MutationHandlerServices;
-  state: CacheState;
+  getState: () => CacheState;
   dataHandler: DataOperations;
 }
 
@@ -41,7 +41,7 @@ export interface MutationOperations {
 export function createMutationHandler(
   config: MutationHandlerConfig,
 ): MutationOperations {
-  const { dispatch, state, dataHandler } = config;
+  const { dispatch, getState, dataHandler } = config;
 
   // Track optimistic changes
   const pendingChanges = new Map<string, OptimisticChange>();
@@ -54,7 +54,7 @@ export function createMutationHandler(
   ): Promise<MutationResult> => {
     try {
       // Apply optimistic update if enabled
-      if (state.cacheConfig.enableOptimisticUpdates) {
+      if (getState().cacheConfig.enableOptimisticUpdates) {
         const changeId = generateChangeId();
         const optimisticChange: OptimisticChange = {
           id: changeId,
@@ -99,7 +99,7 @@ export function createMutationHandler(
     data: Record<string, unknown>,
   ): Promise<MutationResult> => {
     try {
-      const existingItem = state.itemsById[coordId];
+      const existingItem = getState().itemsById[coordId];
 
       if (!existingItem) {
         // Can't optimistically update non-existent item
@@ -107,7 +107,7 @@ export function createMutationHandler(
       }
 
       // Apply optimistic update if enabled
-      if (state.cacheConfig.enableOptimisticUpdates) {
+      if (getState().cacheConfig.enableOptimisticUpdates) {
         const changeId = generateChangeId();
         const optimisticChange: OptimisticChange = {
           id: changeId,
@@ -152,7 +152,7 @@ export function createMutationHandler(
 
   const deleteItem = async (coordId: string): Promise<MutationResult> => {
     try {
-      const existingItem = state.itemsById[coordId];
+      const existingItem = getState().itemsById[coordId];
 
       if (!existingItem) {
         // Can't delete non-existent item
@@ -160,7 +160,7 @@ export function createMutationHandler(
       }
 
       // Apply optimistic removal if enabled
-      if (state.cacheConfig.enableOptimisticUpdates) {
+      if (getState().cacheConfig.enableOptimisticUpdates) {
         const changeId = generateChangeId();
         const optimisticChange: OptimisticChange = {
           id: changeId,
@@ -260,13 +260,13 @@ export function createMutationHandler(
  */
 export function createMutationHandlerForCache(
   dispatch: React.Dispatch<CacheAction>,
-  state: CacheState,
+  getState: () => CacheState,
   dataHandler: DataOperations,
 ): MutationOperations {
   return createMutationHandler({
     dispatch,
     services: {}, // No services needed for cache-only coordination
-    state,
+    getState,
     dataHandler,
   });
 }
@@ -275,7 +275,7 @@ export function createMutationHandlerForCache(
 // @deprecated Use createMutationHandlerForCache instead
 export function createMutationHandlerWithServerService(
   dispatch: React.Dispatch<CacheAction>,
-  state: CacheState,
+  getState: () => CacheState,
   dataHandler: DataOperations,
   _serviceConfig?: unknown, // Ignored - mutations don't use server service
 ) {
@@ -283,14 +283,14 @@ export function createMutationHandlerWithServerService(
     "createMutationHandlerWithServerService is deprecated. Use createMutationHandlerForCache instead. Mutations should use tRPC hooks directly.",
   );
 
-  return createMutationHandlerForCache(dispatch, state, dataHandler);
+  return createMutationHandlerForCache(dispatch, getState, dataHandler);
 }
 
 // Legacy factory function for backwards compatibility
 // @deprecated Use createMutationHandlerForCache instead
 export function createMutationHandlerWithServices(
   dispatch: React.Dispatch<CacheAction>,
-  state: CacheState,
+  getState: () => CacheState,
   dataHandler: DataOperations,
   // Future: real mutation services will be injected here
 ) {
@@ -298,5 +298,5 @@ export function createMutationHandlerWithServices(
     "createMutationHandlerWithServices is deprecated. Use createMutationHandlerForCache instead.",
   );
 
-  return createMutationHandlerForCache(dispatch, state, dataHandler);
+  return createMutationHandlerForCache(dispatch, getState, dataHandler);
 }

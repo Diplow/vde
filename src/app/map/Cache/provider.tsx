@@ -3,6 +3,7 @@ import React, {
   useReducer,
   useMemo,
   useRef,
+  useCallback,
 } from "react";
 
 // Core infrastructure
@@ -137,9 +138,14 @@ export function MapCacheProvider({
     mapContext,
   });
 
+  // Create getState function for handlers
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  const getState = useCallback(() => stateRef.current, []);
+
   const navigationOperations = useNavigationHandler(
     dispatch,
-    state,
+    getState,
     dataOperations,
   );
 
