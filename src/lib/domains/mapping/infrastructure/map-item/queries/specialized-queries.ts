@@ -4,7 +4,7 @@ import type * as schemaImport from "~/server/db/schema";
 import { mapItems, baseItems } from "~/server/db/schema";
 
 import { MapItemType } from "~/lib/domains/mapping/_objects/map-item";
-import type { HexDirection } from "~/lib/domains/mapping/utils/hex-coordinates";
+import type { Direction } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { DbMapItemWithBase } from "../types";
 import { pathToString } from "../mappers";
 
@@ -61,7 +61,7 @@ export class SpecializedQueries {
   }
 
   async fetchDescendantsByParent(params: {
-    parentPath: HexDirection[];
+    parentPath: Direction[];
     parentUserId: number;
     parentGroupId: number;
     limit?: number;
@@ -96,7 +96,7 @@ export class SpecializedQueries {
   }
 
   private _buildDescendantsConditions(
-    parentPath: HexDirection[],
+    parentPath: Direction[],
     parentUserId: number,
     parentGroupId: number,
   ): SQL[] {

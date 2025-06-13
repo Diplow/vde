@@ -5,7 +5,7 @@ import type {
 import { MapItemActions } from "~/lib/domains/mapping/_actions";
 import { adapt } from "~/lib/domains/mapping/types/contracts";
 import {
-  type HexCoord,
+  type Coord,
   CoordSystem,
 } from "~/lib/domains/mapping/utils/hex-coordinates";
 import { MapItemType } from "../_objects";
@@ -35,7 +35,7 @@ export class ItemCrudService {
     url,
   }: {
     parentId: number;
-    coords: HexCoord;
+    coords: Coord;
     title?: string;
     descr?: string;
     url?: string;
@@ -77,7 +77,7 @@ export class ItemCrudService {
   /**
    * Get a specific item by its coordinates
    */
-  async getItem({ coords }: { coords: HexCoord }): Promise<MapItemContract> {
+  async getItem({ coords }: { coords: Coord }): Promise<MapItemContract> {
     const item = await this.actions.getMapItem({ coords });
     return adapt.mapItem(item, item.attrs.coords.userId);
   }
@@ -91,7 +91,7 @@ export class ItemCrudService {
     descr,
     url,
   }: {
-    coords: HexCoord;
+    coords: Coord;
     title?: string;
     descr?: string;
     url?: string;
@@ -112,7 +112,7 @@ export class ItemCrudService {
   /**
    * Remove a specific item (and its descendants)
    */
-  async removeItem({ coords }: { coords: HexCoord }): Promise<void> {
+  async removeItem({ coords }: { coords: Coord }): Promise<void> {
     const itemToRemove = await this.actions.getMapItem({ coords });
     await this.actions.removeItem({ idr: { id: itemToRemove.id } });
   }

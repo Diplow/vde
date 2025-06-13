@@ -5,13 +5,13 @@ import {
   type MapItemWithId,
 } from "~/lib/domains/mapping/_objects";
 import { type GenericRepository } from "../../utils/generic-repository";
-import { type HexCoord } from "../utils/hex-coordinates";
+import { type HexCoordinateinate } from "../utils/hex-coordinates";
 
 export type MapItemIdr =
   | { id: number }
   | {
       attrs: {
-        coords: HexCoord;
+        coords: HexCoordinateinate;
       };
     };
 
@@ -41,8 +41,8 @@ export interface MapItemRepository
    * Get all descendants of a parent map item (direct and indirect children).
    *
    * @param parentPath The parent's coordinate path that children paths must start with
-   * @param parentUserId The userId from the parent's HexCoord
-   * @param parentGroupId The groupId from the parent's HexCoord
+   * @param parentUserId The userId from the parent's Coord
+   * @param parentGroupId The groupId from the parent's Coord
    * @param limit Optional limit for pagination
    * @param offset Optional offset for pagination
    * @returns Array of map items that are descendants of the specified parent
@@ -54,7 +54,7 @@ export interface MapItemRepository
     limit,
     offset,
   }: {
-    parentPath: HexCoord["path"];
+    parentPath: Coord["path"];
     parentUserId: number;
     parentGroupId: number;
     limit?: number;

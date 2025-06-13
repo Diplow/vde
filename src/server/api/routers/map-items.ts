@@ -5,7 +5,7 @@ import {
   mappingServiceMiddleware,
 } from "~/server/api/trpc";
 import { contractToApiAdapters } from "~/server/api/types/contracts";
-import { type HexCoord } from "~/lib/domains/mapping/utils/hex-coordinates";
+import { type Coord } from "~/lib/domains/mapping/utils/hex-coordinates";
 import {
   hexCoordSchema,
   itemCreationSchema,
@@ -32,7 +32,7 @@ export const mapItemsRouter = createTRPCRouter({
     .input(z.object({ coords: hexCoordSchema }))
     .query(async ({ ctx, input }) => {
       const item = await ctx.mappingService.items.crud.getItem({
-        coords: input.coords as HexCoord,
+        coords: input.coords as Coord,
       });
       return contractToApiAdapters.mapItem(item);
     }),
@@ -61,7 +61,7 @@ export const mapItemsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const mapItem = await ctx.mappingService.items.crud.addItemToMap({
         parentId: input.parentId,
-        coords: input.coords as HexCoord,
+        coords: input.coords as Coord,
         title: input.title,
         descr: input.descr,
         url: input.url,
@@ -75,7 +75,7 @@ export const mapItemsRouter = createTRPCRouter({
     .input(z.object({ coords: hexCoordSchema }))
     .mutation(async ({ ctx, input }) => {
       await ctx.mappingService.items.crud.removeItem({
-        coords: input.coords as HexCoord,
+        coords: input.coords as Coord,
       });
       return _createSuccessResponse() as { success: true };
     }),
@@ -86,7 +86,7 @@ export const mapItemsRouter = createTRPCRouter({
     .input(itemUpdateSchema)
     .mutation(async ({ ctx, input }) => {
       const item = await ctx.mappingService.items.crud.updateItem({
-        coords: input.coords as HexCoord,
+        coords: input.coords as Coord,
         title: input.data.title,
         descr: input.data.descr,
         url: input.data.url,
@@ -100,8 +100,8 @@ export const mapItemsRouter = createTRPCRouter({
     .input(itemMovementSchema)
     .mutation(async ({ ctx, input }) => {
       const item = await ctx.mappingService.items.query.moveMapItem({
-        oldCoords: input.oldCoords as HexCoord,
-        newCoords: input.newCoords as HexCoord,
+        oldCoords: input.oldCoords as Coord,
+        newCoords: input.newCoords as Coord,
       });
       return contractToApiAdapters.mapItem(item);
     }),

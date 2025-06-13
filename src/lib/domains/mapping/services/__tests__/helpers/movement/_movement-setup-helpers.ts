@@ -1,4 +1,4 @@
-import { HexDirection } from "../../../../utils/hex-coordinates";
+import { Direction } from "../../../../utils/hex-coordinates";
 import type { TestEnvironment } from "../_test-utilities";
 import {
   _setupBasicMap,
@@ -14,7 +14,7 @@ export async function _setupItemForMovement(
   const initialCoords = _createTestCoordinates({
     userId: setupParams.userId,
     groupId: setupParams.groupId,
-    path: [HexDirection.East],
+    path: [Direction.East],
   });
 
   const item = await testEnv.service.items.crud.addItemToMap({
@@ -41,7 +41,7 @@ export async function _setupTwoItemsForSwap(
   const firstCoords = _createTestCoordinates({
     userId: setupParams.userId,
     groupId: setupParams.groupId,
-    path: [HexDirection.East],
+    path: [Direction.East],
   });
 
   const firstItem = await testEnv.service.items.crud.addItemToMap({
@@ -53,7 +53,7 @@ export async function _setupTwoItemsForSwap(
   const secondCoords = _createTestCoordinates({
     userId: setupParams.userId,
     groupId: setupParams.groupId,
-    path: [HexDirection.West],
+    path: [Direction.West],
   });
 
   const secondItem = await testEnv.service.items.crud.addItemToMap({
@@ -80,7 +80,7 @@ export async function _setupParentChildHierarchy(
   const parentCoords = _createTestCoordinates({
     userId: setupParams.userId,
     groupId: setupParams.groupId,
-    path: [HexDirection.East],
+    path: [Direction.East],
   });
 
   const parentItem = await testEnv.service.items.crud.addItemToMap({
@@ -92,7 +92,7 @@ export async function _setupParentChildHierarchy(
   const childCoords = _createTestCoordinates({
     userId: setupParams.userId,
     groupId: setupParams.groupId,
-    path: [HexDirection.East, HexDirection.NorthEast],
+    path: [Direction.East, Direction.NorthEast],
   });
 
   const childItem = await testEnv.service.items.crud.addItemToMap({
@@ -104,7 +104,7 @@ export async function _setupParentChildHierarchy(
   const parentNewCoords = _createTestCoordinates({
     userId: setupParams.userId,
     groupId: setupParams.groupId,
-    path: [HexDirection.West],
+    path: [Direction.West],
   });
 
   return {

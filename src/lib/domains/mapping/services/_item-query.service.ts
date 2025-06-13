@@ -4,7 +4,7 @@ import type {
 } from "~/lib/domains/mapping/_repositories";
 import { MapItemActions } from "~/lib/domains/mapping/_actions";
 import { adapt } from "~/lib/domains/mapping/types/contracts";
-import type { HexCoord } from "~/lib/domains/mapping/utils/hex-coordinates";
+import type { Coord } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { MapItemContract } from "../types/contracts";
 
 export class ItemQueryService {
@@ -72,8 +72,8 @@ export class ItemQueryService {
     oldCoords,
     newCoords,
   }: {
-    oldCoords: HexCoord;
-    newCoords: HexCoord;
+    oldCoords: Coord;
+    newCoords: Coord;
   }): Promise<MapItemContract> {
     const movedItem = await this.actions.moveMapItem({
       oldCoords,

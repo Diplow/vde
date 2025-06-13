@@ -5,7 +5,7 @@ import { StaticBaseTileLayout } from "../Tile/Base/base";
 import { HierarchyTile } from "../Tile/Hierarchy/hierarchy-tile";
 import {
   CoordSystem,
-  type HexCoord,
+  type Coord,
 } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { MapItemAPIContract } from "~/server/api/types/contracts";
 import type { TileData } from "~/app/map/types/tile-data";
@@ -19,7 +19,7 @@ import {
 } from "~/app/map/constants";
 
 interface StaticCreateItemFormProps {
-  targetCoords: HexCoord;
+  targetCoords: Coord;
   parentItem: MapItemAPIContract | null;
   returnUrl: string;
   rootItemId: string;

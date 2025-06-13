@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { api } from "~/commons/trpc/server";
 import {
   CoordSystem,
-  type HexCoord,
+  type Coord,
 } from "~/lib/domains/mapping/utils/hex-coordinates";
 import {
   validateCreateItemInput,
@@ -10,7 +10,7 @@ import {
 } from "./validation.utils";
 
 interface CreateItemFormFieldsProps {
-  targetCoords: HexCoord;
+  targetCoords: Coord;
   parentId?: string;
   returnUrl: string;
   rootItemId: string;

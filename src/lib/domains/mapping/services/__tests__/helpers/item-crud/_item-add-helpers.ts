@@ -1,6 +1,6 @@
 import { expect } from "vitest";
 import { CoordSystem } from "../../../../utils/hex-coordinates";
-import type { HexCoord } from "../../../../utils/hex-coordinates";
+import type { Coord } from "../../../../utils/hex-coordinates";
 import type { TestEnvironment } from "../_test-utilities";
 
 export async function _addAndValidateChildItem(
@@ -53,7 +53,7 @@ export async function _validateMapItemHierarchy(
 
 export async function _validateMismatchedCoordinatesError(
   testEnv: TestEnvironment,
-  setupData: { rootMapId: number; mismatchedCoords: HexCoord },
+  setupData: { rootMapId: number; mismatchedCoords: Coord },
 ) {
   await expect(
     testEnv.service.items.crud.addItemToMap({
@@ -66,7 +66,7 @@ export async function _validateMismatchedCoordinatesError(
 
 export async function _validateNonChildCoordinatesError(
   testEnv: TestEnvironment,
-  setupData: { rootMapId: number; nonChildCoords: HexCoord },
+  setupData: { rootMapId: number; nonChildCoords: Coord },
 ) {
   await expect(
     testEnv.service.items.crud.addItemToMap({
@@ -79,7 +79,7 @@ export async function _validateNonChildCoordinatesError(
 
 export async function _validateNonExistentParentError(
   testEnv: TestEnvironment,
-  setupData: { childCoords: HexCoord },
+  setupData: { childCoords: Coord },
 ) {
   await expect(
     testEnv.service.items.crud.addItemToMap({

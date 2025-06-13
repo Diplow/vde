@@ -4,7 +4,7 @@ import type {
 } from "~/lib/domains/mapping/_repositories";
 import { type MapItemWithId } from "~/lib/domains/mapping/_objects";
 import {
-  type HexCoord,
+  type Coord,
   CoordSystem,
 } from "~/lib/domains/mapping/utils/hex-coordinates";
 import { MAPPING_ERRORS } from "../types/errors";
@@ -15,7 +15,7 @@ export class MapItemQueryHelpers {
     private readonly baseItems: BaseItemRepository,
   ) {}
 
-  async getParent(coords: HexCoord): Promise<MapItemWithId | null> {
+  async getParent(coords: Coord): Promise<MapItemWithId | null> {
     if (CoordSystem.isCenter(coords)) return null;
 
     const parentCoords = CoordSystem.getParentCoord(coords);
@@ -80,7 +80,7 @@ export class MapItemQueryHelpers {
     return [rootItem, ...descendants];
   }
 
-  async getMapItem({ coords }: { coords: HexCoord }): Promise<MapItemWithId> {
+  async getMapItem({ coords }: { coords: Coord }): Promise<MapItemWithId> {
     try {
       return await this.mapItems.getOneByIdr({
         idr: {

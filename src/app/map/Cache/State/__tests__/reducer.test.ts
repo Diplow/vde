@@ -141,7 +141,7 @@ describe("Cache Reducer", () => {
         ...mockItems,
         {
           id: "3",
-          coordinates: "1,2:0", // This should be filtered out (0 in path = HexDirection.Center)
+          coordinates: "1,2:0", // This should be filtered out (0 in path = Direction.Center)
           name: "Invalid Item",
           descr: "Should be filtered",
           depth: 1,

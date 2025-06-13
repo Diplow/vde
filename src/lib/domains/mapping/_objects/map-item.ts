@@ -3,8 +3,8 @@ import {
   type GenericAggregateConstructorArgs,
 } from "~/lib/domains/utils/generic-objects";
 import {
-  type HexCoord,
-  type HexDirection,
+  type Coord,
+  type Direction,
 } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { BaseItemWithId } from "./base-item";
 import { MAPPING_ERRORS } from "../types/errors";
@@ -17,7 +17,7 @@ export enum MapItemType {
 export interface Attrs {
   originId: number | null; // The original mapItem this is a copy of.
   parentId: number | null; // The parent mapItem this is a copy of.
-  coords: HexCoord; // Updated to new HexCoord structure
+  coords: Coord; // Updated to new Coord structure
   ref: {
     itemType: MapItemType; // Will be 'BASE' for all items except root
     itemId: number;
@@ -58,7 +58,7 @@ export type MapItemIdr =
   | { id: number }
   | {
       attrs: {
-        coords: HexCoord;
+        coords: Coord;
       };
     };
 
@@ -125,7 +125,7 @@ export class MapItem extends GenericAggregate<
   }
 
   public static validateCoords(_item: MapItem) {
-    // The old row/col checks are removed as HexCoord changed.
+    // The old row/col checks are removed as Coord changed.
     // Path length validation might still be relevant depending on requirements.
     // e.g. if (item.attrs.coords.path.length > MAX_DEPTH) ...
     // For now, no specific universal validation on coords beyond its structure.
@@ -180,7 +180,7 @@ export class MapItem extends GenericAggregate<
   private static validateNeighborDirections(item: MapItem) {
     MapItem.checkNeighborsDepth(item);
     MapItem.checkNeighborsPath(item);
-    const occupiedDirections = new Set<HexDirection>();
+    const occupiedDirections = new Set<Direction>();
     for (const neighbor of item.neighbors) {
       const direction = neighbor.attrs.coords.path[
         neighbor.attrs.coords.path.length - 1
