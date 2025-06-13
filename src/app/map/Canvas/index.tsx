@@ -83,7 +83,7 @@ export function DynamicMapCanvas({
     updateCenter,
   } = useMapCache();
   const [isHydrated, setIsHydrated] = useState(false);
-  const { user, mappingUserId } = useAuth();
+  const { mappingUserId } = useAuth();
 
   useEffect(() => {
     // Initialize hydration

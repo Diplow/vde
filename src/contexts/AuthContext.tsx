@@ -74,7 +74,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // The user object is typically at authState.data.user
   const user = authState.data?.user;
   const isAuthLoading = authState.isPending;
-  const isLoading = isAuthLoading || (!!user && mappingUserId === undefined);
+  // Only wait for mappingUserId if we have a user, otherwise we're not loading
+  const isLoading = isAuthLoading;
 
   return (
     <AuthContext.Provider value={{ user, mappingUserId, isLoading, setMappingUserId }}>
