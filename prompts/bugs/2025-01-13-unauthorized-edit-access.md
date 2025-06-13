@@ -53,8 +53,31 @@ The fix ensures that:
 - Users can only edit tiles they actually own
 - Viewing someone else's map doesn't grant edit permissions to their tiles
 
+## Additional Security Issue Found
+After fixing the frontend permission check, discovered that the backend API mutations were only checking authentication (logged in) but NOT authorization (ownership). This meant any logged-in user could call the API to modify any tile.
+
+## Backend Authorization Fix Applied
+Added ownership checks to all mutation endpoints in `/src/server/api/routers/map-items.ts`:
+
+1. **addItem**: 
+   - Check if creating root item in own space
+   - Check if user owns parent when adding child items
+
+2. **removeItem**: 
+   - Check if user owns the item being deleted
+
+3. **updateItem**: 
+   - Check if user owns the item being updated
+
+4. **moveMapItem**: 
+   - Check if user owns the item being moved
+   - Check if user owns the destination parent tile
+
+All mutations now throw a FORBIDDEN error if the user doesn't own the resource they're trying to modify.
+
 ## Test Added
-Should add an E2E test that verifies:
+Should add E2E tests that verify:
 - User A can edit their own tiles
 - User A cannot edit User B's tiles when viewing User B's map
 - Edit buttons only appear on owned tiles
+- API calls fail with FORBIDDEN when trying to modify non-owned items

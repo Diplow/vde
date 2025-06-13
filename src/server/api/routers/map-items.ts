@@ -13,7 +13,8 @@ import {
   itemUpdateSchema,
   itemMovementSchema,
 } from "./map-schemas";
-import { _createSuccessResponse } from "./_map-auth-helpers";
+import { _createSuccessResponse, _getUserId } from "./_map-auth-helpers";
+import { TRPCError } from "@trpc/server";
 
 export const mapItemsRouter = createTRPCRouter({
   // Get root MapItem by ID
@@ -60,9 +61,35 @@ export const mapItemsRouter = createTRPCRouter({
     .use(mappingServiceMiddleware)
     .input(itemCreationSchema)
     .mutation(async ({ ctx, input }) => {
+      // For adding items, check if user owns the parent item OR if they're creating in their own space
+      const coords = input.coords as Coord;
+      const currentUserId = await _getUserId(ctx.user);
+      const currentUserIdString = String(currentUserId);
+      
+      // If creating a root item, ensure it's in user's own space
+      if (coords.path.length === 0 && coords.userId !== currentUserId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You can only create root items in your own space",
+        });
+      }
+      
+      // If creating a child item, check parent ownership
+      if (input.parentId) {
+        const parentItem = await ctx.mappingService.items.query.getItemById({
+          itemId: input.parentId,
+        });
+        if (parentItem.ownerId !== currentUserIdString) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "You can only add items to tiles you own",
+          });
+        }
+      }
+      
       const mapItem = await ctx.mappingService.items.crud.addItemToMap({
         parentId: input.parentId,
-        coords: input.coords as Coord,
+        coords: coords,
         title: input.title,
         descr: input.descr,
         url: input.url,
@@ -75,6 +102,21 @@ export const mapItemsRouter = createTRPCRouter({
     .use(mappingServiceMiddleware)
     .input(z.object({ coords: hexCoordSchema }))
     .mutation(async ({ ctx, input }) => {
+      // Check if user owns the item they're trying to remove
+      const currentUserId = await _getUserId(ctx.user);
+      const currentUserIdString = String(currentUserId);
+      
+      const item = await ctx.mappingService.items.crud.getItem({
+        coords: input.coords as Coord,
+      });
+      
+      if (item.ownerId !== currentUserIdString) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You can only delete items you own",
+        });
+      }
+      
       await ctx.mappingService.items.crud.removeItem({
         coords: input.coords as Coord,
       });
@@ -86,6 +128,21 @@ export const mapItemsRouter = createTRPCRouter({
     .use(mappingServiceMiddleware)
     .input(itemUpdateSchema)
     .mutation(async ({ ctx, input }) => {
+      // Check if user owns the item they're trying to update
+      const currentUserId = await _getUserId(ctx.user);
+      const currentUserIdString = String(currentUserId);
+      
+      const existingItem = await ctx.mappingService.items.crud.getItem({
+        coords: input.coords as Coord,
+      });
+      
+      if (existingItem.ownerId !== currentUserIdString) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You can only update items you own",
+        });
+      }
+      
       const item = await ctx.mappingService.items.crud.updateItem({
         coords: input.coords as Coord,
         title: input.data.title,
@@ -100,9 +157,45 @@ export const mapItemsRouter = createTRPCRouter({
     .use(mappingServiceMiddleware)
     .input(itemMovementSchema)
     .mutation(async ({ ctx, input }) => {
+      // Check if user owns the item they're trying to move
+      const currentUserId = await _getUserId(ctx.user);
+      const currentUserIdString = String(currentUserId);
+      
+      const existingItem = await ctx.mappingService.items.crud.getItem({
+        coords: input.oldCoords as Coord,
+      });
+      
+      if (existingItem.ownerId !== currentUserIdString) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You can only move items you own",
+        });
+      }
+      
+      // Also check if they own the destination parent (if moving to a new parent)
+      const oldCoords = input.oldCoords as Coord;
+      const newCoords = input.newCoords as Coord;
+      
+      // If changing parent (different path prefix), check new parent ownership
+      if (oldCoords.path.slice(0, -1).join() !== newCoords.path.slice(0, -1).join()) {
+        if (newCoords.path.length > 0) {
+          const newParentCoords = { ...newCoords, path: newCoords.path.slice(0, -1) };
+          const newParentItem = await ctx.mappingService.items.crud.getItem({
+            coords: newParentCoords,
+          });
+          
+          if (newParentItem.ownerId !== currentUserIdString) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "You can only move items to tiles you own",
+            });
+          }
+        }
+      }
+      
       const item = await ctx.mappingService.items.query.moveMapItem({
-        oldCoords: input.oldCoords as Coord,
-        newCoords: input.newCoords as Coord,
+        oldCoords: oldCoords,
+        newCoords: newCoords,
       });
       return contractToApiAdapters.mapItem(item);
     }),
