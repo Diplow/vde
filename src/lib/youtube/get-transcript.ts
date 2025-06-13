@@ -45,8 +45,13 @@ async function getTranscript(videoId: string): Promise<string> {
     }
 
     // If not, fetch from YouTube API
+    const youtubeApiKey = process.env.YOUTUBE_API_KEY;
+    if (!youtubeApiKey) {
+      throw new Error("YOUTUBE_API_KEY environment variable is not set. YouTube transcript functionality is disabled.");
+    }
+    
     const response = await fetch(
-      `https://www.googleapis.com/youtube/v3/captions?videoId=${videoId}&part=snippet&key=${process.env.YOUTUBE_API_KEY}`,
+      `https://www.googleapis.com/youtube/v3/captions?videoId=${videoId}&part=snippet&key=${youtubeApiKey}`,
     );
 
     if (!response.ok) {
