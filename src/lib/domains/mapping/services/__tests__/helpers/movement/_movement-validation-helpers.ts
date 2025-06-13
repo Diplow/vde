@@ -1,6 +1,6 @@
 import { expect } from "vitest";
-import { HexDirection, CoordSystem } from "../../../../utils/hex-coordinates";
-import type { HexCoord } from "../../../../utils/hex-coordinates";
+import { Direction, CoordSystem } from "../../../../utils/hex-coordinates";
+import type { Coord } from "../../../../utils/hex-coordinates";
 import type { TestEnvironment } from "../_test-utilities";
 import {
   _createTestCoordinates,
@@ -14,9 +14,9 @@ export async function _validateItemMovementToEmptyCell(
     userId: number;
     groupId: number;
     item: { id: string };
-    initialCoords: HexCoord;
+    initialCoords: Coord;
   },
-  newCoords: HexCoord,
+  newCoords: Coord,
 ) {
   const movedItemContract = await testEnv.service.items.query.moveMapItem({
     oldCoords: movementSetup.initialCoords,
@@ -32,7 +32,7 @@ export async function _validateItemMovementToEmptyCell(
 
 export async function _validateOldLocationEmpty(
   testEnv: TestEnvironment,
-  oldCoords: HexCoord,
+  oldCoords: Coord,
 ) {
   await expect(
     testEnv.service.items.crud.getItem({ coords: oldCoords }),
@@ -41,7 +41,7 @@ export async function _validateOldLocationEmpty(
 
 export async function _validateNewLocationOccupied(
   testEnv: TestEnvironment,
-  newCoords: HexCoord,
+  newCoords: Coord,
   expectedItemId: string,
 ) {
   const itemAtNewLocation = await testEnv.service.items.crud.getItem({
@@ -54,9 +54,9 @@ export async function _validateItemSwapping(
   testEnv: TestEnvironment,
   swapSetup: {
     firstItem: { id: string };
-    firstItemCoords: HexCoord;
+    firstItemCoords: Coord;
     secondItem: { id: string };
-    secondItemCoords: HexCoord;
+    secondItemCoords: Coord;
   },
 ) {
   await testEnv.service.items.query.moveMapItem({
@@ -81,10 +81,10 @@ export async function _validateParentChildMovement(
     userId: number;
     groupId: number;
     parentItem: { id: string };
-    parentInitialCoords: HexCoord;
-    parentNewCoords: HexCoord;
+    parentInitialCoords: Coord;
+    parentNewCoords: Coord;
     childItem: { id: string };
-    childInitialCoords: HexCoord;
+    childInitialCoords: Coord;
   },
 ) {
   await testEnv.service.items.query.moveMapItem({
@@ -107,7 +107,7 @@ export async function _validateParentChildMovement(
 
 export async function _validateParentNewPosition(
   testEnv: TestEnvironment,
-  parentNewCoords: HexCoord,
+  parentNewCoords: Coord,
   parentItemId: string,
 ) {
   const movedParent = await testEnv.service.items.crud.getItem({
@@ -121,11 +121,11 @@ export async function _validateChildRelativePosition(
   hierarchySetup: {
     userId: number;
     groupId: number;
-    parentNewCoords: HexCoord;
+    parentNewCoords: Coord;
     parentItem: { id: string };
     childItem: { id: string };
-    childInitialCoords: HexCoord;
-    parentInitialCoords: HexCoord;
+    childInitialCoords: Coord;
+    parentInitialCoords: Coord;
   },
 ) {
   // Calculate the relative path of the child from the parent
@@ -149,8 +149,8 @@ export async function _validateChildRelativePosition(
 export async function _validateOldPositionsEmpty(
   testEnv: TestEnvironment,
   hierarchySetup: {
-    parentInitialCoords: HexCoord;
-    childInitialCoords: HexCoord;
+    parentInitialCoords: Coord;
+    childInitialCoords: Coord;
   },
 ) {
   await expect(
@@ -177,7 +177,7 @@ export async function _validateUserItemMoveRestriction(
   const childLikePath = _createTestCoordinates({
     userId,
     groupId,
-    path: [HexDirection.East],
+    path: [Direction.East],
   });
 
   await expect(
@@ -190,7 +190,7 @@ export async function _validateUserItemMoveRestriction(
 
 export async function _validateCrossSpaceMovementError(
   testEnv: TestEnvironment,
-  movementSetup: { userId: number; groupId: number; initialCoords: HexCoord },
+  movementSetup: { userId: number; groupId: number; initialCoords: Coord },
 ) {
   const differentUserId = movementSetup.userId + 999999;
   const differentSpaceCoords = _createTestCoordinates({

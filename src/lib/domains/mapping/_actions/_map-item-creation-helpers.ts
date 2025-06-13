@@ -10,7 +10,7 @@ import {
   type MapItemWithId,
   MapItemType,
 } from "~/lib/domains/mapping/_objects";
-import { type HexCoord } from "~/lib/domains/mapping/utils/hex-coordinates";
+import { type Coord } from "~/lib/domains/mapping/utils/hex-coordinates";
 
 export class MapItemCreationHelpers {
   constructor(
@@ -27,7 +27,7 @@ export class MapItemCreationHelpers {
     parentId,
   }: {
     itemType: MapItemType;
-    coords: HexCoord;
+    coords: Coord;
     title?: string;
     descr?: string;
     url?: string;
@@ -68,7 +68,7 @@ export class MapItemCreationHelpers {
   private _validateItemTypeConstraints(
     itemType: MapItemType,
     parent: MapItemWithId | null,
-    coords: HexCoord,
+    coords: Coord,
   ) {
     if (itemType === MapItemType.USER) {
       if (parent) {
@@ -98,7 +98,7 @@ export class MapItemCreationHelpers {
 
   private _buildMapItem(
     itemType: MapItemType,
-    coords: HexCoord,
+    coords: Coord,
     parent: MapItemWithId | null,
     ref: BaseItemWithId,
   ): MapItem {

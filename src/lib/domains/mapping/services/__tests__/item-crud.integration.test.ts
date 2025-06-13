@@ -31,7 +31,7 @@ import {
   _validateRootItemRemoval,
   _validateRemoveNonExistentItemError,
 } from "./helpers/item-crud/_item-remove-helpers";
-import { HexDirection } from "../../utils/hex-coordinates";
+import { Direction } from "../../utils/hex-coordinates";
 
 describe("MappingService - Item CRUD [Integration - DB]", () => {
   let testEnv: TestEnvironment;
@@ -49,7 +49,7 @@ describe("MappingService - Item CRUD [Integration - DB]", () => {
       const childCoords = _createTestCoordinates({
         userId: setupParams.userId,
         groupId: setupParams.groupId,
-        path: [HexDirection.East],
+        path: [Direction.East],
       });
 
       const addItemArgs = {
@@ -74,7 +74,7 @@ describe("MappingService - Item CRUD [Integration - DB]", () => {
       const mismatchedCoords = _createTestCoordinates({
         userId: setupParams.userId + 999999,
         groupId: setupParams.groupId,
-        path: [HexDirection.East],
+        path: [Direction.East],
       });
 
       await _validateMismatchedCoordinatesError(testEnv, {
@@ -90,7 +90,7 @@ describe("MappingService - Item CRUD [Integration - DB]", () => {
       const nonChildCoords = _createTestCoordinates({
         userId: setupParams.userId,
         groupId: setupParams.groupId,
-        path: [HexDirection.West, HexDirection.West],
+        path: [Direction.West, Direction.West],
       });
 
       await _validateNonChildCoordinatesError(testEnv, {
@@ -105,7 +105,7 @@ describe("MappingService - Item CRUD [Integration - DB]", () => {
       const childCoords = _createTestCoordinates({
         userId: testParams.userId,
         groupId: testParams.groupId,
-        path: [HexDirection.East],
+        path: [Direction.East],
       });
 
       await _validateNonExistentParentError(testEnv, { childCoords });
@@ -132,7 +132,7 @@ describe("MappingService - Item CRUD [Integration - DB]", () => {
       const nonExistentCoords = _createTestCoordinates({
         userId: setupParams.userId,
         groupId: setupParams.groupId,
-        path: [HexDirection.SouthWest, HexDirection.West],
+        path: [Direction.SouthWest, Direction.West],
       });
 
       await _validateItemNotFoundError(testEnv, nonExistentCoords);

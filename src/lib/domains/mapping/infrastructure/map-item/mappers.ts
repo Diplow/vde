@@ -8,7 +8,7 @@ import {
   BaseItem,
   type BaseItemWithId,
 } from "~/lib/domains/mapping/_objects/base-item";
-import type { HexDirection } from "~/lib/domains/mapping/utils/hex-coordinates";
+import type { Direction } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { DbMapItemWithBase } from "./types";
 
 export function mapJoinedDbToDomain(
@@ -31,13 +31,13 @@ export function mapJoinedDbToDomain(
   return mapItem as MapItemWithId;
 }
 
-export function pathToString(path: HexDirection[]): string {
+export function pathToString(path: Direction[]): string {
   return path.join(",");
 }
 
-export function parsePathString(pathString: string | null): HexDirection[] {
+export function parsePathString(pathString: string | null): Direction[] {
   if (pathString === null || pathString === "") return [];
-  return pathString.split(",").map(Number) as HexDirection[];
+  return pathString.split(",").map(Number) as Direction[];
 }
 
 function _createBaseItemWithId(

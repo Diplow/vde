@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// Zod schema for HexCoord validation
+// Zod schema for Coord validation
 export const hexCoordSchema = z.object({
   userId: z.number(),
   groupId: z.number(),

@@ -1,6 +1,6 @@
 import { expect } from "vitest";
-import { HexDirection } from "../../../../utils/hex-coordinates";
-import type { HexCoord } from "../../../../utils/hex-coordinates";
+import { Direction } from "../../../../utils/hex-coordinates";
+import type { Coord } from "../../../../utils/hex-coordinates";
 import type { TestEnvironment } from "../_test-utilities";
 import { _setupBasicMap, _createTestCoordinates } from "../_test-utilities";
 
@@ -13,7 +13,7 @@ export async function _setupItemForUpdate(
   const itemCoords = _createTestCoordinates({
     userId: setupParams.userId,
     groupId: setupParams.groupId,
-    path: [HexDirection.East],
+    path: [Direction.East],
   });
 
   const originalItem = await testEnv.service.items.crud.addItemToMap({
@@ -29,7 +29,7 @@ export async function _setupItemForUpdate(
 
 export async function _validateItemUpdate(
   testEnv: TestEnvironment,
-  itemCoords: HexCoord,
+  itemCoords: Coord,
   updateData: { title: string; descr: string; url: string },
 ) {
   const updatedItemContract = await testEnv.service.items.crud.updateItem({
@@ -57,7 +57,7 @@ export async function _validateUpdateNonExistentItemError(
   const nonExistentCoords = _createTestCoordinates({
     userId: setupParams.userId,
     groupId: setupParams.groupId,
-    path: [HexDirection.SouthWest, HexDirection.West],
+    path: [Direction.SouthWest, Direction.West],
   });
 
   await expect(
@@ -70,7 +70,7 @@ export async function _validateUpdateNonExistentItemError(
 
 export async function _validatePartialUpdate(
   testEnv: TestEnvironment,
-  itemCoords: HexCoord,
+  itemCoords: Coord,
   originalItem: { descr: string },
 ) {
   const updatedItemContract = await testEnv.service.items.crud.updateItem({
@@ -84,7 +84,7 @@ export async function _validatePartialUpdate(
 
 export async function _updateAndValidateItem(
   testEnv: TestEnvironment,
-  itemCoords: HexCoord,
+  itemCoords: Coord,
   updateData: { title: string; descr: string; url: string },
 ) {
   const updatedItemContract = await testEnv.service.items.crud.updateItem({
@@ -109,7 +109,7 @@ export async function _updateAndValidateItem(
 
 export async function _partialUpdateAndValidate(
   testEnv: TestEnvironment,
-  itemCoords: HexCoord,
+  itemCoords: Coord,
   partialUpdateData: { title?: string; descr?: string; url?: string },
 ) {
   const updatedItemContract = await testEnv.service.items.crud.updateItem({

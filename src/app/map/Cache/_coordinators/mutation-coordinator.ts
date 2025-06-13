@@ -1,5 +1,5 @@
 import { type Dispatch } from "react";
-import { CoordSystem, type HexCoord } from "~/lib/domains/mapping/utils/hex-coordinates";
+import { CoordSystem, type Coord } from "~/lib/domains/mapping/utils/hex-coordinates";
 import { MapItemType } from "~/lib/domains/mapping/types/contracts";
 import type { MapItemAPIContract } from "~/server/api/types/contracts";
 import type { CacheAction } from "../State/types";
@@ -22,7 +22,7 @@ export interface MutationCoordinatorConfig {
   // Pass mutations as dependencies
   addItemMutation: {
     mutateAsync: (params: {
-      coords: HexCoord;
+      coords: Coord;
       parentId: number;
       title?: string;
       descr?: string;
@@ -31,7 +31,7 @@ export interface MutationCoordinatorConfig {
   };
   updateItemMutation: {
     mutateAsync: (params: {
-      coords: HexCoord;
+      coords: Coord;
       title?: string;
       descr?: string;
       url?: string;
@@ -39,7 +39,7 @@ export interface MutationCoordinatorConfig {
   };
   deleteItemMutation: {
     mutateAsync: (params: {
-      coords: HexCoord;
+      coords: Coord;
     }) => Promise<{ success: true }>;
   };
 }

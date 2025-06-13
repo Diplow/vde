@@ -4,9 +4,9 @@ import type {
 } from "~/lib/domains/mapping/_repositories";
 import { type MapItemWithId, MapItemType } from "~/lib/domains/mapping/_objects";
 import {
-  type HexCoord,
+  type Coord,
   CoordSystem,
-  type HexDirection,
+  type Direction,
 } from "~/lib/domains/mapping/utils/hex-coordinates";
 import { MAPPING_ERRORS } from "../types/errors";
 
@@ -17,10 +17,10 @@ export class MapItemMovementHelpers {
   ) {}
 
   async validateCoordsForMove(
-    oldCoords: HexCoord,
-    newCoords: HexCoord,
-    getMapItem: (coords: HexCoord) => Promise<MapItemWithId>,
-    getParent: (coords: HexCoord) => Promise<MapItemWithId | null>,
+    oldCoords: Coord,
+    newCoords: Coord,
+    getMapItem: (coords: Coord) => Promise<MapItemWithId>,
+    getParent: (coords: Coord) => Promise<MapItemWithId | null>,
   ) {
     await this._validateUserItemConstraints(oldCoords, newCoords, getMapItem);
     await this._validateUserSpaceConstraints(oldCoords, newCoords);
@@ -39,10 +39,10 @@ export class MapItemMovementHelpers {
     targetParent: MapItemWithId | null,
     move: (
       item: MapItemWithId,
-      newCoords: HexCoord,
+      newCoords: Coord,
       newParent: MapItemWithId | null,
     ) => Promise<void>,
-  ): Promise<HexCoord> {
+  ): Promise<Coord> {
     const tempCoords = this._generateTemporaryCoords(targetItem, targetParent);
     await move(targetItem, tempCoords, targetParent);
     return tempCoords;
@@ -50,7 +50,7 @@ export class MapItemMovementHelpers {
 
   async move(
     item: MapItemWithId,
-    newCoords: HexCoord,
+    newCoords: Coord,
     newParent: MapItemWithId | null,
     getDescendants: (parentId: number) => Promise<MapItemWithId[]>,
   ) {
@@ -62,9 +62,9 @@ export class MapItemMovementHelpers {
   }
 
   private async _validateUserItemConstraints(
-    oldCoords: HexCoord,
-    newCoords: HexCoord,
-    getMapItem: (coords: HexCoord) => Promise<MapItemWithId>,
+    oldCoords: Coord,
+    newCoords: Coord,
+    getMapItem: (coords: Coord) => Promise<MapItemWithId>,
   ) {
     if (CoordSystem.isCenter(oldCoords) || CoordSystem.isCenter(newCoords)) {
       const item = await getMapItem(oldCoords);
@@ -77,8 +77,8 @@ export class MapItemMovementHelpers {
   }
 
   private async _validateUserSpaceConstraints(
-    oldCoords: HexCoord,
-    newCoords: HexCoord,
+    oldCoords: Coord,
+    newCoords: Coord,
   ) {
     if (
       oldCoords.userId !== newCoords.userId ||
@@ -92,7 +92,7 @@ export class MapItemMovementHelpers {
 
   private _validateParentExistence(
     parent: MapItemWithId | null,
-    coords: HexCoord,
+    coords: Coord,
   ) {
     if (!parent && coords.path.length > 0) {
       throw new Error(
@@ -104,8 +104,8 @@ export class MapItemMovementHelpers {
   private _generateTemporaryCoords(
     targetItem: MapItemWithId,
     targetParent: MapItemWithId | null,
-  ): HexCoord {
-    const NON_EXISTING_DIRECTION = 7 as HexDirection;
+  ): Coord {
+    const NON_EXISTING_DIRECTION = 7 as Direction;
     const tempPath = [
       ...(targetParent ? targetParent.attrs.coords.path : []),
       NON_EXISTING_DIRECTION,
@@ -120,7 +120,7 @@ export class MapItemMovementHelpers {
 
   private async _updateItemCoordinates(
     item: MapItemWithId,
-    newCoords: HexCoord,
+    newCoords: Coord,
     newParent: MapItemWithId | null,
   ) {
     await this.mapItems.updateByIdr({
@@ -134,8 +134,8 @@ export class MapItemMovementHelpers {
 
   private async _updateDescendantCoordinates(
     descendants: MapItemWithId[],
-    oldCoords: HexCoord,
-    newCoords: HexCoord,
+    oldCoords: Coord,
+    newCoords: Coord,
   ) {
     const sortedDescendants = descendants.sort(
       (a, b) => a.attrs.coords.path.length - b.attrs.coords.path.length,
@@ -145,7 +145,7 @@ export class MapItemMovementHelpers {
       const pathSuffix = descendant.attrs.coords.path.slice(
         oldCoords.path.length,
       );
-      const newDescendantCoords: HexCoord = {
+      const newDescendantCoords: Coord = {
         userId: newCoords.userId,
         groupId: newCoords.groupId,
         path: [...newCoords.path, ...pathSuffix],

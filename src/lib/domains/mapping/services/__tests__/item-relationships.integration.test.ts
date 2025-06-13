@@ -1,5 +1,5 @@
 import { describe, beforeEach, it, expect } from "vitest";
-import { HexDirection } from "../../utils/hex-coordinates";
+import { Direction } from "../../utils/hex-coordinates";
 import {
   type TestEnvironment,
   _cleanupDatabase,
@@ -37,7 +37,7 @@ describe("MappingService - Item Relationships [Integration - DB]", () => {
     const childCoords = _createTestCoordinates({
       userId,
       groupId,
-      path: [HexDirection.NorthEast],
+      path: [Direction.NorthEast],
     });
     const childItem = await testEnv.service.items.crud.addItemToMap({
       parentId: rootMap.id,
@@ -48,7 +48,7 @@ describe("MappingService - Item Relationships [Integration - DB]", () => {
     const grandchildCoords = _createTestCoordinates({
       userId,
       groupId,
-      path: [HexDirection.NorthEast, HexDirection.East],
+      path: [Direction.NorthEast, Direction.East],
     });
     const grandchildItem = await testEnv.service.items.crud.addItemToMap({
       parentId: childItem.id,
@@ -59,7 +59,7 @@ describe("MappingService - Item Relationships [Integration - DB]", () => {
     const unrelatedChildCoords = _createTestCoordinates({
       userId,
       groupId,
-      path: [HexDirection.West],
+      path: [Direction.West],
     });
     await testEnv.service.items.crud.addItemToMap({
       parentId: rootMap.id,

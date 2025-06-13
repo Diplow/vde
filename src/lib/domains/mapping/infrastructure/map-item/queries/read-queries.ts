@@ -6,7 +6,7 @@ import { mapItems, baseItems } from "~/server/db/schema";
 import type {
   MapItemWithId,
 } from "~/lib/domains/mapping/_objects/map-item";
-import type { HexDirection } from "~/lib/domains/mapping/utils/hex-coordinates";
+import type { Direction } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { DbMapItemWithBase } from "../types";
 import { mapJoinedDbToDomain, pathToString } from "../mappers";
 
@@ -43,7 +43,7 @@ export class ReadQueries {
   async findItemIdByCoords(coords: {
     userId: number;
     groupId: number;
-    path: HexDirection[];
+    path: Direction[];
   }): Promise<number | undefined> {
     const { userId, groupId, path } = coords;
     const pathString = pathToString(path);

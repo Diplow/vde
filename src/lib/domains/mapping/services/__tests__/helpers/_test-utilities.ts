@@ -7,7 +7,7 @@ import type {
 } from "../../../_repositories";
 import { db } from "~/server/db";
 import { mapItems, baseItems } from "~/server/db/schema";
-import { type HexCoord, HexDirection } from "../../../utils/hex-coordinates";
+import { type Coord, Direction } from "../../../utils/hex-coordinates";
 import { sql } from "drizzle-orm";
 
 export interface TestRepositories {
@@ -70,8 +70,8 @@ export function _createTestEnvironment(): TestEnvironment {
 export function _createTestCoordinates(params: {
   userId: number;
   groupId: number;
-  path?: HexDirection[];
-}): HexCoord {
+  path?: Direction[];
+}): Coord {
   return {
     userId: params.userId,
     groupId: params.groupId,
@@ -96,7 +96,7 @@ export async function _setupMapWithChild(
   params: {
     userId: number;
     groupId: number;
-    childPath?: HexDirection[];
+    childPath?: Direction[];
     childTitle?: string;
   },
 ) {
@@ -104,7 +104,7 @@ export async function _setupMapWithChild(
   const childCoords = _createTestCoordinates({
     userId: params.userId,
     groupId: params.groupId,
-    path: params.childPath ?? [HexDirection.East],
+    path: params.childPath ?? [Direction.East],
   });
 
   const childItem = await service.items.crud.addItemToMap({

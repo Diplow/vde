@@ -7,7 +7,7 @@ import {
   type RelatedLists,
 } from "~/lib/domains/mapping/_objects/map-item";
 import {
-  type HexDirection,
+  type Direction,
 } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { MapItemRepository } from "~/lib/domains/mapping/_repositories";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
@@ -160,7 +160,7 @@ export class DbMapItemRepository implements MapItemRepository {
   }
 
   async getDescendantsByParent(params: {
-    parentPath: HexDirection[];
+    parentPath: Direction[];
     parentUserId: number;
     parentGroupId: number;
     limit?: number;

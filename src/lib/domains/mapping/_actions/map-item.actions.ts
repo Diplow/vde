@@ -8,7 +8,7 @@ import {
   type MapItemWithId,
   MapItemType,
 } from "~/lib/domains/mapping/_objects";
-import { type HexCoord } from "~/lib/domains/mapping/utils/hex-coordinates";
+import { type Coord } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { MapItemIdr } from "../_repositories/map-item";
 import { MapItemCreationHelpers } from "./_map-item-creation-helpers";
 import { MapItemQueryHelpers } from "./_map-item-query-helpers";
@@ -50,7 +50,7 @@ export class MapItemActions {
     parentId,
   }: {
     itemType: MapItemType;
-    coords: HexCoord;
+    coords: Coord;
     title?: string;
     descr?: string;
     url?: string;
@@ -78,7 +78,7 @@ export class MapItemActions {
   public async getMapItem({
     coords,
   }: {
-    coords: HexCoord;
+    coords: Coord;
   }): Promise<MapItemWithId> {
     return await this.queryHelpers.getMapItem({ coords });
   }
@@ -87,8 +87,8 @@ export class MapItemActions {
     oldCoords,
     newCoords,
   }: {
-    oldCoords: HexCoord;
-    newCoords: HexCoord;
+    oldCoords: Coord;
+    newCoords: Coord;
   }) {
     const sourceItem = await this.getMapItem({ coords: oldCoords });
     this._validateUserItemMove(sourceItem, newCoords);
@@ -155,7 +155,7 @@ export class MapItemActions {
     await this.mapItems.remove(itemId);
   }
 
-  private _validateUserItemMove(item: MapItemWithId, newCoords: HexCoord) {
+  private _validateUserItemMove(item: MapItemWithId, newCoords: Coord) {
     if (item.attrs.itemType === MapItemType.USER && newCoords.path.length > 0) {
       throw new Error(
         "USER (root) items cannot be moved to become child items.",
@@ -163,7 +163,7 @@ export class MapItemActions {
     }
   }
 
-  private _validateUserSpaceMove(item: MapItemWithId, newCoords: HexCoord) {
+  private _validateUserSpaceMove(item: MapItemWithId, newCoords: Coord) {
     if (
       item.attrs.itemType === MapItemType.USER &&
       (item.attrs.coords.userId !== newCoords.userId ||
@@ -182,7 +182,7 @@ export class MapItemActions {
     }
   }
 
-  private async _getTargetItem(newCoords: HexCoord) {
+  private async _getTargetItem(newCoords: Coord) {
     return await this.mapItems
       .getOneByIdr({ idr: { attrs: { coords: newCoords } } })
       .catch(() => null);
@@ -191,7 +191,7 @@ export class MapItemActions {
   private async _handleTargetItemDisplacement(
     targetItem: MapItemWithId | null,
     sourceParent: MapItemWithId | null,
-    oldCoords: HexCoord,
+    oldCoords: Coord,
   ) {
     if (!targetItem) return null;
 
@@ -214,7 +214,7 @@ export class MapItemActions {
 
   private async _moveSourceItem(
     sourceItem: MapItemWithId,
-    newCoords: HexCoord,
+    newCoords: Coord,
     targetParent: MapItemWithId | null,
   ) {
     await this.movementHelpers.move(
@@ -227,8 +227,8 @@ export class MapItemActions {
 
   private async _restoreDisplacedItem(
     targetItem: MapItemWithId | null,
-    tempCoordsHoldingTarget: HexCoord | null,
-    oldCoords: HexCoord,
+    tempCoordsHoldingTarget: Coord | null,
+    oldCoords: Coord,
     sourceParent: MapItemWithId | null,
   ) {
     if (targetItem && tempCoordsHoldingTarget) {

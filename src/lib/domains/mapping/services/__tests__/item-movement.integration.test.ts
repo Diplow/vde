@@ -1,5 +1,5 @@
 import { describe, beforeEach, it } from "vitest";
-import { HexDirection } from "../../utils/hex-coordinates";
+import { Direction } from "../../utils/hex-coordinates";
 import {
   type TestEnvironment,
   _cleanupDatabase,
@@ -35,7 +35,7 @@ describe("MappingService - Item Movement [Integration - DB]", () => {
       const newCoords = _createTestCoordinates({
         userId: setupParams.userId,
         groupId: setupParams.groupId,
-        path: [HexDirection.SouthEast],
+        path: [Direction.SouthEast],
       });
 
       await _validateItemMovementToEmptyCell(testEnv, movementSetup, newCoords);

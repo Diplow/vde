@@ -1,11 +1,11 @@
 import type { MapItemAPIContract } from "~/server/api/types/contracts";
 import {
   CoordSystem,
-  type HexCoord,
+  type Coord,
 } from "~/lib/domains/mapping/utils/hex-coordinates";
 import { DEFAULT_MAP_COLORS } from "../constants";
 
-function getColor(coordinates: HexCoord): string {
+function getColor(coordinates: Coord): string {
   if (coordinates.path.length < 1) {
     return "zinc-50";
   }

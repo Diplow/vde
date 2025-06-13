@@ -1,5 +1,5 @@
 import { expect } from "vitest";
-import { HexDirection, CoordSystem } from "../../../../utils/hex-coordinates";
+import { Direction, CoordSystem } from "../../../../utils/hex-coordinates";
 import type { TestEnvironment } from "../_test-utilities";
 import {
   _setupBasicMap,
@@ -16,7 +16,7 @@ export async function _setupItemHierarchyForRemoval(
   const child1Coords = _createTestCoordinates({
     userId: setupParams.userId,
     groupId: setupParams.groupId,
-    path: [HexDirection.East],
+    path: [Direction.East],
   });
 
   const child1 = await testEnv.service.items.crud.addItemToMap({
@@ -28,7 +28,7 @@ export async function _setupItemHierarchyForRemoval(
   const child2Coords = _createTestCoordinates({
     userId: setupParams.userId,
     groupId: setupParams.groupId,
-    path: [HexDirection.West],
+    path: [Direction.West],
   });
 
   await testEnv.service.items.crud.addItemToMap({
@@ -80,7 +80,7 @@ export async function _validateRemoveNonExistentItemError(
   const nonExistentCoords = _createTestCoordinates({
     userId: setupParams.userId,
     groupId: setupParams.groupId,
-    path: [HexDirection.SouthWest, HexDirection.West],
+    path: [Direction.SouthWest, Direction.West],
   });
 
   await expect(

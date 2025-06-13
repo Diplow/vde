@@ -1,6 +1,6 @@
 import { expect } from "vitest";
-import { HexDirection, CoordSystem } from "../../../../utils/hex-coordinates";
-import type { HexCoord } from "../../../../utils/hex-coordinates";
+import { Direction, CoordSystem } from "../../../../utils/hex-coordinates";
+import type { Coord } from "../../../../utils/hex-coordinates";
 import type { TestEnvironment } from "../_test-utilities";
 import { _setupBasicMap, _createTestCoordinates } from "../_test-utilities";
 
@@ -13,7 +13,7 @@ export async function _setupItemForRetrieval(
   const itemCoords = _createTestCoordinates({
     userId: setupParams.userId,
     groupId: setupParams.groupId,
-    path: [HexDirection.East],
+    path: [Direction.East],
   });
 
   await testEnv.service.items.crud.addItemToMap({
@@ -52,7 +52,7 @@ export async function _validateItemRetrieval(
 
 export async function _validateItemNotFoundError(
   testEnv: TestEnvironment,
-  nonExistentCoords: HexCoord,
+  nonExistentCoords: Coord,
 ) {
   await expect(
     testEnv.service.items.crud.getItem({ coords: nonExistentCoords }),

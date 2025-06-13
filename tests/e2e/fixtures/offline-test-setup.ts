@@ -27,42 +27,42 @@ function getTestItems(rootMapId: number) {
     path: []
   },
   { 
-    id: ROOT_MAP_ID + 1, 
+    id: rootMapId + 1, 
     coordId: `${TEST_USER_ID},0:1`, 
     name: "Navigation Test 1", 
     description: "Test child tile at position 1",
     path: [1]
   },
   { 
-    id: ROOT_MAP_ID + 2, 
+    id: rootMapId + 2, 
     coordId: `${TEST_USER_ID},0:2`, 
     name: "Navigation Test 2", 
     description: "Test child tile at position 2",
     path: [2]
   },
   { 
-    id: ROOT_MAP_ID + 3, 
+    id: rootMapId + 3, 
     coordId: `${TEST_USER_ID},0:3`, 
     name: "Navigation Test 3", 
     description: "Test child tile at position 3",
     path: [3]
   },
   { 
-    id: ROOT_MAP_ID + 4, 
+    id: rootMapId + 4, 
     coordId: `${TEST_USER_ID},0:4`, 
     name: "Empty Tile 4", 
     description: "Test child tile at position 4",
     path: [4]
   },
   { 
-    id: ROOT_MAP_ID + 5, 
+    id: rootMapId + 5, 
     coordId: `${TEST_USER_ID},0:5`, 
     name: "Empty Tile 5", 
     description: "Test child tile at position 5",
     path: [5]
   },
   { 
-    id: ROOT_MAP_ID + 6, 
+    id: rootMapId + 6, 
     coordId: `${TEST_USER_ID},0:6`, 
     name: "Empty Tile 6", 
     description: "Test child tile at position 6",
@@ -70,21 +70,21 @@ function getTestItems(rootMapId: number) {
   },
   // Grandchildren under child1
   { 
-    id: ROOT_MAP_ID + 7, 
+    id: rootMapId + 7, 
     coordId: `${TEST_USER_ID},0:1,1`, 
     name: "Grandchild 1-1", 
     description: "Second level test tile",
     path: [1, 1]
   },
   { 
-    id: ROOT_MAP_ID + 8, 
+    id: rootMapId + 8, 
     coordId: `${TEST_USER_ID},0:1,2`, 
     name: "Grandchild 1-2", 
     description: "Second level test tile",
     path: [1, 2]
   },
   { 
-    id: ROOT_MAP_ID + 9, 
+    id: rootMapId + 9, 
     coordId: `${TEST_USER_ID},0:1,3`, 
     name: "Grandchild 1-3", 
     description: "Second level test tile",
@@ -92,28 +92,33 @@ function getTestItems(rootMapId: number) {
   },
   // Great grandchildren under grandchild1_1
   { 
-    id: ROOT_MAP_ID + 10, 
+    id: rootMapId + 10, 
     coordId: `${TEST_USER_ID},0:1,1,1`, 
     name: "Great-Grandchild 1-1-1", 
     description: "Third level test tile",
     path: [1, 1, 1]
   },
   { 
-    id: ROOT_MAP_ID + 11, 
+    id: rootMapId + 11, 
     coordId: `${TEST_USER_ID},0:1,1,2`, 
     name: "Great-Grandchild 1-1-2", 
     description: "Third level test tile",
     path: [1, 1, 2]
   },
 ];
+}
 
 /**
  * Helper to populate localStorage with test data for offline mode testing
  */
 export async function populateOfflineStorage(page: Page) {
+  // Get the root map ID
+  const rootMapId = getRootMapIdDynamic();
+  const testItems = getTestItems(rootMapId);
+  
   // Convert test items to cache format
   const cacheData = {
-    items: TEST_ITEMS.reduce((acc, item) => {
+    items: testItems.reduce((acc, item) => {
       const tileData: TileData = {
         metadata: {
           dbId: item.id,
@@ -248,4 +253,3 @@ export async function setupOfflineData(page: Page) {
   
   console.log("[OfflineTest] Set up offline data in localStorage");
 }
-
