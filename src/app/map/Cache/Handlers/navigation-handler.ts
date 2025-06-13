@@ -5,7 +5,7 @@ import type { DataOperations, NavigationOperations } from "./types";
 
 export interface NavigationHandlerConfig {
   dispatch: React.Dispatch<CacheAction>;
-  state: CacheState;
+  getState: () => CacheState;
   dataHandler: DataOperations;
   // For testing, we can inject these dependencies
   router?: {
@@ -28,7 +28,7 @@ export interface NavigationOptions {
 }
 
 export function createNavigationHandler(config: NavigationHandlerConfig) {
-  const { dispatch, state, dataHandler, router } = config;
+  const { dispatch, getState, dataHandler, router } = config;
 
   const navigateToItem = async (
     itemCoordId: string,
@@ -37,13 +37,13 @@ export function createNavigationHandler(config: NavigationHandlerConfig) {
     const { pushToHistory = true } = options; // Default to true for normal navigation
     try {
       // 1. Check if we already have the item
-      const existingItem = state.itemsById[itemCoordId];
+      const existingItem = getState().itemsById[itemCoordId];
       
       // 2. Update the cache center first (this changes the view immediately)
       dispatch(cacheActions.setCenter(itemCoordId));
       
       // 3. Only load region data if we don't have it or if it needs more depth
-      if (!existingItem || !state.regionMetadata[itemCoordId]) {
+      if (!existingItem || !getState().regionMetadata[itemCoordId]) {
         // Load the region data in the background (without showing loader)
         dataHandler.prefetchRegion(itemCoordId).catch(error => {
           console.error('[NAV] Background region load failed:', error);
@@ -53,7 +53,7 @@ export function createNavigationHandler(config: NavigationHandlerConfig) {
       }
 
       // 3. Get the item from state (it should have been loaded by loadRegion)
-      const item = state.itemsById[itemCoordId];
+      const item = getState().itemsById[itemCoordId];
       
       let urlUpdated = false;
 
@@ -107,6 +107,7 @@ export function createNavigationHandler(config: NavigationHandlerConfig) {
   };
 
   const syncURLWithState = (): void => {
+    const state = getState();
     const centerItem = state.currentCenter
       ? state.itemsById[state.currentCenter]
       : null;
@@ -125,7 +126,7 @@ export function createNavigationHandler(config: NavigationHandlerConfig) {
   ): Promise<NavigationResult> => {
     try {
       // Load region if needed
-      await dataHandler.loadRegion(itemCoordId, state.cacheConfig.maxDepth);
+      await dataHandler.loadRegion(itemCoordId, getState().cacheConfig.maxDepth);
 
       // Update only cache center, not URL
       dispatch(cacheActions.setCenter(itemCoordId));
@@ -172,6 +173,7 @@ export function createNavigationHandler(config: NavigationHandlerConfig) {
   const toggleItemExpansionWithURL = (itemId: string): void => {
     if (!router) return;
 
+    const state = getState();
     const centerItem = state.currentCenter
       ? state.itemsById[state.currentCenter]
       : null;
@@ -230,7 +232,7 @@ function buildMapUrl(centerItemId: string, expandedItems: string[]): string {
 // Hook-based factory for use in React components
 export function useNavigationHandler(
   dispatch: React.Dispatch<CacheAction>,
-  state: CacheState,
+  getState: () => CacheState,
   dataHandler: DataOperations,
 ) {
   // Always call hooks unconditionally
@@ -240,7 +242,7 @@ export function useNavigationHandler(
 
   return createNavigationHandler({
     dispatch,
-    state,
+    getState,
     dataHandler,
     router,
     searchParams,
@@ -251,7 +253,7 @@ export function useNavigationHandler(
 // Factory function for testing with mocked dependencies
 export function createNavigationHandlerForTesting(
   dispatch: React.Dispatch<CacheAction>,
-  state: CacheState,
+  getState: () => CacheState,
   dataHandler: DataOperations,
   mockRouter?: { push: (url: string) => void; replace: (url: string) => void },
   mockSearchParams?: URLSearchParams,
@@ -259,7 +261,7 @@ export function createNavigationHandlerForTesting(
 ) {
   return createNavigationHandler({
     dispatch,
-    state,
+    getState,
     dataHandler,
     router: mockRouter,
     searchParams: mockSearchParams,

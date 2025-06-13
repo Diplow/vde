@@ -19,45 +19,14 @@ export function useDataOperationsWrapper(
   const getState = useCallback(() => stateRef.current, []);
 
   return useMemo(() => {
-    // Create a wrapper that provides current state to the handler
+    // Create handler with getState function
     const handler = createDataHandlerWithServerService(
       dispatch,
-      state,
+      getState,
       serverService,
     );
 
-    // Wrap each method to provide current state
-    return {
-      loadRegion: async (centerCoordId: string, maxDepth?: number) => {
-        const currentState = getState();
-        // Recreate handler with current state for this operation
-        const currentHandler = createDataHandlerWithServerService(
-          dispatch,
-          currentState,
-          serverService,
-        );
-        return currentHandler.loadRegion(centerCoordId, maxDepth);
-      },
-      loadItemChildren: async (parentCoordId: string, maxDepth?: number) => {
-        const currentState = getState();
-        const currentHandler = createDataHandlerWithServerService(
-          dispatch,
-          currentState,
-          serverService,
-        );
-        return currentHandler.loadItemChildren(parentCoordId, maxDepth);
-      },
-      prefetchRegion: async (centerCoordId: string) => {
-        const currentState = getState();
-        const currentHandler = createDataHandlerWithServerService(
-          dispatch,
-          currentState,
-          serverService,
-        );
-        return currentHandler.prefetchRegion(centerCoordId);
-      },
-      invalidateRegion: handler.invalidateRegion,
-      invalidateAll: handler.invalidateAll,
-    };
-  }, [dispatch, serverService, getState, state]);
+    // Return the handler directly - no need to wrap anymore
+    return handler;
+  }, [dispatch, serverService, getState]);
 }

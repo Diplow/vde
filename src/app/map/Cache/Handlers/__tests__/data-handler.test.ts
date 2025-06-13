@@ -102,7 +102,7 @@ describe("Data Handler", () => {
     config = {
       dispatch: mockDispatch,
       services: mockServices,
-      state: mockState,
+      getState: () => mockState,
     };
   });
 
@@ -142,7 +142,7 @@ describe("Data Handler", () => {
 
       const handler = createDataHandler({
         ...config,
-        state: staleState,
+        getState: () => staleState,
       });
 
       await handler.loadRegion("1,2", 2);
@@ -165,7 +165,7 @@ describe("Data Handler", () => {
 
       const handler = createDataHandler({
         ...config,
-        state: lowDepthState,
+        getState: () => lowDepthState,
       });
 
       await handler.loadRegion("1,2", 3);
@@ -188,7 +188,7 @@ describe("Data Handler", () => {
 
       const handler = createDataHandler({
         ...config,
-        state: freshState,
+        getState: () => freshState,
       });
 
       await handler.loadRegion("1,2", 2);
@@ -394,7 +394,7 @@ describe("Data Handler", () => {
     test("createDataHandlerWithMockableService works with mock utils", async () => {
       const handler = createDataHandlerWithMockableService(
         mockDispatch,
-        mockState,
+        () => mockState,
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
         mockUtils as any,
         { retryAttempts: 1 },
@@ -419,7 +419,7 @@ describe("Data Handler", () => {
 
       const handler = createDataHandlerWithMockableService(
         mockDispatch,
-        mockState,
+        () => mockState,
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
         mockUtils as any,
         { enableRetry: false },

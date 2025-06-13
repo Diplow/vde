@@ -31,23 +31,23 @@ export interface DataHandlerServices {
 export interface DataHandlerConfig {
   dispatch: React.Dispatch<CacheAction>;
   services: DataHandlerServices;
-  state: CacheState;
+  getState: () => CacheState;
 }
 
 export function createDataHandler(config: DataHandlerConfig) {
-  const { dispatch, services, state } = config;
+  const { dispatch, services, getState } = config;
 
   const loadRegion = async (
     centerCoordId: string,
-    maxDepth = state.cacheConfig.maxDepth,
+    maxDepth = getState().cacheConfig.maxDepth,
   ): Promise<LoadResult> => {
     const regionKey = centerCoordId;
 
     // Check if we need to load
-    const regionMetadata = state.regionMetadata[regionKey];
+    const regionMetadata = getState().regionMetadata[regionKey];
     const shouldLoad =
       !regionMetadata ||
-      isStale(regionMetadata.loadedAt, state.cacheConfig.maxAge) ||
+      isStale(regionMetadata.loadedAt, getState().cacheConfig.maxAge) ||
       regionMetadata.maxDepth < maxDepth;
 
     if (!shouldLoad) {
@@ -103,14 +103,14 @@ export function createDataHandler(config: DataHandlerConfig) {
     try {
       const items = await services.server.fetchItemsForCoordinate({
         centerCoordId,
-        maxDepth: state.cacheConfig.maxDepth,
+        maxDepth: getState().cacheConfig.maxDepth,
       });
 
       dispatch(
         cacheActions.loadRegion(
           items as Parameters<typeof cacheActions.loadRegion>[0],
           centerCoordId,
-          state.cacheConfig.maxDepth,
+          getState().cacheConfig.maxDepth,
         ),
       );
 
@@ -147,7 +147,7 @@ function isStale(lastFetched: number, maxAge: number): boolean {
 // Factory function for creating with server service
 export function createDataHandlerWithServerService(
   dispatch: React.Dispatch<CacheAction>,
-  state: CacheState,
+  getState: () => CacheState,
   serverService: ReturnType<typeof useServerService>,
 ) {
   const services: DataHandlerServices = {
@@ -156,13 +156,13 @@ export function createDataHandlerWithServerService(
     },
   };
 
-  return createDataHandler({ dispatch, services, state });
+  return createDataHandler({ dispatch, services, getState });
 }
 
 // Pure factory function for easier testing
 export function createDataHandlerWithMockableService(
   dispatch: React.Dispatch<CacheAction>,
-  state: CacheState,
+  getState: () => CacheState,
   utils: ReturnType<typeof api.useUtils>,
   serviceConfig?: Parameters<typeof createServerService>[1],
 ) {
@@ -174,7 +174,7 @@ export function createDataHandlerWithMockableService(
     },
   };
 
-  return createDataHandler({ dispatch, services, state });
+  return createDataHandler({ dispatch, services, getState });
 }
 
 // Legacy factory function for backwards compatibility
@@ -182,7 +182,7 @@ export function createDataHandlerWithMockableService(
 export function createDataHandlerWithTRPC(
   dispatch: React.Dispatch<CacheAction>,
   utils: ReturnType<typeof api.useUtils>,
-  state: CacheState,
+  getState: () => CacheState,
 ) {
   console.warn(
     "createDataHandlerWithTRPC is deprecated. Use createDataHandlerWithServerService instead.",
@@ -205,5 +205,5 @@ export function createDataHandlerWithTRPC(
     },
   };
 
-  return createDataHandler({ dispatch, services, state });
+  return createDataHandler({ dispatch, services, getState });
 }
