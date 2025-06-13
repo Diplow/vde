@@ -488,11 +488,3 @@ describe("Storage Service", () => {
     });
   });
 });
-
-// Hook testing would require React testing environment
-describe("useStorageService Hook", () => {
-  test.skip("hook testing requires React provider setup", () => {
-    // This would require proper React testing setup
-    // For now, we focus on testing the pure function approach
-  });
-});
