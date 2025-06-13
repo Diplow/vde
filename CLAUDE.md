@@ -59,4 +59,132 @@ pnpm test:e2e:headed         # Run tests with visible browser window
 
 **Note**: Tests use offline mode with localStorage persistence. No server/database required beyond the dev server.
 
-[Rest of the file remains unchanged]
+## Architecture Overview
+
+### Frontend
+- **Next.js 15 App Router** with progressive enhancement
+- Static → Progressive → Dynamic component patterns
+- Offline-first with localStorage caching
+- See: `/src/app/map/ARCHITECTURE.md`
+
+### Backend
+- **tRPC** for type-safe API
+- Server-side caching and optimizations
+- See: `/src/server/README.md`
+
+### Domain Layer
+- **Domain-Driven Design** in `/src/lib/domains/`
+- Clear boundaries between mapping, IAM, and other domains
+- See: `/src/lib/domains/README.md`
+
+### Data Layer
+- **Drizzle ORM + PostgreSQL**
+- Migrations in `/drizzle/migrations/`
+- Offline mode with localStorage persistence
+
+## Development Workflows
+
+### 1. Debugging Workflow (`prompts/claude/DEBUG.md`)
+
+When debugging issues:
+
+1. **Create Debug Session**: `prompts/bugs/YYYY-MM-DD-explicit-title.md`
+2. **Understand Architecture**: Check README files before investigating
+3. **Make Assumptions**: Make working assumptions rather than asking for clarification
+4. **Fix Linter Errors**: Immediately fix any linter errors in investigated files
+5. **Use E2E Tests**: For UI issues, use `pnpm test:e2e:debug`
+6. **Add Tests**: Write tests that would have caught the bug
+7. **Consider Refactoring**: Complex bugs often hide in complex code
+
+### 2. Feature Implementation (`prompts/claude/FEATURE.md`)
+
+When implementing new features:
+
+1. **Create Feature Doc**: `prompts/features/YYYY-MM-DD-feature-name.md`
+2. **Understanding Phase**: Clarify requirements, define problem, challenge assumptions
+3. **Analysis Phase**: Study architecture, check existing patterns
+4. **Design Phase**: Propose solution with alternatives
+5. **Implementation**: Incremental changes, test happy path first
+6. **Verification**: Review and ensure quality
+
+### 3. Refactoring for Clarity (`prompts/claude/REFACTOR_CLARITY.md`)
+
+The project follows the "Rule of 6" - consistent with Hexframe's hexagonal structure:
+
+#### The Fundamental Rule
+- **Function Name**: Explains WHAT it does
+- **Arguments**: Explain WHAT'S NEEDED
+- **Function Body**: Explains HOW it does it
+
+#### Rule of 6 Structure
+- **Folders**: Max 6 child folders + 6 files per directory
+- **Files**: Max 6 functions per file (prefix internal functions with "_")
+- **Functions**: Max 50 lines (flexible for low-level code)
+- **Arguments**: Max 3 arguments, or 1 object with max 6 keys
+
+#### Refactoring Process
+1. **Create Session**: `prompts/refactors/YYYY-MM-DD-explicit-title.md`
+2. **Pre-Analysis**: Identify existing and new domain concepts
+3. **Validation**: Get user approval on new concepts BEFORE refactoring
+4. **Execute**: Complete the entire refactoring independently
+
+## Key Concepts
+
+### Hexframe Structure
+- **Tile**: Hexagonal unit representing a single concept/task
+- **Frame**: Expanded tile with 1 center + up to 6 child tiles
+- **Map**: View centered on a tile showing its descendants
+- **System**: Complete hierarchical structure
+
+### Spatial Meaning
+- **Opposite tiles**: Represent tensions or complementary aspects
+- **Neighboring tiles**: Natural connections and collaborators
+- **Center tile**: Unifies surrounding concepts
+
+### Visual Composition
+- **Tool Tiles**: LLMs, APIs, databases as reusable components
+- **Drag-to-Center**: Compose tiles to create new systems
+- **Drag-to-Neighbor**: Augment tiles with capabilities
+- **CollaborativeMaps**: Templates for multi-agent orchestration
+
+## Best Practices
+
+1. **Make Smart Assumptions**: Proceed with reasonable assumptions rather than blocking on questions
+2. **Test Happy Path First**: Get basic functionality working before edge cases
+3. **Lint Early and Often**: Fix linter errors immediately when found
+4. **Document Intent**: Use clear naming that reveals purpose
+5. **Maintain Abstraction Levels**: Keep consistent abstraction at each level
+6. **Use Existing Patterns**: Check similar code before implementing new patterns
+
+## Common Tasks
+
+### Running the Development Environment
+```bash
+./scripts/start-database.sh   # Start PostgreSQL container
+pnpm db:migrate              # Run database migrations
+pnpm dev                     # Start development server
+```
+
+### Running Tests
+```bash
+pnpm test                    # Run all tests
+pnpm test:unit              # Unit tests only
+pnpm test:integration       # Integration tests only
+pnpm test:e2e               # E2E tests (requires dev server)
+```
+
+### Code Quality Checks
+```bash
+pnpm lint                    # ESLint checks
+pnpm typecheck              # TypeScript checks
+pnpm build                  # Full production build
+```
+
+## Important Notes
+
+- Always use `pnpm` (not npm or yarn)
+- Tests use Vitest (not Jest)
+- E2E tests run in offline mode
+- Follow the Rule of 6 for code organization
+- Create session documents for debugging, features, and refactoring
+- Domain concepts should have README.md documentation
