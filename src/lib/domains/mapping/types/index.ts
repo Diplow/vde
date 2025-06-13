@@ -1,7 +1,11 @@
 export {
-  type HexMap as MapMappingDomainType,
   type MapItem as MapItemMappingDomainType,
   type MapItemType,
+  type MapItemAttrs,
+  type MapItemRelatedItems,
+  type MapItemRelatedLists,
+  type MapItemIdr,
+  type MapItemWithId,
 } from "../_objects";
 
 export {

@@ -1,6 +1,6 @@
-# Hex Map Generator Script
+# Map Generator Script
 
-This script generates a hexagonal map structure with a specified depth. It demonstrates the use of hexagonal coordinate systems and recursive map generation.
+This script generates a map structure with a specified depth. It demonstrates the use of hexagonal coordinate systems and recursive map generation.
 
 ## Requirements
 
@@ -51,9 +51,9 @@ The script now has enhanced argument handling:
   - 2: Center hex + neighbors + neighbors of neighbors
   - etc.
 - `mapName`: Name of the generated map (must be at least 3 characters long)
-  - Default: "Hex Map (Depth X)", where X is the depth
+  - Default: "Map (Depth X)", where X is the depth
 - `description`: Description of the map
-  - Default: "Auto-generated hex map with X levels of depth"
+  - Default: "Auto-generated map with X levels of depth"
 
 ## Important Note on Argument Order
 
@@ -76,10 +76,10 @@ It will use:
 npm run map:build -- 1
 
 # Generate a map with 3 levels of depth
-npm run map:build -- 3 "Complex Hex Grid" "A demonstration of recursive hex mapping"
+npm run map:build -- 3 "Complex Grid" "A demonstration of recursive mapping"
 
-# Generate just a center hex
-npm run map:build -- 0 "Single Hex"
+# Generate just a center node
+npm run map:build -- 0 "Single Node"
 
 # Providing a name without depth (uses default depth of 1)
 npm run map:build -- "My Test Map" "Test description"

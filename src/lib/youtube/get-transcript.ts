@@ -53,14 +53,18 @@ async function getTranscript(videoId: string): Promise<string> {
       console.error(response);
     }
 
-    const data = await response.json();
+    const data = await response.json() as { items?: Array<{ id: string }> };
 
     if (!data.items || data.items.length === 0) {
       throw new Error(`No captions found for video ${videoId}`);
     }
 
     // Get the caption track ID
-    const captionId = data.items[0].id;
+    const captionId = data.items[0]?.id;
+    
+    if (!captionId) {
+      throw new Error(`No caption ID found for video ${videoId}`);
+    }
 
     // Fetch the actual transcript
     const transcriptResponse = await fetch(
@@ -118,18 +122,6 @@ async function structureTranscript(transcript: string): Promise<ContentMap> {
       throw new Error("MISTRAL_API_KEY environment variable is not set");
     }
 
-    // Fonction de conversion des sentiments textuels en enum
-    function mapFeelingStringToEnum(feelingString: string): Feeling {
-      switch (feelingString.toUpperCase()) {
-        case "NEGATIF":
-          return Feeling.NEGATIVE;
-        case "POSITIF":
-          return Feeling.POSITIVE;
-        case "NEUTRE":
-        default:
-          return Feeling.NEUTRAL;
-      }
-    }
 
     // Chargement du prompt unifié
     const unifiedPrompt = await loadPrompt("poc.md");
@@ -153,18 +145,8 @@ async function structureTranscript(transcript: string): Promise<ContentMap> {
       throw new Error("Réponse invalide de l'API Mistral: Contenu manquant");
     }
 
-    const content = JSON.parse(response.choices[0].message.content as string);
+    const content = JSON.parse(response.choices[0].message.content as string) as ContentMap;
 
-    // Conversion des sentiments textuels en enum
-    // content.ideas = content.ideas.map((idea: any) => ({
-    //   ...idea,
-    //   feeling: mapFeelingStringToEnum(idea.feeling),
-    // }));
-
-    // content.refs = content.refs.map((ref: any) => ({
-    //   ...ref,
-    //   feeling: mapFeelingStringToEnum(ref.feeling),
-    // }));
 
     return content;
   } catch (error) {

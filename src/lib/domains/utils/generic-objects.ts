@@ -3,38 +3,22 @@ export type GenericHistory = {
   updatedAt: Date;
 };
 
-export type GenericAttributes = {
-  [key: string]: any;
-};
+export type GenericAttributes = Record<string, unknown>;
 
-export type GenericRelatedItems =
-  | {
-      [key: string]:
-        | (GenericAggregate<
-            GenericAttributes,
-            GenericRelatedItems,
-            GenericRelatedLists
-          > & { id: number })
-        | null;
-    }
-  | {};
+// Looser constraints for type checking
+// The constraint just needs to be an object, the actual type safety comes from the specific types
+export type RelatedItemsConstraint = object;
 
-export type GenericRelatedLists =
-  | {
-      [key: string]: Array<
-        GenericAggregate<
-          GenericAttributes,
-          GenericRelatedItems,
-          GenericRelatedLists
-        > & { id: number }
-      >;
-    }
-  | {};
+export type RelatedListsConstraint = object;
+
+// Keep the original types for backward compatibility
+export type GenericRelatedItems = RelatedItemsConstraint;
+export type GenericRelatedLists = RelatedListsConstraint;
 
 export type GenericAggregateConstructorArgs<
   A extends GenericAttributes,
-  I extends GenericRelatedItems,
-  L extends GenericRelatedLists,
+  I extends RelatedItemsConstraint,
+  L extends RelatedListsConstraint,
 > = {
   id?: number;
   history?: GenericHistory;
@@ -45,8 +29,8 @@ export type GenericAggregateConstructorArgs<
 
 export class GenericAggregate<
   A extends GenericAttributes,
-  I extends GenericRelatedItems,
-  L extends GenericRelatedLists,
+  I extends RelatedItemsConstraint,
+  L extends RelatedListsConstraint,
 > {
   readonly id: number | undefined;
   readonly history: GenericHistory;

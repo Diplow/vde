@@ -1,5 +1,5 @@
 export const MAPPING_ERRORS = {
-  // HexMap errors
+  // Map errors
   CENTER_REQUIRED: "Center is required for map creation",
   INVALID_ID: "Invalid ID: must be a positive number",
   INVALID_MAP_CENTER: "Invalid map center: must be at the origin 0,0",
@@ -14,8 +14,18 @@ export const MAPPING_ERRORS = {
   INVALID_NEIGHBOR_COLOR:
     "Invalid neighbor: must have the same color as parent",
   INVALID_NEIGHBOR_PATH: "Invalid neighbor: path must extend parent's path",
+  INVALID_NEIGHBOR_DIRECTION:
+    "Invalid neighbor: must have a unique direction from parent",
 
-  // HexMap actions errors
+  // MapItem validation errors
+  USER_ITEM_CANNOT_HAVE_PARENT: "USER type MapItem cannot have a parent.",
+  BASE_ITEM_MUST_HAVE_PARENT: "BASE type MapItem must have a parent.",
+  CHILD_COORDS_MUST_MATCH_PARENT:
+    "Child item's userId and groupId must match parent's.",
+  NULL_PARENT_MUST_BE_USER_TYPE:
+    "Items with parentId NULL must be of USER type.",
+
+  // Map actions errors
   PARENT_REQUIRED: "Parent should be provided for non-center items",
   FAILED_PARENT_COORDS: "Failed to get parent coords",
   MAP_CENTER_ITEM: "Map item is the center of the map",

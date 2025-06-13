@@ -18,7 +18,7 @@ export const authRouter = createTRPCRouter({
         image: z.string().url().optional(), // As per better-auth docs
       }),
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       // better-auth server-side signUp is not explicitly in the provided basic usage.
       // Typically, client-side authClient.signUp.email is used.
       // If a server-side equivalent exists or needs to be built (e.g. for admin actions):
@@ -57,10 +57,10 @@ export const authRouter = createTRPCRouter({
         }
         // Return the user and token, or the whole response
         return response; // Contains user, token, redirect, url
-      } catch (error: any) {
+      } catch (error) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
-          message: error.message || "Login failed",
+          message: (error as Error).message || "Login failed",
           cause: error,
         });
       }
@@ -79,10 +79,10 @@ export const authRouter = createTRPCRouter({
           });
         }
         return { success: true };
-      } catch (error: any) {
+      } catch (error) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: error.message || "Logout failed",
+          message: (error as Error).message || "Logout failed",
           cause: error,
         });
       }

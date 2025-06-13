@@ -16,13 +16,16 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
-    environmentMatchGlobs: [
-      // Run integration tests with node environment
-      ["**/*.integration.test.ts", "node"],
-    ],
     env: {
       // Load .env.test file for tests
       NODE_ENV: "test",
+    },
+    // Run integration tests sequentially to avoid database conflicts
+    pool: "forks",
+    poolOptions: {
+      forks: {
+        singleFork: true,
+      },
     },
   },
   resolve: {

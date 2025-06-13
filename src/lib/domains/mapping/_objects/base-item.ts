@@ -1,23 +1,22 @@
 import {
   GenericAggregate,
-  GenericAggregateConstructorArgs,
+  type GenericAggregateConstructorArgs,
 } from "../../utils/generic-objects";
 
-export interface Attrs {
+export interface Attrs extends Record<string, unknown> {
   title: string;
   descr: string;
   link: string;
 }
 
-export interface RelatedItems {}
-export interface RelatedLists {}
+export type RelatedItems = Record<string, never>;
+export type RelatedLists = Record<string, never>;
 
-export interface BaseItemConstructorArgs
-  extends GenericAggregateConstructorArgs<
-    Partial<Attrs>,
-    RelatedItems,
-    RelatedLists
-  > {}
+export type BaseItemConstructorArgs = GenericAggregateConstructorArgs<
+  Partial<Attrs>,
+  RelatedItems,
+  RelatedLists
+>;
 
 export type BaseItemIdr = {
   id: number;

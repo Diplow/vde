@@ -35,33 +35,36 @@ export function RegisterForm() {
       };
 
       await authClient.signUp.email(signUpData, {
-        onSuccess: async (ctx) => {
+        onSuccess: async (_ctx) => {
           try {
             await trpcUtils.auth.getSession.invalidate();
 
             const mapCreationResult = await createMapMutation.mutateAsync();
 
             if (mapCreationResult.success && mapCreationResult.mapId) {
-              router.push(`/map/${mapCreationResult.mapId}`);
+              router.push(`/map?center=${mapCreationResult.mapId}`);
             } else {
               console.error(
                 "Map creation failed after signup:",
-                mapCreationResult.error,
+                mapCreationResult.success === false
+                  ? mapCreationResult.error
+                  : "Unknown error",
               );
               setError(
-                mapCreationResult.error ||
+                (mapCreationResult.success === false
+                  ? mapCreationResult.error
+                  : null) ??
                   "Signup successful, but failed to create your map. Please try logging in or contact support.",
               );
               setIsLoading(false);
             }
-          } catch (mutationError: any) {
+          } catch (mutationError) {
             console.error(
               "Error during createDefaultMapForCurrentUser mutation:",
               mutationError,
             );
             setError(
-              mutationError.message ||
-                "An error occurred while setting up your map.",
+              mutationError instanceof Error ? mutationError.message : "An error occurred while setting up your map.",
             );
             setIsLoading(false);
           }
@@ -74,9 +77,10 @@ export function RegisterForm() {
           setIsLoading(false);
         },
       });
-    } catch (err: any) {
+    } catch (err) {
       console.error("handleSubmit error:", err);
-      setError(err.message || "An unexpected error occurred.");
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred.";
+      setError(errorMessage);
       setIsLoading(false);
     }
   };
@@ -92,8 +96,8 @@ export function RegisterForm() {
       onEmailChange={(e) => setEmail(e.target.value)}
       onPasswordChange={(e) => setPassword(e.target.value)}
       onSubmit={handleSubmit}
-      // formAction can be set here for non-JS fallback
-      // e.g., formAction="/api/auth/register-action"
+      formAction="/api/auth/register-action"
+      // formAction is for non-JS fallback
     />
   );
 }

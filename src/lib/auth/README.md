@@ -68,7 +68,7 @@ The authentication system is built around `better-auth` and integrates with the 
   - They use methods from the `authClient` (`authClient.signIn.email` and `authClient.signUp.email`) to interact with the `better-auth` backend.
   - After successful operations, they typically invalidate the `auth.getSession` tRPC query to refresh the `AuthContext`.
 
-- **Auth Tile (`src/app/map/[id]/Tile/auth.dynamic.tsx`):**
+- **Auth Tile (`src/app/map/Tile/Auth/auth.tsx`):**
 
   - A dynamically imported component that hosts the `LoginForm` and `RegisterForm`.
   - It allows users to switch between login and registration views.
@@ -119,6 +119,41 @@ The authentication system is built around `better-auth` and integrates with the 
     - The client's session is updated.
     - (Note: Specific UI for logout button and post-logout redirection to be finalized.)
 
+## User Map Flow
+
+The application ensures every authenticated user has a workspace (map) through the following flow:
+
+### Home Page Flow (`src/app/page.tsx`)
+
+1. **Authentication Check**: 
+   - The `useAuth` hook provides the current user state
+   - Unauthenticated users see the welcome screen with login/signup options
+
+2. **Map Discovery**:
+   - Once authenticated, `getUserMap` query checks if the user has an existing map
+   - Uses the mapping domain's user ID system (converts auth user ID to mapping user ID)
+
+3. **Automatic Map Creation**:
+   - If no map exists, `createDefaultMapForCurrentUser` mutation creates one
+   - Default map is named "{userName}'s Map"
+   - Creation happens transparently without user intervention
+
+4. **Navigation**:
+   - Users are automatically redirected to `/map?center={mapId}`
+   - The map page becomes their primary workspace
+
+### State Management
+
+The flow is managed by `useUserMapFlow` hook which provides clear states:
+- `loading`: Initial auth check
+- `unauthenticated`: No user session
+- `fetching_map`: Querying for user's map
+- `creating_map`: Creating default map
+- `redirecting`: Navigating to map
+- `error`: Handle failures gracefully
+
+This ensures a smooth onboarding experience where new users automatically get a workspace without manual setup.
+
 ## Key Files
 
 - **Core `better-auth` Server Config:** `src/server/auth.ts`
@@ -128,8 +163,9 @@ The authentication system is built around `better-auth` and integrates with the 
 - **tRPC Context Enhancer:** `src/server/api/trpc.ts` (specifically `createContext`)
 - **Frontend Auth Provider:** `src/contexts/AuthContext.tsx`
 - **UI Forms:** `src/components/auth/LoginForm.tsx`, `src/components/auth/RegisterForm.tsx`
-- **Auth UI Tile:** `src/app/map/[id]/Tile/auth.dynamic.tsx`
+- **Auth UI Tile:** `src/app/map/Tile/Auth/auth.tsx`
 - **Database Schema:** `src/server/db/schema/users.ts`, `accounts.ts`, etc.
+- **User Map Flow:** `src/app/_hooks/use-user-map-flow.ts`, `src/app/page.tsx`
 - **Feature Plan:** `prompts/features/2025-05-16-better-auth.md`, `prompts/features/2025-05-18-homepage.md` (for historical context and planning)
 
 This setup provides a solid foundation for authentication, leveraging `better-auth` for core functionality while integrating smoothly with the project's tRPC and Next.js architecture.

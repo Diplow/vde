@@ -3,6 +3,7 @@ import "server-only";
 import { createHydrationHelpers } from "@trpc/react-query/rsc";
 import { headers } from "next/headers";
 import { cache } from "react";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 import { createCaller, type AppRouter } from "~/server/api/root";
 import { createContext as apiCreateContext } from "~/server/api/trpc";
@@ -20,8 +21,8 @@ const createContext = cache(async () => {
   const controller = new AbortController();
 
   return apiCreateContext({
-    req: { headers: heads } as any, // Mocking req object for RSC
-    res: undefined as any, // res is not available/needed in RSC context
+    req: { headers: heads } as unknown as NextApiRequest, // Mocking req object for RSC
+    res: undefined as unknown as NextApiResponse, // res is not available/needed in RSC context
     info: {
       accept: null,
       type: "query",
