@@ -62,9 +62,13 @@ jobs:
 
       - name: Run linter
         run: pnpm lint
+        env:
+          SKIP_ENV_VALIDATION: true
 
       - name: Run type checking
         run: pnpm typecheck
+        env:
+          SKIP_ENV_VALIDATION: true
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
