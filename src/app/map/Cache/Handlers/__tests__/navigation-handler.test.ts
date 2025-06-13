@@ -50,6 +50,7 @@ describe("Navigation Handler", () => {
             depth: 1,
             parentId: undefined,
             coordinates: { userId: 1, groupId: 2, path: [1, 2] },
+            ownerId: "test-owner",
           },
           state: {
             isDragged: false,

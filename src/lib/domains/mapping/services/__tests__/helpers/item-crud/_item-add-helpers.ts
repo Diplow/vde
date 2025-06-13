@@ -2,17 +2,21 @@ import { expect } from "vitest";
 import { CoordSystem } from "../../../../utils/hex-coordinates";
 import type { Coord } from "../../../../utils/hex-coordinates";
 import type { TestEnvironment } from "../_test-utilities";
+import { MapItemType } from "../../../../_objects/map-item";
 
 export async function _addAndValidateChildItem(
   testEnv: TestEnvironment,
-  setupData: unknown,
+  setupData: { rootMapItem: { id: string | number } },
   addItemArgs: {
     title: string;
     coords: Parameters<typeof CoordSystem.createId>[0];
   },
 ) {
   const childItemContract =
-    await testEnv.service.items.crud.addItemToMap(addItemArgs);
+    await testEnv.service.items.crud.addItemToMap({
+      ...addItemArgs,
+      parentId: Number(setupData.rootMapItem.id),
+    });
 
   // Validate the child item contract
   expect(childItemContract).toBeDefined();
@@ -21,7 +25,7 @@ export async function _addAndValidateChildItem(
   expect(childItemContract.coords).toEqual(
     CoordSystem.createId(addItemArgs.coords),
   );
-  expect(childItemContract.itemType).toBe("base");
+  expect(childItemContract.itemType).toBe(MapItemType.BASE);
 
   return childItemContract;
 }
@@ -29,7 +33,7 @@ export async function _addAndValidateChildItem(
 export async function _validateMapItemHierarchy(
   testEnv: TestEnvironment,
   setupParams: { userId: number; groupId: number },
-  addItemArgs: { parentId: number },
+  addItemArgs: { parentId: number; title?: string; coords?: Coord },
 ) {
   const mapData = await testEnv.service.maps.getMapData(setupParams);
 
@@ -44,10 +48,15 @@ export async function _validateMapItemHierarchy(
       (item) => item.id !== String(mapData.id),
     );
     expect(childInTree).toBeDefined();
-    expect(childInTree.name).toBe(addItemArgs.title);
-    expect(childInTree.coords).toEqual(
-      CoordSystem.createId(addItemArgs.coords as Parameters<typeof CoordSystem.createId>[0]),
-    );
+    if (childInTree) {
+      expect(childInTree.name).toBe(addItemArgs.title);
+      const coords = 'coords' in addItemArgs ? addItemArgs.coords : undefined;
+      if (coords) {
+        expect(childInTree.coords).toEqual(
+          CoordSystem.createId(coords),
+        );
+      }
+    }
   }
 }
 

@@ -41,6 +41,7 @@ describe("Cache Selectors", () => {
         depth: 0,
         parentId: undefined,
         coordinates: { userId: 1, groupId: 2, path: [] },
+        ownerId: "test-owner",
       },
       state: {
         isDragged: false,
@@ -64,6 +65,7 @@ describe("Cache Selectors", () => {
         depth: 1,
         parentId: "root-id",
         coordinates: { userId: 1, groupId: 2, path: [1] },
+        ownerId: "test-owner",
       },
       state: {
         isDragged: false,
@@ -87,6 +89,7 @@ describe("Cache Selectors", () => {
         depth: 1,
         parentId: "root-id",
         coordinates: { userId: 1, groupId: 2, path: [2] },
+        ownerId: "test-owner",
       },
       state: {
         isDragged: false,
@@ -110,6 +113,7 @@ describe("Cache Selectors", () => {
         depth: 2,
         parentId: "child-1-id",
         coordinates: { userId: 1, groupId: 2, path: [1, 3] },
+        ownerId: "test-owner",
       },
       state: {
         isDragged: false,

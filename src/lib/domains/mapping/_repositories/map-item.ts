@@ -5,13 +5,13 @@ import {
   type MapItemWithId,
 } from "~/lib/domains/mapping/_objects";
 import { type GenericRepository } from "../../utils/generic-repository";
-import { type HexCoordinateinate } from "../utils/hex-coordinates";
+import { type Coord } from "../utils/hex-coordinates";
 
 export type MapItemIdr =
   | { id: number }
   | {
       attrs: {
-        coords: HexCoordinateinate;
+        coords: Coord;
       };
     };
 

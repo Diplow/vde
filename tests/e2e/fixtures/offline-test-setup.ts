@@ -121,7 +121,7 @@ export async function populateOfflineStorage(page: Page) {
     items: testItems.reduce((acc, item) => {
       const tileData: TileData = {
         metadata: {
-          dbId: item.id,
+          dbId: String(item.id),
           coordId: item.coordId,
           parentId: item.path.length > 0 ? 
             `${TEST_USER_ID},0:${item.path.slice(0, -1).join(",")}` : 

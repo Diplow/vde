@@ -8,6 +8,7 @@ import { initialCacheState } from "../../State/reducer";
 import type { DataHandlerConfig, DataHandlerServices } from "../data-handler";
 import type { CacheState } from "../../State/types";
 import type { MapItemAPIContract } from "~/server/api/types/contracts";
+import { MapItemType } from "~/lib/domains/mapping/_objects/map-item";
 
 // Mock console.warn to avoid noise in tests
 const mockConsoleWarn = vi.fn();
@@ -44,7 +45,7 @@ describe("Data Handler", () => {
       depth: 1,
       url: "",
       parentId: null,
-      itemType: "BASE" as const,
+      itemType: MapItemType.BASE,
       ownerId: "test-owner",
     },
     {
@@ -55,7 +56,7 @@ describe("Data Handler", () => {
       depth: 2,
       url: "",
       parentId: null,
-      itemType: "BASE" as const,
+      itemType: MapItemType.BASE,
       ownerId: "test-owner",
     },
   ];
@@ -394,7 +395,8 @@ describe("Data Handler", () => {
       const handler = createDataHandlerWithMockableService(
         mockDispatch,
         mockState,
-        mockUtils as Parameters<typeof createDataHandlerWithMockableService>[2],
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+        mockUtils as any,
         { retryAttempts: 1 },
       );
 
@@ -418,7 +420,8 @@ describe("Data Handler", () => {
       const handler = createDataHandlerWithMockableService(
         mockDispatch,
         mockState,
-        mockUtils as Parameters<typeof createDataHandlerWithMockableService>[2],
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+        mockUtils as any,
         { enableRetry: false },
       );
 

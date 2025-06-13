@@ -43,6 +43,11 @@ export const WithTimestamp: Story = {
 };
 
 export const MapCreationFailed: Story = {
+  args: {
+    title: "Workspace Creation Failed",
+    message: "Failed to create your workspace. Please contact an administrator for assistance.",
+    showTimestamp: true,
+  },
   render: () => (
     <MapCreationError 
       message="Failed to create your workspace. Please contact an administrator for assistance." 
@@ -51,6 +56,11 @@ export const MapCreationFailed: Story = {
 };
 
 export const MapFetchFailed: Story = {
+  args: {
+    title: "Map Access Error",
+    message: "Network error accessing your map data",
+    onRetry: () => console.log("Retry map fetch"),
+  },
   render: () => (
     <MapFetchError 
       message="Network error accessing your map data"
@@ -60,6 +70,11 @@ export const MapFetchFailed: Story = {
 };
 
 export const GenericMapError: Story = {
+  args: {
+    title: "Map Error",
+    message: "Failed to retrieve your map details",
+    onRetry: () => console.log("Retry map fetch"),
+  },
   render: () => (
     <MapFetchError 
       message="Failed to retrieve your map details"

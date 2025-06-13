@@ -3,6 +3,7 @@ import { Direction, CoordSystem } from "../../../../utils/hex-coordinates";
 import type { Coord } from "../../../../utils/hex-coordinates";
 import type { TestEnvironment } from "../_test-utilities";
 import { _setupBasicMap, _createTestCoordinates } from "../_test-utilities";
+import { MapItemType } from "../../../../_objects/map-item";
 
 export async function _setupItemForRetrieval(
   testEnv: TestEnvironment,
@@ -45,7 +46,7 @@ export async function _validateItemRetrieval(
   expect(retrievedItem.descr).toBe(expectedItemData.descr);
   expect(retrievedItem.url).toBe(expectedItemData.url);
   expect(retrievedItem.coords).toEqual(CoordSystem.createId(itemCoords));
-  expect(retrievedItem.itemType).toBe("base");
+  expect(retrievedItem.itemType).toBe(MapItemType.BASE);
 
   return retrievedItem;
 }

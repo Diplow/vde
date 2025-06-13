@@ -10,9 +10,13 @@ export type MapFlowState =
   | "redirecting"
   | "error";
 
+export type FlowError =
+  | { type: "map_creation"; message: string }
+  | { type: "map_fetch"; message: string };
+
 interface UseUserMapFlowResult {
   state: MapFlowState;
-  error: string | null;
+  error: FlowError | null;
   retry: () => void;
 }
 
@@ -28,7 +32,7 @@ interface UseUserMapFlowOptions {
 export function useUserMapFlow({ user, isAuthLoading }: UseUserMapFlowOptions): UseUserMapFlowResult {
   const router = useRouter();
   const [state, setState] = useState<MapFlowState>("loading");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<FlowError | null>(null);
 
   // Query for user's map - only enabled when authenticated
   const getUserMapQuery = api.map.getUserMap.useQuery(undefined, {
@@ -43,12 +47,12 @@ export function useUserMapFlow({ user, isAuthLoading }: UseUserMapFlowOptions): 
         setState("redirecting");
         router.push(`/map?center=${data.mapId}`);
       } else {
-        setError("Failed to create your workspace. Please contact an administrator.");
+        setError({ type: "map_creation", message: "Failed to create your workspace. Please contact an administrator." });
         setState("error");
       }
     },
     onError: () => {
-      setError("An error occurred while creating your workspace. Please contact an administrator.");
+      setError({ type: "map_creation", message: "An error occurred while creating your workspace. Please contact an administrator." });
       setState("error");
     },
   });
@@ -71,7 +75,7 @@ export function useUserMapFlow({ user, isAuthLoading }: UseUserMapFlowOptions): 
     }
 
     if (getUserMapQuery.isError) {
-      setError("Network error accessing your map data");
+      setError({ type: "map_fetch", message: "Network error accessing your map data" });
       setState("error");
       return;
     }
@@ -89,7 +93,7 @@ export function useUserMapFlow({ user, isAuthLoading }: UseUserMapFlowOptions): 
           createMapMutation.mutate();
         }
       } else if (!data.success) {
-        setError(data.error || "Failed to retrieve your map details");
+        setError({ type: "map_fetch", message: data.error || "Failed to retrieve your map details" });
         setState("error");
       }
     }
@@ -100,6 +104,9 @@ export function useUserMapFlow({ user, isAuthLoading }: UseUserMapFlowOptions): 
     getUserMapQuery.isFetching,
     getUserMapQuery.isError,
     getUserMapQuery.data,
+    createMapMutation.isPending,
+    createMapMutation.data,
+    createMapMutation.isError,
     createMapMutation,
     router,
   ]);

@@ -106,9 +106,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
   if (name === "getUserMapItems") {
-    const userId = args.userId as number;
-    const groupId = (args.groupId as number) ?? 0;
-    const depth = (args.depth as number) ?? 3;
+    const userId = args?.userId as number;
+    const groupId = (args?.groupId as number) ?? 0;
+    const depth = (args?.depth as number) ?? 3;
 
     try {
       const result = await getUserMapItemsHandler(userId, groupId, depth);

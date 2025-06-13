@@ -17,6 +17,8 @@ export function ErrorState({
   onRetry, 
   showTimestamp = false 
 }: ErrorStateProps) {
+  const timestamp = React.useMemo(() => new Date().toISOString(), []);
+  
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
       <div className="rounded-lg bg-card p-8 text-center shadow-xl">
@@ -27,8 +29,9 @@ export function ErrorState({
           {message}
         </p>
         {showTimestamp && (
-          <div className="text-sm text-muted-foreground mb-4">
-            Error details have been logged. Please contact your administrator with this timestamp: {new Date().toISOString()}
+          <div className="mb-4 text-sm text-muted-foreground">
+            Error details have been logged. Please contact your administrator
+            with this timestamp: {timestamp}
           </div>
         )}
         {onRetry && (

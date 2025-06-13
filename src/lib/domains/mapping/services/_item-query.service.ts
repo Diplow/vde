@@ -34,9 +34,10 @@ export class ItemQueryService {
     if (!rootItem) return [];
     const descendants = await this.actions.getDescendants(rootItem.id);
     const allItems = [rootItem, ...descendants];
-    return allItems.map((item) =>
-      adapt.mapItem(item, item.attrs.coords.userId),
-    );
+    return allItems.map((item) => {
+      const userId = item.attrs.coords.userId;
+      return adapt.mapItem(item, userId);
+    });
   }
 
   /**
@@ -51,9 +52,10 @@ export class ItemQueryService {
     if (!item) throw new Error(`Item with id ${itemId} not found.`);
 
     const descendants = await this.actions.getDescendants(itemId);
-    return descendants.map((desc) =>
-      adapt.mapItem(desc, desc.attrs.coords.userId),
-    );
+    return descendants.map((desc) => {
+      const userId = desc.attrs.coords.userId;
+      return adapt.mapItem(desc, userId);
+    });
   }
 
   /**
@@ -62,7 +64,8 @@ export class ItemQueryService {
   async getItemById({ itemId }: { itemId: number }): Promise<MapItemContract> {
     const item = await this.actions.mapItems.getOne(itemId);
     if (!item) throw new Error(`Item with id ${itemId} not found.`);
-    return adapt.mapItem(item, item.attrs.coords.userId);
+    const userId = item.attrs.coords.userId;
+    return adapt.mapItem(item, userId);
   }
 
   /**
@@ -79,6 +82,7 @@ export class ItemQueryService {
       oldCoords,
       newCoords,
     });
-    return adapt.mapItem(movedItem, movedItem.attrs.coords.userId);
+    const userId = movedItem.attrs.coords.userId;
+    return adapt.mapItem(movedItem, userId);
   }
 }

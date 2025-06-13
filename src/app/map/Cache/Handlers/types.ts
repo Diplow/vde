@@ -1,5 +1,5 @@
 import type { CacheAction, CacheState } from "../State/types";
-import type { MapItemType } from "~/server/db/schema";
+import type { MapItemType } from "~/lib/domains/mapping/_objects/map-item";
 
 // Common handler dependencies
 export interface HandlerConfig {

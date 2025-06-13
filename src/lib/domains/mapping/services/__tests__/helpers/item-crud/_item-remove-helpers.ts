@@ -48,14 +48,14 @@ export async function _validateItemRemovalAndHierarchy(
   },
 ) {
   let mapData = await testEnv.service.maps.getMapData(setupData.setupParams);
-  expect(mapData.itemCount).toBe(3); // root + 2 children
+  expect(mapData?.itemCount).toBe(3); // root + 2 children
 
   await testEnv.service.items.crud.removeItem({
     coords: setupData.child1Coords,
   });
 
   mapData = await testEnv.service.maps.getMapData(setupData.setupParams);
-  expect(mapData.itemCount).toBe(2); // root + 1 child
+  expect(mapData?.itemCount).toBe(2); // root + 1 child
 }
 
 export async function _validateRootItemRemoval(

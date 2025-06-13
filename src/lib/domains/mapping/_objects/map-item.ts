@@ -14,7 +14,7 @@ export enum MapItemType {
   BASE = "base",
 }
 
-export interface Attrs {
+export interface Attrs extends Record<string, unknown> {
   originId: number | null; // The original mapItem this is a copy of.
   parentId: number | null; // The parent mapItem this is a copy of.
   coords: Coord; // Updated to new Coord structure
@@ -37,6 +37,7 @@ export interface RelatedItems {
   parent: MapItemWithId | null;
   origin: MapItemWithId | null;
 }
+
 export interface RelatedLists {
   neighbors: MapItemWithId[];
 }
@@ -45,7 +46,7 @@ export interface MapItemConstructorArgs
   extends GenericAggregateConstructorArgs<
     Partial<Attrs> & Pick<Attrs, "coords" | "itemType">, // coords, itemType are required
     Partial<RelatedItems> & { ref: BaseItemWithId },
-    Partial<RelatedLists>
+    RelatedLists
   > {
   attrs: Partial<Attrs> & Pick<Attrs, "coords" | "itemType">; // coords, itemType are required
   ref: BaseItemWithId;

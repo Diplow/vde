@@ -29,6 +29,7 @@ const createMockItem = (
     parentId,
     coordinates: CoordSystem.parseId(coordId),
     depth,
+    ownerId: "test-owner",
   },
   data: {
     name,

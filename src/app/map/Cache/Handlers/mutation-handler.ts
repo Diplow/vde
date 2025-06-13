@@ -1,6 +1,7 @@
 import type { CacheAction, CacheState } from "../State/types";
 import { cacheActions } from "../State/actions";
 import type { DataOperations } from "./types";
+import { MapItemType } from "~/lib/domains/mapping/_objects/map-item";
 
 // Note: Server mutations are NOT handled through the server service
 // They should use tRPC mutation hooks directly for proper client-side patterns
@@ -72,7 +73,7 @@ export function createMutationHandler(
           depth: 1, // TODO: Calculate actual depth
           id: `optimistic_${changeId}`,
           parentId: null, // TODO: Determine parent
-          itemType: "BASE" as const,
+          itemType: MapItemType.BASE,
           ownerId: "current-user", // TODO: Get actual user
         };
 
@@ -118,13 +119,21 @@ export function createMutationHandler(
 
         pendingChanges.set(changeId, optimisticChange);
 
+        // Create an optimistic update that maintains all required fields
+        // We need to create a proper MapItemAPIContract for the loadRegion action
         const updatedItem = {
-          ...existingItem.data,
-          ...data,
+          id: existingItem.metadata.dbId,
+          name: data.name as string ?? existingItem.data.name,
+          descr: data.description as string ?? existingItem.data.description,
+          url: data.url as string ?? existingItem.data.url,
           coordinates: coordId,
+          depth: existingItem.metadata.depth,
+          parentId: existingItem.metadata.parentId ?? null,
+          itemType: MapItemType.BASE,
+          ownerId: existingItem.metadata.ownerId,
         };
-
-        dispatch(cacheActions.loadRegion([updatedItem] as Parameters<typeof cacheActions.loadRegion>[0], coordId, 1));
+        
+        dispatch(cacheActions.loadRegion([updatedItem], coordId, 1));
 
         return { success: true, optimisticApplied: true };
       }

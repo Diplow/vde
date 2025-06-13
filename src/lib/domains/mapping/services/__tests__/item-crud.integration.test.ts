@@ -61,7 +61,7 @@ describe("MappingService - Item CRUD [Integration - DB]", () => {
 
       await _addAndValidateChildItem(
         testEnv,
-        { rootMapId: rootMap.id },
+        { rootMapItem: { id: rootMap.id } },
         addItemArgs,
       );
       await _validateMapItemHierarchy(testEnv, setupParams, addItemArgs);

@@ -19,8 +19,8 @@ import {
 } from "../actions";
 import { ACTION_TYPES } from "../types";
 import type { MapItemAPIContract } from "~/server/api/types/contracts";
-import type { CacheAction, CacheConfig } from "../types";
-import type { MapItem } from "~/lib/domains/mapping/types";
+import type { CacheAction, CacheState } from "../types";
+import { MapItemType } from "~/lib/domains/mapping/_objects/map-item";
 
 describe("Cache Actions", () => {
   // Mock data for testing
@@ -33,7 +33,7 @@ describe("Cache Actions", () => {
       depth: 1,
       url: "",
       parentId: null,
-      itemType: "BASE" as const,
+      itemType: MapItemType.BASE,
       ownerId: "test-owner",
     },
   ];
@@ -331,7 +331,7 @@ describe("Cache Actions", () => {
     test("actions work with empty arrays", () => {
       const result = loadRegion([], "1,2", 0);
       // Type assertion for actions that have payload
-      expect((result as { payload: { items: MapItem[] } }).payload.items).toEqual(
+      expect((result as { payload: { items: MapItemAPIContract[] } }).payload.items).toEqual(
         [],
       );
     });
@@ -346,14 +346,14 @@ describe("Cache Actions", () => {
       const partialConfig = { maxAge: 1000 };
       const result = updateCacheConfig(partialConfig);
       // Type assertion for actions that have payload
-      expect((result as { payload: Partial<CacheConfig> }).payload).toEqual(partialConfig);
+      expect((result as { payload: Partial<CacheState['cacheConfig']> }).payload).toEqual(partialConfig);
     });
 
     test("updateCacheConfig works with empty config", () => {
       const emptyConfig = {};
       const result = updateCacheConfig(emptyConfig);
       // Type assertion for actions that have payload
-      expect((result as { payload: Partial<CacheConfig> }).payload).toEqual(emptyConfig);
+      expect((result as { payload: Partial<CacheState['cacheConfig']> }).payload).toEqual(emptyConfig);
     });
   });
 });

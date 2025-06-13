@@ -43,6 +43,7 @@ const mockItem1: TileData = {
     parentId: "0,0", // Example parent
     coordinates: CoordSystem.parseId("1,1"),
     depth: 1,
+    ownerId: "test-owner",
   },
   data: {
     name: "Item Tile 1",
@@ -67,6 +68,7 @@ const mockItem2: TileData = {
     parentId: "0,0", // Example parent
     coordinates: CoordSystem.parseId("2,2"),
     depth: 1,
+    ownerId: "test-owner",
   },
   data: {
     name: "Rester sur X pour débattre avec tout le monde ? Le Libre marché des idées",
@@ -97,6 +99,7 @@ const mockItem3: TileData = {
     parentId: "0,0",
     coordinates: CoordSystem.parseId("3,3"),
     depth: 1,
+    ownerId: "test-owner",
   },
   data: {
     name: longTitle,

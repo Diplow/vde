@@ -3,7 +3,7 @@ import {
   type GenericAggregateConstructorArgs,
 } from "../../utils/generic-objects";
 
-export interface Attrs {
+export interface Attrs extends Record<string, unknown> {
   title: string;
   descr: string;
   link: string;

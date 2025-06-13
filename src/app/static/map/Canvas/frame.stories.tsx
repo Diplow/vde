@@ -31,6 +31,7 @@ const createMockItem = (
       parentId,
       coordinates,
       depth,
+      ownerId: "test-owner",
     },
     data: {
       name,

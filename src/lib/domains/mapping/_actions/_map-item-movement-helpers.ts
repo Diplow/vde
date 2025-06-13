@@ -54,7 +54,7 @@ export class MapItemMovementHelpers {
     newParent: MapItemWithId | null,
     getDescendants: (parentId: number) => Promise<MapItemWithId[]>,
   ) {
-    const oldCoords = item.attrs.coords;
+    const oldCoords: Coord = item.attrs.coords;
     const descendants = await getDescendants(item.id);
 
     await this._updateItemCoordinates(item, newCoords, newParent);
@@ -106,14 +106,16 @@ export class MapItemMovementHelpers {
     targetParent: MapItemWithId | null,
   ): Coord {
     const NON_EXISTING_DIRECTION = 7 as Direction;
-    const tempPath = [
-      ...(targetParent ? targetParent.attrs.coords.path : []),
+    const parentPath: Direction[] = targetParent ? targetParent.attrs.coords.path : [];
+    const tempPath: Direction[] = [
+      ...parentPath,
       NON_EXISTING_DIRECTION,
     ];
 
+    const targetCoords = targetItem.attrs.coords;
     return {
-      userId: targetItem.attrs.coords.userId,
-      groupId: targetItem.attrs.coords.groupId,
+      userId: targetCoords.userId,
+      groupId: targetCoords.groupId,
       path: tempPath,
     };
   }
@@ -142,13 +144,15 @@ export class MapItemMovementHelpers {
     );
 
     for (const descendant of sortedDescendants) {
-      const pathSuffix = descendant.attrs.coords.path.slice(
+      const descendantPath = descendant.attrs.coords.path;
+      const pathSuffix: Direction[] = descendantPath.slice(
         oldCoords.path.length,
       );
+      const newPath: Direction[] = [...newCoords.path, ...pathSuffix];
       const newDescendantCoords: Coord = {
         userId: newCoords.userId,
         groupId: newCoords.groupId,
-        path: [...newCoords.path, ...pathSuffix],
+        path: newPath,
       };
 
       await this.mapItems.updateByIdr({

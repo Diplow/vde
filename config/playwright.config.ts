@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 dotenv.config({ path: ".env.test" });
 
 // Set DATABASE_URL from TEST_DATABASE_URL for E2E tests
-if (process.env.TEST_DATABASE_URL) {
+if (process.env.NODE_ENV === "test" && process.env.TEST_DATABASE_URL) {
   process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
 }
 

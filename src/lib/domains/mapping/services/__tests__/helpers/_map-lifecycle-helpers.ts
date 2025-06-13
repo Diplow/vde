@@ -15,9 +15,10 @@ export async function _createAndValidateMap(
   expect(mapContract.id).toBeGreaterThan(0);
   expect(mapContract.title).toBe(expectedData.title ?? "Test Map");
   expect(mapContract.descr).toBe(expectedData.descr ?? "Test Description");
-  expect(mapContract.coords.userId).toBe(params.userId);
-  expect(mapContract.coords.groupId).toBe(params.groupId);
-  expect(mapContract.coords.path).toEqual([]);
+  const coords = mapContract.coords;
+  expect(coords.userId).toBe(params.userId);
+  expect(coords.groupId).toBe(params.groupId);
+  expect(coords.path).toEqual([]);
 
   return mapContract;
 }
@@ -33,8 +34,9 @@ export async function _validateMapInRepository(
   );
   expect(rootItem).not.toBeNull();
   if (rootItem) {
-    expect(rootItem.attrs.coords.userId).toBe(params.userId);
-    expect(rootItem.attrs.coords.groupId).toBe(params.groupId);
+    const rootCoords = rootItem.attrs.coords;
+    expect(rootCoords.userId).toBe(params.userId);
+    expect(rootCoords.groupId).toBe(params.groupId);
     expect(rootItem.attrs.itemType).toBe(MapItemType.USER);
     expect(rootItem.ref.attrs.title).toBe(expectedData.title);
   }
@@ -42,13 +44,13 @@ export async function _validateMapInRepository(
 
 export function _validateRetrievedMapData(
   retrievedMapData: unknown,
-  createdMap: { id: string; title: string; descr: string },
+  createdMap: { id: number; title: string; descr: string },
   params: { userId: number; groupId: number },
 ) {
   expect(retrievedMapData).not.toBeNull();
   if (retrievedMapData) {
     const mapData = retrievedMapData as {
-      id: string;
+      id: number;
       title: string;
       descr: string;
       coords: unknown;
@@ -88,8 +90,8 @@ export async function _setupMultipleUserMaps(
 }
 
 export function _validateUserMapsRetrieval(
-  retrievedMaps: Array<{ id: string }>,
-  expectedMaps: Array<{ id: string }>,
+  retrievedMaps: Array<{ id: number }>,
+  expectedMaps: Array<{ id: number }>,
 ) {
   expect(retrievedMaps).toHaveLength(2);
   expect(retrievedMaps.map((m) => m.id).sort()).toEqual(

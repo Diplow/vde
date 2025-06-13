@@ -1,5 +1,5 @@
 import { describe, beforeEach, it, expect } from "vitest";
-import { Direction } from "../../utils/hex-coordinates";
+import { type Coord, Direction } from "../../utils/hex-coordinates";
 import {
   type TestEnvironment,
   _cleanupDatabase,
@@ -34,29 +34,29 @@ describe("MappingService - Item Relationships [Integration - DB]", () => {
     const groupId = testParams.groupId;
     const rootMap = await _setupBasicMap(testEnv.service, { userId, groupId });
 
-    const childCoords = _createTestCoordinates({
+    const childCoords: Coord = _createTestCoordinates({
       userId,
       groupId,
       path: [Direction.NorthEast],
     });
-    const childItem = await testEnv.service.items.crud.addItemToMap({
+    const childItem: Awaited<ReturnType<typeof testEnv.service.items.crud.addItemToMap>> = await testEnv.service.items.crud.addItemToMap({
       parentId: rootMap.id,
       coords: childCoords,
       title: "Child Item",
     });
 
-    const grandchildCoords = _createTestCoordinates({
+    const grandchildCoords: Coord = _createTestCoordinates({
       userId,
       groupId,
       path: [Direction.NorthEast, Direction.East],
     });
-    const grandchildItem = await testEnv.service.items.crud.addItemToMap({
-      parentId: childItem.id,
+    const grandchildItem: Awaited<ReturnType<typeof testEnv.service.items.crud.addItemToMap>> = await testEnv.service.items.crud.addItemToMap({
+      parentId: parseInt(childItem.id),
       coords: grandchildCoords,
       title: "Grandchild Item",
     });
 
-    const unrelatedChildCoords = _createTestCoordinates({
+    const unrelatedChildCoords: Coord = _createTestCoordinates({
       userId,
       groupId,
       path: [Direction.West],
@@ -87,7 +87,7 @@ describe("MappingService - Item Relationships [Integration - DB]", () => {
     });
     expect(mapData?.items.length).toBe(4);
 
-    const rootMapContract = await testEnv.service.items.crud.getItem({
+    const rootMapContract: Awaited<ReturnType<typeof testEnv.service.items.crud.getItem>> = await testEnv.service.items.crud.getItem({
       coords: hierarchySetup.rootMap.coords,
     });
 
@@ -99,7 +99,7 @@ describe("MappingService - Item Relationships [Integration - DB]", () => {
 
   async function _validateChildDescendants(hierarchySetup: { childItem: { id: string } }) {
     const childDescendants = await testEnv.service.items.query.getDescendants({
-      itemId: hierarchySetup.childItem.id,
+      itemId: parseInt(hierarchySetup.childItem.id),
     });
     expect(childDescendants.length).toBe(1);
     expect(childDescendants[0]!.name).toBe("Grandchild Item");
@@ -109,7 +109,7 @@ describe("MappingService - Item Relationships [Integration - DB]", () => {
     grandchildItem: { id: string };
   }) {
     const noDescendants = await testEnv.service.items.query.getDescendants({
-      itemId: hierarchySetup.grandchildItem.id,
+      itemId: parseInt(hierarchySetup.grandchildItem.id),
     });
     expect(noDescendants.length).toBe(0);
   }
