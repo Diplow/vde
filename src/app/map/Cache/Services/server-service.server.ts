@@ -22,26 +22,32 @@ export const createStaticServerService = (_config: ServiceConfig = {}) => {
       
       // If this is a specific item (has a path), fetch it and its descendants
       if (coords.path && coords.path.length > 0) {
-        // First get the specific item
-        const centerItem = await api.map.getItemByCoords({
-          coords: {
-            userId: coords.userId,
-            groupId: coords.groupId,
-            path: coords.path,
-          },
-        });
-
-        // Then get its descendants if it exists
-        if (centerItem?.id) {
-          const descendants = await api.map.getDescendants({
-            itemId: parseInt(centerItem.id),
+        try {
+          // First get the specific item
+          const centerItem = await api.map.getItemByCoords({
+            coords: {
+              userId: coords.userId,
+              groupId: coords.groupId,
+              path: coords.path,
+            },
           });
+
+          // Then get its descendants if it exists
+          if (centerItem?.id) {
+            const descendants = await api.map.getDescendants({
+              itemId: parseInt(centerItem.id),
+            });
+            
+            // Return the center item plus its descendants
+            return [centerItem, ...descendants];
+          }
           
-          // Return the center item plus its descendants
-          return [centerItem, ...descendants];
+          // Fallback if no descendants
+          return centerItem ? [centerItem] : [];
+        } catch (error) {
+          console.error('[StaticServerService] Failed to fetch items:', error);
+          return [];
         }
-        
-        return centerItem ? [centerItem] : [];
       } else {
         // For root-level queries with proper coordinate format (e.g., "10,0:")
         // Fetch all items for this root

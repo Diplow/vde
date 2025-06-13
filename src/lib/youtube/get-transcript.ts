@@ -60,7 +60,11 @@ async function getTranscript(videoId: string): Promise<string> {
     }
 
     // Get the caption track ID
-    const captionId = data.items[0].id;
+    const captionId = data.items[0]?.id;
+    
+    if (!captionId) {
+      throw new Error(`No caption ID found for video ${videoId}`);
+    }
 
     // Fetch the actual transcript
     const transcriptResponse = await fetch(

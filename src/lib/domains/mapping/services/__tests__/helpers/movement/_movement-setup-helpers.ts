@@ -96,7 +96,7 @@ export async function _setupParentChildHierarchy(
   });
 
   const childItem = await testEnv.service.items.crud.addItemToMap({
-    parentId: parentItem.id,
+    parentId: parseInt(parentItem.id),
     coords: childCoords,
     title: "Child Item",
   });

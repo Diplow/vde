@@ -69,11 +69,13 @@ export function useOfflineMode({
           }));
 
           // Load items into cache
-          dispatch(cacheActions.loadRegion(
-            itemsArray,
-            cachedData.center ?? null,
-            cachedData.maxDepth ?? 3
-          ));
+          if (cachedData.center) {
+            dispatch(cacheActions.loadRegion(
+              itemsArray,
+              cachedData.center,
+              cachedData.maxDepth ?? 3
+            ));
+          }
 
           // Set center if available
           if (cachedData.center) {

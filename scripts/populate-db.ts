@@ -223,7 +223,7 @@ async function populateDb() {
 
       // Calculate coordinates for this video (first level children of center)
       // We'll place them around the center using different directions
-      const direction = (videoIndex + 1) as HexDirection; // 6 directions available
+      const direction = (videoIndex % 6) as HexDirection; // 0-5 safe range
       const videoCoord = CoordSystem.getNeighborCoord(centerCoord, direction);
 
       // Step 5: Add video as an item to the main map (child of the root map item)
@@ -247,7 +247,7 @@ async function populateDb() {
           console.log(`Adding idea "${idea.title}"...`);
 
           // Calculate coordinates for this idea (second level - child of video)
-          const ideaDirection = ((ideaIndex + 1) % 7) as HexDirection;
+          const ideaDirection = ((ideaIndex + 1) % 6) as HexDirection;
           const ideaCoord = CoordSystem.getNeighborCoord(
             videoCoord,
             ideaDirection,

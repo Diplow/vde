@@ -107,8 +107,8 @@ export default {
           },
           fill: {
             DEFAULT: colors.slate[200],
-            hover: `rgb(${colors.slate[300]} / 0.5)`,
-            selected: `rgb(${colors.amber[400]} / 0.8)`,
+            hover: colors.slate[300] + '80', // 50% opacity as hex
+            selected: colors.amber[400] + 'CC', // 80% opacity as hex
           },
         },
         background: "hsl(var(--background))",
@@ -170,7 +170,6 @@ export default {
       },
       screens: {
         xs: "475px",
-        ...fontFamily.sans,
       },
       boxShadow: {
         hex: "0 0 15px -3px rgba(var(--color-primary-500), 0.3)",

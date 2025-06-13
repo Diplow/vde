@@ -115,11 +115,9 @@ export class MutationCoordinator {
       const coords = CoordSystem.parseId(coordId);
       const result = await this.config.updateItemMutation.mutateAsync({
         coords,
-        data: {
-          title: data.title ?? data.name,
-          descr: data.description ?? data.descr,
-          url: data.url,
-        },
+        title: data.title ?? data.name,
+        descr: data.description ?? data.descr,
+        url: data.url,
       });
       
       // Finalize with real data

@@ -38,11 +38,11 @@ export default function HomePage() {
       return <RedirectingState />;
 
     case "error":
-      if (error?.includes("workspace")) {
-        return <MapCreationError message={error} />;
+      if (error?.type === "map_creation") {
+        return <MapCreationError message={error.message} />;
       }
       return (
-        <MapFetchError message={error ?? "Unknown error"} onRetry={retry} />
+        <MapFetchError message={error?.message ?? "Unknown error"} onRetry={retry} />
       );
 
     default:

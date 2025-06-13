@@ -67,9 +67,9 @@ export async function seedE2ETestData() {
       id: TEST_AUTH_USER_ID,
       email: TEST_USER_EMAIL,
       name: TEST_USER_NAME,
-      email_verified: true,
-      created_at: new Date(),
-      updated_at: new Date(),
+      emailVerified: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
     console.log("✅ Created test auth user");
 

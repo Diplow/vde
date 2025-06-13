@@ -39,26 +39,29 @@ export function useMapIdResolution(centerParam: string): ResolvedMapInfo {
   useEffect(() => {
     if (isCoordinate) {
       // Already a coordinate, parse it
-      const [userIdStr, rest] = centerParam.split(",");
-      const [groupIdStr] = rest.split(":");
+      const parts = centerParam.split(",");
+      const userIdStr = parts[0];
+      const rest = parts[1];
+      const groupIdStr = rest ? rest.split(":")[0] : "0";
       
       setResolvedInfo({
         centerCoordinate: centerParam,
-        userId: parseInt(userIdStr),
+        userId: parseInt(userIdStr ?? "0"),
         groupId: parseInt(groupIdStr ?? "0"),
-        rootItemId: parseInt(userIdStr), // For coordinates, rootItemId is usually the userId
+        rootItemId: parseInt(userIdStr ?? "0"), // For coordinates, rootItemId is usually the userId
         isLoading: false,
         error: null,
       });
     } else if (rootItem) {
       // Resolved from mapItemId to actual item
       const coords = rootItem.coordinates.split(",");
-      const [userIdStr, rest] = coords;
-      const [groupIdStr] = rest.split(":");
+      const userIdStr = coords[0];
+      const rest = coords[1];
+      const groupIdStr = rest ? rest.split(":")[0] : "0";
       
       setResolvedInfo({
         centerCoordinate: rootItem.coordinates,
-        userId: parseInt(userIdStr),
+        userId: parseInt(userIdStr ?? "0"),
         groupId: parseInt(groupIdStr ?? "0"),
         rootItemId: parseInt(centerParam),
         isLoading: false,
@@ -68,7 +71,7 @@ export function useMapIdResolution(centerParam: string): ResolvedMapInfo {
       setResolvedInfo(prev => ({
         ...prev,
         isLoading: false,
-        error: error as Error,
+        error: new Error(error.message || "Failed to resolve map ID"),
       }));
     }
   }, [centerParam, isCoordinate, rootItem, error]);

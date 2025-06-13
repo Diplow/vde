@@ -6,6 +6,7 @@ import type { MutationOperations } from "../Handlers/types";
 import type { DataOperations } from "../Handlers/types";
 import type { StorageService } from "../Services/types";
 import { MutationCoordinator } from "./mutation-coordinator";
+import type { Coord } from "~/lib/domains/mapping/utils/hex-coordinates";
 
 interface MutationOperationsConfig {
   dispatch: Dispatch<CacheAction>;
@@ -33,6 +34,39 @@ export function useMutationOperations(config: MutationOperationsConfig): Mutatio
   stateRef.current = config.state;
   const getState = useCallback(() => ({ itemsById: stateRef.current.itemsById }), []);
   
+  // Wrap mutations to match expected interface
+  const wrappedAddItemMutation = useMemo(() => ({
+    mutateAsync: async (params: { coords: Coord; parentId: number; title?: string; descr?: string; url?: string }) => {
+      return addItemMutation.mutateAsync({
+        parentId: params.parentId,
+        coords: params.coords,
+        title: params.title,
+        descr: params.descr,
+        url: params.url,
+      });
+    },
+  }), [addItemMutation]);
+
+  const wrappedUpdateItemMutation = useMemo(() => ({
+    mutateAsync: async (params: { coords: Coord; title?: string; descr?: string; url?: string }) => {
+      return updateItemMutation.mutateAsync({
+        coords: params.coords,
+        data: {
+          title: params.title,
+          descr: params.descr,
+          url: params.url,
+        },
+      });
+    },
+  }), [updateItemMutation]);
+
+  const wrappedDeleteItemMutation = useMemo(() => ({
+    mutateAsync: async (params: { coords: Coord }) => {
+      await deleteItemMutation.mutateAsync(params);
+      return { success: true as const };
+    },
+  }), [deleteItemMutation]);
+
   // Create coordinator instance
   const coordinator = useMemo(() => {
     return new MutationCoordinator({
@@ -41,9 +75,9 @@ export function useMutationOperations(config: MutationOperationsConfig): Mutatio
       dataOperations: config.dataOperations,
       storageService: config.storageService,
       mapContext: config.mapContext,
-      addItemMutation,
-      updateItemMutation,
-      deleteItemMutation,
+      addItemMutation: wrappedAddItemMutation,
+      updateItemMutation: wrappedUpdateItemMutation,
+      deleteItemMutation: wrappedDeleteItemMutation,
     });
   }, [
     config.dispatch,
@@ -51,9 +85,9 @@ export function useMutationOperations(config: MutationOperationsConfig): Mutatio
     config.dataOperations,
     config.storageService,
     config.mapContext,
-    addItemMutation,
-    updateItemMutation,
-    deleteItemMutation,
+    wrappedAddItemMutation,
+    wrappedUpdateItemMutation,
+    wrappedDeleteItemMutation,
   ]);
   
   // Return operations interface

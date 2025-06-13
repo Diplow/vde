@@ -6,6 +6,7 @@ import {
 } from "../server-service";
 import { ServiceError, NetworkError, TimeoutError } from "../types";
 import type { ServiceConfig } from "../types";
+import { MapItemType } from "~/lib/domains/mapping/_objects/map-item";
 
 // Mock console.warn to avoid noise in tests
 const mockConsoleWarn = vi.fn();
@@ -24,35 +25,29 @@ describe("Server Service", () => {
     mockGetRootItemByIdFetch = vi.fn();
     mockGetDescendantsFetch = vi.fn();
     
+    // Create a mock that matches the tRPC utils structure
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
     mockUtils = {
       map: {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         getItemsForRootItem: {
           fetch: mockFetch,
-        },
+        } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         getItemByCoords: {
           fetch: mockGetItemByCoordsFetch,
-        },
+        } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         getRootItemById: {
           fetch: mockGetRootItemByIdFetch,
-        },
+        } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         getDescendants: {
           fetch: mockGetDescendantsFetch,
-        },
-        // Mutations are not used in the service anymore
-        addItem: {
-          useMutation: vi.fn(), // Only for reference
-        },
-        updateItem: {
-          useMutation: vi.fn(), // Only for reference
-        },
-        removeItem: {
-          useMutation: vi.fn(), // Only for reference
-        },
-        moveMapItem: {
-          useMutation: vi.fn(), // Only for reference
-        },
+        } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
       },
-    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any;
   });
 
   afterEach(() => {
@@ -101,7 +96,7 @@ describe("Server Service", () => {
           depth: 1,
           url: "",
           parentId: null,
-          itemType: "BASE",
+          itemType: MapItemType.BASE,
           ownerId: "test-owner",
         },
       ];

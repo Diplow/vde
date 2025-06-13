@@ -1,6 +1,6 @@
 // Service interface types for dependency injection and mocking
 
-import type { MapItemType } from "~/server/db/schema";
+import type { MapItemType } from "~/lib/domains/mapping/_objects/map-item";
 
 export interface ServerService {
   // Data fetching operations (primary purpose)

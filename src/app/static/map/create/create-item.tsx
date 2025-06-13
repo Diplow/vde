@@ -10,7 +10,7 @@ import {
 import type { MapItemAPIContract } from "~/server/api/types/contracts";
 import type { TileData } from "~/app/map/types/tile-data";
 import { getColor } from "~/app/map/types/tile-data";
-import type { TILE_COLORS } from "~/app/map/Tile/Item/item.styles";
+// Remove TILE_COLORS import as it's not needed
 import { api } from "~/commons/trpc/server";
 import { _getParentHierarchy } from "~/app/map/Controls/ParentHierarchy/hierarchy.utils";
 import {
@@ -36,10 +36,10 @@ export async function StaticCreateItemForm({
 
   // Get color for the future tile based on its position
   const colorString = getColor(targetCoords);
-  const [colorName, tint] = colorString.split("-");
+  const [colorName, tint] = colorString.split("-") as [string, string];
   const tileColor = {
-    color: colorName as keyof typeof TILE_COLORS,
-    tint: tint as keyof typeof TILE_COLORS[keyof typeof TILE_COLORS],
+    color: colorName as "zinc" | "amber" | "lime" | "fuchsia" | "rose" | "indigo" | "cyan",
+    tint: tint as "50" | "100" | "200" | "300" | "400" | "500" | "600" | "700" | "800" | "900" | "950",
   };
 
   // Get all items for hierarchy building
@@ -79,6 +79,7 @@ export async function StaticCreateItemForm({
             coordinates: coords,
             parentId: parentId ?? undefined,
             depth: coords.path.length,
+            ownerId: item.ownerId,
           },
           state: {
             isDragged: false,
@@ -161,7 +162,7 @@ export async function StaticCreateItemForm({
         {/* Right Column - Hierarchy Panel */}
         <div className="lg:w-96">
           {/* Hierarchy */}
-          {(hierarchy.length > 0 ?? parentItem ?? true) && (
+          {(hierarchy.length > 0 || parentItem) && (
             <div className="rounded-lg border border-gray-700 bg-gray-800 p-6">
               <h2 className="mb-4 text-lg font-semibold text-white">Hierarchy</h2>
               <div className="flex flex-col items-center gap-2">
@@ -210,6 +211,7 @@ export async function StaticCreateItemForm({
                             coordinates: parentCoords,
                             parentId: undefined,
                             depth: parentCoords.path.length,
+                            ownerId: parentItem.ownerId,
                           },
                           state: {
                             isDragged: false,

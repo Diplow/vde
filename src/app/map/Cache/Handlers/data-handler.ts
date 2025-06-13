@@ -1,7 +1,7 @@
 import { type api } from "~/commons/trpc/react";
 import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { CacheAction, CacheState } from "../State/types";
-import type { MapItemType } from "~/server/db/schema";
+import type { MapItemType } from "~/lib/domains/mapping/_objects/map-item";
 import { cacheActions } from "../State/actions";
 import {
   createServerService,

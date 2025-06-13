@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 import { readdir, rmdir, unlink } from "fs/promises";
-import { existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import path from "path";
 import postgres from "postgres";
 import { execSync } from "child_process";
@@ -51,9 +51,7 @@ async function getDatabaseUrl(): Promise<string> {
   // Load environment variables
   const envPath = path.join(process.cwd(), ".env");
   if (existsSync(envPath)) {
-    const envContent = await import("fs").then((fs) =>
-      fs.readFileSync(envPath, "utf8"),
-    );
+    const envContent = readFileSync(envPath, "utf8");
     const envVars = envContent.split("\n").reduce(
       (acc, line) => {
         const [key, value] = line.split("=");

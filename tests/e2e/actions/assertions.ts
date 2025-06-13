@@ -64,7 +64,7 @@ export class MapAssertions {
     expect(count).toBe(expectedTitles.length);
     
     for (let i = 0; i < expectedTitles.length; i++) {
-      await expect(hierarchyTiles.nth(i)).toHaveText(expectedTitles[i]);
+      await expect(hierarchyTiles.nth(i)).toHaveText(expectedTitles[i] ?? '');
     }
   }
 

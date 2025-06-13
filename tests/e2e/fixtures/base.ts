@@ -1,5 +1,4 @@
 import { test as base } from "@playwright/test";
-import type { GoToOptions } from "@playwright/test";
 import { initializeOfflineMode, clearOfflineStorage, setupOfflineData } from "./offline-test-setup";
 
 export interface TileCoordinates {
@@ -20,7 +19,7 @@ export const test = base.extend({
     let isFirstNavigation = true;
     let hasNavigated = false;
     
-    page.goto = async (url: string, options?: GoToOptions) => {
+    page.goto = async (url: string, options?: any) => {
       // Build the full URL
       let fullUrl: string;
       try {

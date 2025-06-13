@@ -141,9 +141,6 @@ export function MapCacheProvider({
     dispatch,
     state,
     dataOperations,
-    testingOverrides.mockRouter,
-    testingOverrides.mockSearchParams,
-    testingOverrides.mockPathname,
   );
 
   const syncOperations = useSyncEngine(dispatch, state, dataOperations, {
