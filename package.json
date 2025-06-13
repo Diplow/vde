@@ -11,6 +11,7 @@
     "db:populate": "tsx scripts/populate-db.ts",
     "db:push": "drizzle-kit push --config=./config/drizzle.config.ts",
     "db:studio": "drizzle-kit studio --config=./config/drizzle.config.ts",
+    "db:setup": "drizzle-kit push --config=./config/drizzle.config.ts",
     "db:create-placeholder-user": "dotenv -e .env -e .env.local -- tsx scripts/create-placeholder-user.ts",
     "db:delete": "tsx scripts/delete-database.ts",
     "dev": "next dev",
