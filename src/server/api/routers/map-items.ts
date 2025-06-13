@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   createTRPCRouter,
   publicProcedure,
+  protectedProcedure,
   mappingServiceMiddleware,
 } from "~/server/api/trpc";
 import { contractToApiAdapters } from "~/server/api/types/contracts";
@@ -55,7 +56,7 @@ export const mapItemsRouter = createTRPCRouter({
     }),
 
   // Add item to map
-  addItem: publicProcedure
+  addItem: protectedProcedure
     .use(mappingServiceMiddleware)
     .input(itemCreationSchema)
     .mutation(async ({ ctx, input }) => {
@@ -70,7 +71,7 @@ export const mapItemsRouter = createTRPCRouter({
     }),
 
   // Remove item
-  removeItem: publicProcedure
+  removeItem: protectedProcedure
     .use(mappingServiceMiddleware)
     .input(z.object({ coords: hexCoordSchema }))
     .mutation(async ({ ctx, input }) => {
@@ -81,7 +82,7 @@ export const mapItemsRouter = createTRPCRouter({
     }),
 
   // Update item
-  updateItem: publicProcedure
+  updateItem: protectedProcedure
     .use(mappingServiceMiddleware)
     .input(itemUpdateSchema)
     .mutation(async ({ ctx, input }) => {
@@ -95,7 +96,7 @@ export const mapItemsRouter = createTRPCRouter({
     }),
 
   // Move map item
-  moveMapItem: publicProcedure
+  moveMapItem: protectedProcedure
     .use(mappingServiceMiddleware)
     .input(itemMovementSchema)
     .mutation(async ({ ctx, input }) => {
