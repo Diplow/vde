@@ -8,7 +8,6 @@ import React, {
   useEffect,
 } from "react";
 import { authClient } from "~/lib/auth/auth-client"; // Your auth client
-import { api } from '~/commons/trpc/react';
 
 // Define User type based on what better-auth session returns
 // This should align with better-auth's User type or the user object shape it provides.
@@ -25,6 +24,7 @@ interface AuthContextType {
   user: User | null | undefined; // undefined during loading, null if not logged in
   mappingUserId: number | undefined; // The user's mapping system ID
   isLoading: boolean;
+  setMappingUserId: (id: number | undefined) => void;
   // Optional: A function to explicitly trigger re-fetching session or handling logout
   // if more complex logic than just invalidating tRPC query is needed client-side.
   // signOut?: () => Promise<void>;
@@ -43,6 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [authState, setAuthState] = useState<SessionState>(() =>
     authClient.useSession.get(),
   );
+  const [mappingUserId, setMappingUserId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     // Define the callback to update React state when the Atom changes
@@ -73,17 +74,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // The user object is typically at authState.data.user
   const user = authState.data?.user;
   const isAuthLoading = authState.isPending;
-  
-  // Fetch the mapping user ID when we have an auth user
-  const { data: mappingData } = api.map.user.getCurrentUserMappingId.useQuery(undefined, {
-    enabled: !!user && !isAuthLoading,
-  });
-  
-  const mappingUserId = mappingData?.mappingUserId;
   const isLoading = isAuthLoading || (!!user && mappingUserId === undefined);
 
   return (
-    <AuthContext.Provider value={{ user, mappingUserId, isLoading }}>
+    <AuthContext.Provider value={{ user, mappingUserId, isLoading, setMappingUserId }}>
       {children}
     </AuthContext.Provider>
   );
