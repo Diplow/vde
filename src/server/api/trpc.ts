@@ -48,6 +48,8 @@ export function convertToHeaders(
   return headers;
 }
 
+export type Context = Awaited<ReturnType<typeof createContext>>;
+
 export const createContext = async (opts: CreateNextContextOptions) => {
   const { req, res } = opts;
 

@@ -16,7 +16,6 @@ const getDatabaseUrl = () => {
   }
 
   // Use regular database URL for non-test environments
-  // console.log("🔍 USING PRODUCTION DATABASE");
   return env.DATABASE_URL;
 };
 
@@ -25,7 +24,22 @@ const connectionString = getDatabaseUrl();
 if (!connectionString) {
   throw new Error("Database connection string is not set");
 }
-const client = postgres(connectionString);
+
+// Configuration optimized for Neon in serverless environments
+const isProduction = process.env.NODE_ENV === "production";
+const client = postgres(connectionString, {
+  // Neon-recommended settings for serverless
+  max: isProduction ? 1 : 10, // Single connection in production
+  idle_timeout: isProduction ? 20 : undefined, // Close idle connections quickly
+  connect_timeout: 10, // Fast timeout for serverless
+  
+  // Disable prepared statements for serverless environments
+  // This is recommended by Neon for better connection pooling
+  prepare: !isProduction,
+  
+  // SSL is required for Neon in production
+  ssl: isProduction ? 'require' : false,
+});
 
 // Create a Drizzle ORM instance with the schema
 export const db = drizzle(client, { schema });
