@@ -391,3 +391,134 @@ Ask yourself:
 5. Does the structure follow the Rule of 6?
 6. Can I read function names and understand the entire flow?
 7. Did I apply all validated domain concepts consistently?
+
+## Git Workflow for Refactoring
+
+### Branch Management
+1. **Create Refactor Branch**: Based on develop or current feature branch
+   ```bash
+   # From develop branch (for general refactoring)
+   git checkout develop
+   git pull origin develop
+   git checkout -b refactor/explicit-description
+   
+   # OR from a feature branch (if refactoring within that feature)
+   git checkout feature/current-feature
+   git pull origin feature/current-feature
+   git checkout -b refactor/clarity-in-feature
+   
+   # Examples:
+   # refactor/create-item-clarity
+   # refactor/apply-rule-of-6-to-components
+   # refactor/extract-domain-concepts
+   ```
+
+2. **Commit Strategy**: Group related changes logically
+   ```bash
+   # Structural changes first
+   git add src/app/map/create/
+   git commit -m "refactor: restructure create-item into Rule of 6 layout
+   
+   - Split 269-line component into 6 focused functions
+   - Created _components, _hooks, and _utils folders
+   - Each file now has max 6 functions"
+   
+   # Then concept extraction
+   git add src/lib/domains/mapping/
+   git commit -m "refactor: extract TileDataTransformer domain concept
+   
+   - Added transformer for MapItemContract to TileData
+   - Reused existing CoordSystem utilities
+   - Documented in mapping domain README"
+   ```
+
+### Safe Refactoring Practices
+1. **Test First**: Ensure tests pass before refactoring
+   ```bash
+   pnpm test
+   pnpm test:e2e
+   git commit -m "test: add tests to cover refactoring scope"
+   ```
+
+2. **Incremental Changes**: Refactor in small, verifiable steps
+   ```bash
+   # Step 1: Extract without changing behavior
+   git commit -m "refactor: extract coordinate formatting logic"
+   
+   # Step 2: Improve naming
+   git commit -m "refactor: rename functions for clarity"
+   
+   # Step 3: Apply Rule of 6
+   git commit -m "refactor: split large functions per Rule of 6"
+   ```
+
+3. **Verify No Behavior Changes**: Run tests after each commit
+   ```bash
+   pnpm test
+   pnpm lint
+   pnpm typecheck
+   ```
+
+### Documentation Updates
+```bash
+# Update UBIQUITOUS.md with new concepts
+git add UBIQUITOUS.md
+git commit -m "docs: add TileDataTransformer to ubiquitous language"
+
+# Update domain READMEs
+git add src/lib/domains/mapping/README.md
+git commit -m "docs: document new transformer utilities in mapping domain"
+```
+
+### Creating Pull Request
+1. **Push Refactor Branch**: Push to GitHub
+   ```bash
+   git push origin refactor/explicit-description
+   ```
+
+2. **Create PR**: Open pull request to base branch
+   ```bash
+   # To develop (if refactoring from develop)
+   gh pr create --base develop --title "Refactor: [Description]" \
+     --body-file prompts/refactors/YYYY-MM-DD-title.md
+   
+   # To feature branch (if refactoring within feature)
+   gh pr create --base feature/current-feature --title "Refactor: [Description]" \
+     --body-file prompts/refactors/YYYY-MM-DD-title.md
+   ```
+
+3. **PR Description**: Use entire refactor document
+   - Copy complete content of `prompts/refactors/YYYY-MM-DD-title.md`
+   - This includes:
+     - Pre-refactoring analysis
+     - Domain concepts identified
+     - User validation received
+     - Changes applied
+     - Metrics and improvements
+
+### Managing Large Refactors
+For refactors spanning multiple files:
+
+1. **Feature Branch Protection**: Keep refactor isolated
+   ```bash
+   # Create tracking issue
+   git commit --allow-empty -m "refactor: tracking issue for large refactor
+   
+   Scope:
+   - [ ] Refactor component A
+   - [ ] Refactor component B
+   - [ ] Update documentation"
+   ```
+
+2. **Stacked Commits**: One commit per logical change
+   ```bash
+   # Use interactive rebase to organize commits
+   git rebase -i origin/main
+   ```
+
+3. **Regular Rebasing**: Keep up with base branch
+   ```bash
+   git fetch origin
+   git rebase origin/develop  # or origin/feature/current-feature
+   # Resolve conflicts carefully to maintain refactor integrity
+   ```
