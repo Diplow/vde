@@ -325,23 +325,6 @@ describe("Server Service", () => {
     });
   });
 
-  describe("useServerService Hook", () => {
-    // Mock tRPC context for hook testing
-    // NOTE: These tests are commented out because they require complex tRPC provider setup
-    // The main benefit is the pure function approach, which we test extensively above
-
-    test.skip("hook returns service with same interface", () => {
-      // This would require proper tRPC test provider setup
-      // For now, we focus on testing the pure createServerService function
-      // which is the primary interface for testing
-    });
-
-    test.skip("hook uses provided config", () => {
-      // This would require proper tRPC test provider setup
-      // For now, we focus on testing the pure createServerService function
-    });
-  });
-
   describe("createServerServiceFactory", () => {
     test("creates factory function", () => {
       const factory = createServerServiceFactory({ retryAttempts: 5 });
