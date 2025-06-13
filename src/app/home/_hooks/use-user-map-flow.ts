@@ -35,13 +35,13 @@ export function useUserMapFlow({ user, isAuthLoading }: UseUserMapFlowOptions): 
   const [error, setError] = useState<FlowError | null>(null);
 
   // Query for user's map - only enabled when authenticated
-  const getUserMapQuery = api.map.getUserMap.useQuery(undefined, {
+  const getUserMapQuery = api.map.user.getUserMap.useQuery(undefined, {
     enabled: !!user && !isAuthLoading,
     retry: false,
   });
 
   // Mutation to create default map
-  const createMapMutation = api.map.createDefaultMapForCurrentUser.useMutation({
+  const createMapMutation = api.map.user.createDefaultMapForCurrentUser.useMutation({
     onSuccess: (data) => {
       if (data.success && data.mapId) {
         setState("redirecting");
@@ -82,6 +82,7 @@ export function useUserMapFlow({ user, isAuthLoading }: UseUserMapFlowOptions): 
 
     if (getUserMapQuery.data) {
       const data = getUserMapQuery.data;
+      
       
       if (data.success && data.map?.id) {
         setState("redirecting");

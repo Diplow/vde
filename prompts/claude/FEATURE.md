@@ -126,3 +126,131 @@ Should I proceed with this plan?
 - **Debug-Driven Tests**: When bugs are found, add tests that would have caught them
 - **Don't Over-Test Initially**: Avoid premature test complexity
 - **Test After Implementation**: Once working, add comprehensive test coverage
+
+## Git Workflow for Features
+
+### Branch Strategy
+1. **Create Feature Branch**: Always branch from develop
+   ```bash
+   git checkout develop
+   git pull origin develop
+   git checkout -b feature/explicit-feature-name
+   
+   # Examples:
+   # feature/dark-mode-toggle
+   # feature/export-to-csv
+   # feature/collaborative-editing
+   ```
+
+2. **Regular Commits**: Commit logical chunks of work
+   ```bash
+   # Stage related changes
+   git add src/components/DarkModeToggle.tsx
+   git add src/contexts/ThemeContext.tsx
+   
+   # Descriptive commit messages
+   git commit -m "feat: add dark mode toggle component
+   
+   - Created DarkModeToggle component with sun/moon icons
+   - Integrated with existing theme context
+   - Persists preference to localStorage"
+   ```
+
+### Commit Guidelines
+Follow conventional commits for clear history:
+- **feat**: New feature or enhancement
+- **test**: Adding tests for the feature
+- **docs**: Documentation updates
+- **style**: CSS/styling changes (not code style)
+- **refactor**: Code restructuring without behavior change
+
+### Development Flow
+1. **Start Clean**: Ensure working directory is clean
+   ```bash
+   git status
+   git stash  # If needed
+   ```
+
+2. **Incremental Progress**: Commit working states
+   ```bash
+   # After implementing core functionality
+   git add -p  # Review changes before staging
+   git commit -m "feat: implement basic CSV export functionality"
+   
+   # After adding UI
+   git commit -m "feat: add export button to data table"
+   
+   # After adding tests
+   git commit -m "test: add unit tests for CSV export"
+   ```
+
+3. **Keep History Clean**: Squash WIP commits if needed
+   ```bash
+   # Interactive rebase to clean up history
+   git rebase -i HEAD~3
+   # Mark commits to squash, edit messages
+   ```
+
+### Before Creating PR
+1. **Update Feature Document**: Mark all tasks complete
+2. **Run All Checks**:
+   ```bash
+   pnpm lint
+   pnpm typecheck
+   pnpm test
+   pnpm test:e2e
+   pnpm build  # Ensure production build works
+   ```
+
+3. **Review Changes**: Ensure all changes are intentional
+   ```bash
+   git log --oneline origin/main..HEAD
+   git diff origin/main...HEAD
+   ```
+
+### Creating Pull Request
+1. **Push Feature Branch**: Push to GitHub
+   ```bash
+   git push origin feature/explicit-feature-name
+   ```
+
+2. **Create PR to develop**: Open pull request
+   ```bash
+   # Using GitHub CLI
+   gh pr create --base develop --title "Feature: [Feature name]" \
+     --body-file prompts/features/YYYY-MM-DD-feature-name.md
+   
+   # Or manually on GitHub, using the feature document as PR description
+   ```
+
+3. **PR Description**: Use entire feature document content
+   - Copy the complete content of `prompts/features/YYYY-MM-DD-feature-name.md`
+   - This includes:
+     - Feature understanding and context
+     - Architecture analysis
+     - Design decisions and alternatives
+     - Implementation checklist with completion status
+     - Testing strategy and results
+
+### Managing Long-Running Features
+For features that take multiple days:
+
+1. **Daily Progress Commits**: End each day with a WIP commit
+   ```bash
+   git add .
+   git commit -m "WIP: [what you accomplished today]"
+   ```
+
+2. **Rebase Regularly**: Keep up with develop branch
+   ```bash
+   git fetch origin
+   git rebase origin/develop
+   ```
+
+3. **Feature Flags**: For partial implementations
+   ```typescript
+   // Use environment variable or feature flag
+   if (process.env.NEXT_PUBLIC_ENABLE_DARK_MODE) {
+     // New feature code
+   }
+   ```
