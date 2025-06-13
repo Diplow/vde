@@ -45,7 +45,7 @@ export function useMapIdResolution(centerParam: string): ResolvedMapInfo {
       setResolvedInfo({
         centerCoordinate: centerParam,
         userId: parseInt(userIdStr),
-        groupId: parseInt(groupIdStr || "0"),
+        groupId: parseInt(groupIdStr ?? "0"),
         rootItemId: parseInt(userIdStr), // For coordinates, rootItemId is usually the userId
         isLoading: false,
         error: null,
@@ -59,7 +59,7 @@ export function useMapIdResolution(centerParam: string): ResolvedMapInfo {
       setResolvedInfo({
         centerCoordinate: rootItem.coordinates,
         userId: parseInt(userIdStr),
-        groupId: parseInt(groupIdStr || "0"),
+        groupId: parseInt(groupIdStr ?? "0"),
         rootItemId: parseInt(centerParam),
         isLoading: false,
         error: null,

@@ -90,7 +90,7 @@ export function DeleteItemDialog({
             </p>
             {isUserRootMap ? (
               <p className="mt-2 text-xs text-amber-700">
-                This is a user's root map and cannot be deleted.
+                This is a user&apos;s root map and cannot be deleted.
               </p>
             ) : (
               <>

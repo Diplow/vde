@@ -8,7 +8,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
-import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 import {
   validateCreateItemInput,
   type CreateItemFormData,
@@ -45,7 +44,7 @@ export function CreateItemModal({
   const [errors, setErrors] = useState<CreateItemFormErrors>({});
 
   // Parse coordinates for form
-  const targetCoords = CoordSystem.parseId(coordId);
+  // const targetCoords = CoordSystem.parseId(coordId);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,10 +88,10 @@ export function CreateItemModal({
       } else {
         // Only show error in dynamic mode, otherwise fallback to page
         if (preventRedirects) {
-          const errorData = await response.json();
+          const errorData = await response.json() as { error?: string };
           setErrors({
             general:
-              errorData.error || "Failed to create item. Please try again.",
+              errorData.error ?? "Failed to create item. Please try again.",
           });
         } else {
           // Fallback to full page form on error

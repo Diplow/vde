@@ -1,11 +1,9 @@
-import { describe, beforeEach, it, expect } from "vitest";
-import { HexDirection, CoordSystem } from "../../utils/hex-coordinates";
-import type { HexCoord } from "../../utils/hex-coordinates";
+import { describe, beforeEach, it } from "vitest";
+import { HexDirection } from "../../utils/hex-coordinates";
 import {
   type TestEnvironment,
   _cleanupDatabase,
   _createTestEnvironment,
-  _setupBasicMap,
   _createTestCoordinates,
   _createUniqueTestParams,
 } from "./helpers/_test-utilities";

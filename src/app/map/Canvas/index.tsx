@@ -68,9 +68,9 @@ export function DynamicMapCanvas({
   urlInfo,
   fallback,
   errorBoundary,
-  enableBackgroundSync = true,
-  syncInterval = 30000,
-  cacheConfig,
+  enableBackgroundSync: _enableBackgroundSync = true,
+  syncInterval: _syncInterval = 30000,
+  cacheConfig: _cacheConfig,
 }: DynamicMapCanvasProps) {
   const {
     items,
@@ -78,25 +78,13 @@ export function DynamicMapCanvas({
     expandedItems,
     isLoading,
     error,
-    loadRegion,
-    isRegionLoaded,
     invalidateRegion,
     updateCenter,
   } = useMapCache();
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Feature detection (per ARCHITECTURE.md)
-  const [capabilities, setCapabilities] = useState({
-    hasJS: false,
-    hasLocalStorage: false,
-  });
-
   useEffect(() => {
-    // Initialize capabilities and hydration
-    setCapabilities({
-      hasJS: true,
-      hasLocalStorage: typeof localStorage !== "undefined",
-    });
+    // Initialize hydration
     setIsHydrated(true);
   }, []); // Run only once on mount
 
@@ -107,24 +95,24 @@ export function DynamicMapCanvas({
       // Initializing center
       updateCenter(centerInfo.center);
     }
-  }, []); // Run only once on mount
+  }, [center, centerInfo.center, updateCenter]); // Include dependencies
 
   // Simplified tile actions without interaction modes
   const tileActions = useMemo(
     () => ({
-      handleTileClick: (coordId: string, _event: MouseEvent) => {
+      handleTileClick: (_coordId: string, _event: MouseEvent) => {
         // handleTileClick called
         // Default tile click behavior (can be enhanced later)
       },
-      handleTileDrag: (coordId: string, _event: DragEvent) => {
+      handleTileDrag: (_coordId: string, _event: DragEvent) => {
         // handleTileDrag called
         // TODO: Handle drag operations
       },
-      handleTileHover: (coordId: string, isHovering: boolean) => {
+      handleTileHover: (_coordId: string, _isHovering: boolean) => {
         // handleTileHover called
         // TODO: Handle hover state
       },
-      onCreateTileRequested: (coordId: string) => {
+      onCreateTileRequested: (_coordId: string) => {
         // Create tile requested
         // This callback is used by empty tiles to signal create requests
       },

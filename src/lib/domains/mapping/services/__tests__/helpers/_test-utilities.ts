@@ -29,7 +29,9 @@ export async function _cleanupDatabase(): Promise<void> {
   // Delete in the correct order to avoid foreign key constraint violations
   // First delete mapItems (which reference baseItems), then baseItems
   try {
+    // eslint-disable-next-line drizzle/enforce-delete-with-where
     await db.delete(mapItems);
+    // eslint-disable-next-line drizzle/enforce-delete-with-where
     await db.delete(baseItems);
 
     // Small delay to ensure cleanup completes

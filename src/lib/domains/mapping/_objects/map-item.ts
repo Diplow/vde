@@ -4,7 +4,6 @@ import {
 } from "~/lib/domains/utils/generic-objects";
 import {
   type HexCoord,
-  CoordSystem,
   type HexDirection,
 } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { BaseItemWithId } from "./base-item";
@@ -125,7 +124,7 @@ export class MapItem extends GenericAggregate<
     MapItem.validateParentChildRelationship(item); // New validation method
   }
 
-  public static validateCoords(item: MapItem) {
+  public static validateCoords(_item: MapItem) {
     // The old row/col checks are removed as HexCoord changed.
     // Path length validation might still be relevant depending on requirements.
     // e.g. if (item.attrs.coords.path.length > MAX_DEPTH) ...

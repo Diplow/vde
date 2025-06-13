@@ -1,4 +1,4 @@
-import type { MapItemWithId, BaseItemWithId } from "../_objects";
+import type { MapItemWithId } from "../_objects";
 import { MapItemType } from "../_objects";
 import { CoordSystem } from "../utils/hex-coordinates";
 

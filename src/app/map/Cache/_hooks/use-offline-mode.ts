@@ -140,7 +140,7 @@ export function useOfflineMode({
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [enabled, state.itemsById, state.expandedItemIds, state.currentCenter, saveToStorage]);
+  }, [enabled, state.itemsById, state.expandedItemIds, state.currentCenter, saveToStorage, syncEnabled]);
 
   // Listen for online/offline events
   useEffect(() => {
@@ -162,7 +162,7 @@ export function useOfflineMode({
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, [enabled, saveToStorage]);
+  }, [enabled, saveToStorage, syncEnabled]);
 
   // Save on page unload
   useEffect(() => {
@@ -196,7 +196,7 @@ export function useOfflineMode({
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [enabled, state]);
+  }, [enabled, state, syncEnabled]);
 
   return {
     isOffline: enabled && typeof window !== "undefined" && !navigator.onLine,

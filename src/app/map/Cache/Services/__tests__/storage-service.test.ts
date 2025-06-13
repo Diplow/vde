@@ -1,7 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   createStorageService,
-  useStorageService,
   createBrowserStorageService,
   createSSRStorageService,
   createMockStorageService,
@@ -466,7 +465,7 @@ describe("Storage Service", () => {
 
     test("handles circular references in data", async () => {
       const service = createStorageService(mockStorageOperations);
-      const circularData: any = { name: "test" };
+      const circularData: Record<string, unknown> = { name: "test" };
       circularData.self = circularData;
 
       // Should handle JSON.stringify error gracefully

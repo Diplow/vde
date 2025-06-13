@@ -1,13 +1,11 @@
-import { eq, inArray, type SQL, sql, and, like, gte } from "drizzle-orm";
+import { eq, inArray, type SQL, sql } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type * as schemaImport from "~/server/db/schema";
 import { mapItems, baseItems } from "~/server/db/schema";
 
 import type {
-  MapItemIdr,
   MapItemWithId,
 } from "~/lib/domains/mapping/_objects/map-item";
-import { MapItemType } from "~/lib/domains/mapping/_objects/map-item";
 import type { HexDirection } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { DbMapItemWithBase } from "../types";
 import { mapJoinedDbToDomain, pathToString } from "../mappers";

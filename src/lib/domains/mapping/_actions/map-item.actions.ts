@@ -5,12 +5,10 @@ import type {
 import {
   type BaseItemAttrs,
   type BaseItemWithId,
-  MapItemAttrs,
   type MapItemWithId,
   MapItemType,
 } from "~/lib/domains/mapping/_objects";
 import { type HexCoord } from "~/lib/domains/mapping/utils/hex-coordinates";
-import { ShallNotUpdate as MapItemShallNotUpdate } from "../_objects/map-item";
 import type { MapItemIdr } from "../_repositories/map-item";
 import { MapItemCreationHelpers } from "./_map-item-creation-helpers";
 import { MapItemQueryHelpers } from "./_map-item-query-helpers";
@@ -131,7 +129,7 @@ export class MapItemActions {
 
     if ("id" in idr) {
       item = await this.mapItems.getOne(idr.id);
-    } else if (idr.attrs && idr.attrs.coords) {
+    } else if (idr.attrs?.coords) {
       item = await this.mapItems.getOneByIdr({ idr });
     } else {
       throw new Error("Invalid identifier for removeItem");

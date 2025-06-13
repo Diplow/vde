@@ -19,10 +19,10 @@ interface MapControlsProps {
 }
 
 export function MapControls({
-  urlInfo,
-  expandedItemIds,
-  minimapItemsData,
-  currentMapCenterCoordId,
+  urlInfo: _urlInfo,
+  expandedItemIds: _expandedItemIds,
+  minimapItemsData: _minimapItemsData,
+  currentMapCenterCoordId: _currentMapCenterCoordId,
   cacheStatus,
 }: MapControlsProps) {
   // Simplified controls without action panel

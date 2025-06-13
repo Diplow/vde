@@ -31,7 +31,7 @@ export interface TileButtonUIProps {
 }
 
 export const TileButtonUI = ({
-  iconSize,
+  iconSize: _iconSize,
   buttonSizeClasses,
   children,
   ariaLabel,
@@ -57,7 +57,7 @@ export const TileButtonUI = ({
 
 // Shared helper functions
 
-export const getButtonPositioning = (scale: number) => {
+export const getButtonPositioning = (_scale: number) => {
   // Default positioning for scale 1 and 4+
   return "absolute left-1/2 -translate-x-1/2 top-[10%] z-30";
 };
@@ -92,9 +92,11 @@ export const getExpandUrl = (
   const isExpanded = allExpandedItemIds.includes(item.metadata.dbId);
   const newParams = new URLSearchParams(urlInfo.searchParamsString);
 
-  isExpanded
-    ? _collapse(newParams, item, allExpandedItemIds)
-    : _expand(newParams, item, allExpandedItemIds);
+  if (isExpanded) {
+    _collapse(newParams, item, allExpandedItemIds);
+  } else {
+    _expand(newParams, item, allExpandedItemIds);
+  }
 
   // Add action metadata for server-side logging
   newParams.set("_action", isExpanded ? "collapse" : "expand");
@@ -118,7 +120,7 @@ export const getExpandUrl = (
 
 export const createNavigationUrl = (
   item: TileData,
-  urlInfo: URLInfo,
+  _urlInfo: URLInfo,
 ): string => {
   // Navigate to map with center as query param and action metadata
   const params = new URLSearchParams({

@@ -17,6 +17,39 @@ const config: StorybookConfig = {
   },
   "staticDirs": [
     "../public"
-  ]
+  ],
+  "viteFinal": async (config) => {
+    // Fix Vite optimization issues
+    config.optimizeDeps = {
+      ...config.optimizeDeps,
+      include: [
+        ...(config.optimizeDeps?.include || []),
+        "react",
+        "react-dom",
+        "react/jsx-runtime",
+        "react/jsx-dev-runtime",
+        "@storybook/experimental-nextjs-vite",
+        "@storybook/test",
+        "next/link",
+        "lucide-react",
+        "@radix-ui/react-slot",
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      exclude: [
+        ...(config.optimizeDeps?.exclude || []),
+        "util"
+      ]
+    };
+    
+    // Fix module externalization
+    config.ssr = {
+      ...config.ssr,
+      noExternal: ["util"]
+    };
+    
+    return config;
+  }
 };
 export default config;

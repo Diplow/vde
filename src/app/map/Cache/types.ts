@@ -7,7 +7,7 @@ import type {
   NavigationOperations,
   LoadResult,
 } from "./Handlers/types";
-import type { ServerService, StorageService } from "./Services/types";
+import type { ServerService, StorageService, ServiceConfig } from "./Services/types";
 import type { SyncOperations, SyncResult, SyncStatus } from "./Sync/types";
 
 // Cache context interface
@@ -109,12 +109,12 @@ export interface MapCacheProviderProps {
     groupId: number;
   };
   cacheConfig?: Partial<MapCacheHook["config"]>;
-  serverConfig?: Parameters<typeof import("./Services/server-service").useServerService>[0];
-  storageConfig?: Parameters<typeof import("./Services/storage-service").useStorageService>[0];
+  serverConfig?: ServiceConfig;
+  storageConfig?: ServiceConfig;
   offlineMode?: boolean;
   testingOverrides?: {
     disableSync?: boolean;
-    mockRouter?: any;
+    mockRouter?: unknown;
     mockSearchParams?: URLSearchParams;
     mockPathname?: string;
   };

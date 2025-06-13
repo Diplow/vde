@@ -1,10 +1,8 @@
 import { HexDirection } from "../../../../utils/hex-coordinates";
-import type { HexCoord } from "../../../../utils/hex-coordinates";
 import type { TestEnvironment } from "../_test-utilities";
 import {
   _setupBasicMap,
   _createTestCoordinates,
-  _createUniqueTestParams,
 } from "../_test-utilities";
 
 export async function _setupItemForMovement(

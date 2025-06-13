@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import type { Dispatch } from "react";
 import type { CacheState, CacheAction } from "../State/types";
 import type { DataOperations } from "../Handlers/types";
@@ -66,7 +66,7 @@ export function useCacheLifecycle(config: LifecycleHookConfig): void {
 
         config.dispatch(
           cacheActions.loadRegion(
-            items,
+            items as Parameters<typeof cacheActions.loadRegion>[0],
             currentCenter,
             cacheConfig.maxDepth,
           ),
@@ -81,7 +81,7 @@ export function useCacheLifecycle(config: LifecycleHookConfig): void {
       }
     };
     
-    prefetchRegion();
+    void prefetchRegion();
   }, [
     config.state.currentCenter,
     config.state.regionMetadata,
@@ -89,6 +89,7 @@ export function useCacheLifecycle(config: LifecycleHookConfig): void {
     config.state.cacheConfig.maxDepth,
     config.state.isLoading,
     config.serverService,
-    config.dispatch
+    config.dispatch,
+    config
   ]);
 }

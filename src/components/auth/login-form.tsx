@@ -26,7 +26,7 @@ export function LoginForm() {
           onSuccess: () => {
             // Invalidate session to trigger AuthContext update
             // LoginPage will handle fetching map and redirection
-            trpcUtils.auth.getSession.invalidate();
+            void trpcUtils.auth.getSession.invalidate();
           },
           onError: (ctx) => {
             console.error("Sign in error callback:", ctx.error);
@@ -39,9 +39,9 @@ export function LoginForm() {
       );
 
       // Handle error from authClient.signIn.email if it's returned in the result
-      if (result && result.error) {
+      if (result?.error) {
         setError(
-          result.error.message || "An unexpected error occurred during login.",
+          result.error.message ?? "An unexpected error occurred during login.",
         );
       } else if (result && !result.error) {
         // Login was successful according to authClient.
@@ -54,10 +54,10 @@ export function LoginForm() {
           setError("Login process did not complete as expected.");
         }
       }
-    } catch (err: any) {
+    } catch (err) {
       // Catches errors from authClient.signIn.email itself if it throws
       console.error("handleSubmit main error:", err);
-      setError(err.message || "An unexpected server error occurred.");
+      setError(err instanceof Error ? err.message : "An unexpected server error occurred.");
     } finally {
       setIsLoading(false);
     }

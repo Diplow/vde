@@ -79,7 +79,7 @@ describe("MappingService - Item Relationships [Integration - DB]", () => {
   async function _validateRootDescendants(hierarchySetup: {
     userId: number;
     groupId: number;
-    rootMap: any;
+    rootMap: { coords: Parameters<typeof testEnv.service.items.crud.getItem>[0]['coords'] };
   }) {
     const mapData = await testEnv.service.maps.getMapData({
       userId: hierarchySetup.userId,
@@ -92,12 +92,12 @@ describe("MappingService - Item Relationships [Integration - DB]", () => {
     });
 
     const rootDescendants = await testEnv.service.items.query.getDescendants({
-      itemId: rootMapContract.id,
+      itemId: parseInt(rootMapContract.id),
     });
     expect(rootDescendants.length).toBe(3);
   }
 
-  async function _validateChildDescendants(hierarchySetup: { childItem: any }) {
+  async function _validateChildDescendants(hierarchySetup: { childItem: { id: string } }) {
     const childDescendants = await testEnv.service.items.query.getDescendants({
       itemId: hierarchySetup.childItem.id,
     });
@@ -106,7 +106,7 @@ describe("MappingService - Item Relationships [Integration - DB]", () => {
   }
 
   async function _validateLeafDescendants(hierarchySetup: {
-    grandchildItem: any;
+    grandchildItem: { id: string };
   }) {
     const noDescendants = await testEnv.service.items.query.getDescendants({
       itemId: hierarchySetup.grandchildItem.id,

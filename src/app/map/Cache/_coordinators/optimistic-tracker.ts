@@ -41,7 +41,7 @@ export class OptimisticChangeTracker {
     return Array.from(this.changes.entries()).map(([id, change]) => ({
       id,
       ...change,
-      timestamp: parseInt(id.split('_')[1] || '0'),
+      timestamp: parseInt(id.split('_')[1] ?? '0'),
     }));
   }
 

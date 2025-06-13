@@ -59,7 +59,7 @@ describe("MappingService - Item CRUD [Integration - DB]", () => {
         descr: "Child Description",
       };
 
-      const childItemContract = await _addAndValidateChildItem(
+      await _addAndValidateChildItem(
         testEnv,
         { rootMapId: rootMap.id },
         addItemArgs,

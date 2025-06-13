@@ -1,37 +1,42 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
-import { renderHook } from "@testing-library/react";
 import {
   createServerService,
-  useServerService,
   createServerServiceFactory,
   createMockServerService,
 } from "../server-service";
 import { ServiceError, NetworkError, TimeoutError } from "../types";
-import type { ServerService, ServiceConfig } from "../types";
+import type { ServiceConfig } from "../types";
 
 // Mock console.warn to avoid noise in tests
 const mockConsoleWarn = vi.fn();
 console.warn = mockConsoleWarn;
 
 describe("Server Service", () => {
-  let mockUtils: any;
+  let mockUtils: Parameters<typeof createServerService>[0];
   let mockFetch: ReturnType<typeof vi.fn>;
+  let mockGetItemByCoordsFetch: ReturnType<typeof vi.fn>;
+  let mockGetRootItemByIdFetch: ReturnType<typeof vi.fn>;
+  let mockGetDescendantsFetch: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     mockFetch = vi.fn();
+    mockGetItemByCoordsFetch = vi.fn();
+    mockGetRootItemByIdFetch = vi.fn();
+    mockGetDescendantsFetch = vi.fn();
+    
     mockUtils = {
       map: {
         getItemsForRootItem: {
           fetch: mockFetch,
         },
         getItemByCoords: {
-          fetch: vi.fn(),
+          fetch: mockGetItemByCoordsFetch,
         },
         getRootItemById: {
-          fetch: vi.fn(),
+          fetch: mockGetRootItemByIdFetch,
         },
         getDescendants: {
-          fetch: vi.fn(),
+          fetch: mockGetDescendantsFetch,
         },
         // Mutations are not used in the service anymore
         addItem: {
@@ -226,12 +231,12 @@ describe("Server Service", () => {
         coordinates: "1,2:1",
         name: "Test Item",
       };
-      mockUtils.map.getItemByCoords.fetch.mockResolvedValue(item);
+      mockGetItemByCoordsFetch.mockResolvedValue(item);
 
       const service = createServerService(mockUtils);
       const result = await service.getItemByCoordinate("1,2:1");
 
-      expect(mockUtils.map.getItemByCoords.fetch).toHaveBeenCalledWith({
+      expect(mockGetItemByCoordsFetch).toHaveBeenCalledWith({
         coords: { userId: 1, groupId: 2, path: [1] },
       });
       expect(result).toEqual(item);
@@ -243,12 +248,12 @@ describe("Server Service", () => {
         coordinates: "1,2",
         name: "Root Item",
       };
-      mockUtils.map.getRootItemById.fetch.mockResolvedValue(rootItem);
+      mockGetRootItemByIdFetch.mockResolvedValue(rootItem);
 
       const service = createServerService(mockUtils);
       const result = await service.getRootItemById(123);
 
-      expect(mockUtils.map.getRootItemById.fetch).toHaveBeenCalledWith({
+      expect(mockGetRootItemByIdFetch).toHaveBeenCalledWith({
         mapItemId: 123,
       });
       expect(result).toEqual(rootItem);
@@ -259,12 +264,12 @@ describe("Server Service", () => {
         { id: "child-1", name: "Child 1" },
         { id: "child-2", name: "Child 2" },
       ];
-      mockUtils.map.getDescendants.fetch.mockResolvedValue(descendants);
+      mockGetDescendantsFetch.mockResolvedValue(descendants);
 
       const service = createServerService(mockUtils);
       const result = await service.getDescendants(123);
 
-      expect(mockUtils.map.getDescendants.fetch).toHaveBeenCalledWith({
+      expect(mockGetDescendantsFetch).toHaveBeenCalledWith({
         itemId: 123,
       });
       expect(result).toEqual(descendants);
@@ -434,8 +439,8 @@ describe("Server Service", () => {
   describe("Complex coordinate parsing", () => {
     test("handles complex coordinate IDs", async () => {
       const mockItem = { id: "123", coordinates: "1,2:3,4,5", name: "Test" };
-      mockUtils.map.getItemByCoords.fetch.mockResolvedValue(mockItem);
-      mockUtils.map.getDescendants.fetch.mockResolvedValue([]);
+      mockGetItemByCoordsFetch.mockResolvedValue(mockItem);
+      mockGetDescendantsFetch.mockResolvedValue([]);
 
       const service = createServerService(mockUtils);
 
@@ -445,7 +450,7 @@ describe("Server Service", () => {
       });
 
       // For complex coordinates, it should call getItemByCoords
-      expect(mockUtils.map.getItemByCoords.fetch).toHaveBeenCalledWith({
+      expect(mockGetItemByCoordsFetch).toHaveBeenCalledWith({
         coords: {
           userId: 1,
           groupId: 2,

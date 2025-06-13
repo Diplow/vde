@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+// Relations are imported in _relations.ts, not needed here
 
 // Core Aggregates
 export { baseItems } from "./_tables/mapping/base-items";

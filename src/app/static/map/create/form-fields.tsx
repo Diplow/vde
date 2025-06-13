@@ -20,7 +20,10 @@ interface CreateItemFormFieldsProps {
 // Helper function to safely extract string from FormData
 function getFormDataString(formData: FormData, key: string): string {
   const value = formData.get(key);
-  return value ? String(value) : "";
+  if (value === null) return "";
+  if (typeof value === "string") return value;
+  // For File objects, return empty string
+  return "";
 }
 
 // Server action for form submission
@@ -44,7 +47,7 @@ async function createItemAction(formData: FormData) {
     const errorParams = new URLSearchParams();
     Object.entries(validation.errors).forEach(([key, value]) => {
       if (value) {
-        errorParams.set(`error_${key}`, value);
+        errorParams.set(`error_${key}`, value as string);
       }
     });
     const separator = rawData.returnUrl.includes("?") ? "&" : "?";
@@ -106,7 +109,7 @@ export function CreateItemFormFields({
   targetCoords,
   parentId,
   returnUrl,
-  rootItemId,
+  rootItemId: _rootItemId,
   errors,
 }: CreateItemFormFieldsProps) {
   const coordId = CoordSystem.createId(targetCoords);

@@ -8,7 +8,7 @@ import type { ServiceConfig } from "./types";
  * Static server service for server-side usage (SSR, server actions, etc.)
  * This version doesn't use React hooks and can be used in server contexts.
  */
-export const createStaticServerService = (config: ServiceConfig = {}) => {
+export const createStaticServerService = (_config: ServiceConfig = {}) => {
   return {
     async fetchItemsForCoordinate(params: {
       centerCoordId: string;
@@ -32,7 +32,7 @@ export const createStaticServerService = (config: ServiceConfig = {}) => {
         });
 
         // Then get its descendants if it exists
-        if (centerItem && centerItem.id) {
+        if (centerItem?.id) {
           const descendants = await api.map.getDescendants({
             itemId: parseInt(centerItem.id),
           });

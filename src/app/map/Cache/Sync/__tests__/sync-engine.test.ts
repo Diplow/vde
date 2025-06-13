@@ -2,17 +2,14 @@ import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   createSyncEngine,
   createSyncEngineForTesting,
-  useSyncEngine,
 } from "../sync-engine";
 import { initialCacheState } from "../../State/reducer";
-import type { CacheAction, CacheState } from "../../State/types";
+import type { CacheState } from "../../State/types";
 import type { DataOperations } from "../../Handlers/types";
 import type {
   SyncConfig,
   SyncEvent,
   SyncEventHandler,
-  SyncResult,
-  SyncStatus,
 } from "../types";
 
 // Mock console.warn to avoid noise in tests
@@ -265,7 +262,7 @@ describe("Sync Engine", () => {
         ([event]) => event === "offline",
       );
       if (offlineEvent) {
-        offlineEvent[1](); // Call the event handler
+        (offlineEvent[1] as () => void)(); // Call the event handler
       }
 
       const onlineEvents = capturedEvents.filter(
@@ -557,7 +554,7 @@ describe("Sync Engine", () => {
       expect(failedEvents).toHaveLength(1);
       expect(failedEvents[0]).toMatchObject({
         type: "SYNC_FAILED",
-        error: expect.any(Error),
+        error: expect.any(Error) as Error,
       });
     });
   });
@@ -607,8 +604,8 @@ describe("Sync Engine", () => {
         type: "SYNC_COMPLETED",
         result: expect.objectContaining({
           success: true,
-          itemsSynced: expect.any(Number),
-        }),
+          itemsSynced: expect.any(Number) as number,
+        }) as { success: boolean; itemsSynced: number },
       });
     });
 

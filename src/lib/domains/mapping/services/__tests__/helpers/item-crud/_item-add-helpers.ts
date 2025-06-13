@@ -1,13 +1,15 @@
 import { expect } from "vitest";
-import { HexDirection, CoordSystem } from "../../../../utils/hex-coordinates";
-import { MapItemType } from "../../../../types/contracts";
+import { CoordSystem } from "../../../../utils/hex-coordinates";
 import type { HexCoord } from "../../../../utils/hex-coordinates";
 import type { TestEnvironment } from "../_test-utilities";
 
 export async function _addAndValidateChildItem(
   testEnv: TestEnvironment,
-  setupData: any,
-  addItemArgs: any,
+  setupData: unknown,
+  addItemArgs: {
+    title: string;
+    coords: Parameters<typeof CoordSystem.createId>[0];
+  },
 ) {
   const childItemContract =
     await testEnv.service.items.crud.addItemToMap(addItemArgs);
@@ -26,8 +28,8 @@ export async function _addAndValidateChildItem(
 
 export async function _validateMapItemHierarchy(
   testEnv: TestEnvironment,
-  setupParams: any,
-  addItemArgs: any,
+  setupParams: { userId: number; groupId: number },
+  addItemArgs: { parentId: number },
 ) {
   const mapData = await testEnv.service.maps.getMapData(setupParams);
 
@@ -39,19 +41,19 @@ export async function _validateMapItemHierarchy(
 
     // Find child item in the tree
     const childInTree = mapData.items.find(
-      (item: any) => item.id !== String(mapData.id),
+      (item) => item.id !== String(mapData.id),
     );
     expect(childInTree).toBeDefined();
     expect(childInTree.name).toBe(addItemArgs.title);
     expect(childInTree.coords).toEqual(
-      CoordSystem.createId(addItemArgs.coords),
+      CoordSystem.createId(addItemArgs.coords as Parameters<typeof CoordSystem.createId>[0]),
     );
   }
 }
 
 export async function _validateMismatchedCoordinatesError(
   testEnv: TestEnvironment,
-  setupData: any,
+  setupData: { rootMapId: number; mismatchedCoords: HexCoord },
 ) {
   await expect(
     testEnv.service.items.crud.addItemToMap({
@@ -64,7 +66,7 @@ export async function _validateMismatchedCoordinatesError(
 
 export async function _validateNonChildCoordinatesError(
   testEnv: TestEnvironment,
-  setupData: any,
+  setupData: { rootMapId: number; nonChildCoords: HexCoord },
 ) {
   await expect(
     testEnv.service.items.crud.addItemToMap({
@@ -77,7 +79,7 @@ export async function _validateNonChildCoordinatesError(
 
 export async function _validateNonExistentParentError(
   testEnv: TestEnvironment,
-  setupData: any,
+  setupData: { childCoords: HexCoord },
 ) {
   await expect(
     testEnv.service.items.crud.addItemToMap({

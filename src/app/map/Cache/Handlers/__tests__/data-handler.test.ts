@@ -6,7 +6,7 @@ import {
 import { cacheActions } from "../../State/actions";
 import { initialCacheState } from "../../State/reducer";
 import type { DataHandlerConfig, DataHandlerServices } from "../data-handler";
-import type { CacheAction, CacheState } from "../../State/types";
+import type { CacheState } from "../../State/types";
 import type { MapItemAPIContract } from "~/server/api/types/contracts";
 
 // Mock console.warn to avoid noise in tests
@@ -15,7 +15,22 @@ console.warn = mockConsoleWarn;
 
 describe("Data Handler", () => {
   let mockDispatch: ReturnType<typeof vi.fn>;
-  let mockUtils: any;
+  let mockUtils: {
+    map: {
+      getItemsForRootItem: {
+        fetch: ReturnType<typeof vi.fn>;
+      };
+      getItemByCoords: {
+        fetch: ReturnType<typeof vi.fn>;
+      };
+      getRootItemById: {
+        fetch: ReturnType<typeof vi.fn>;
+      };
+      getDescendants: {
+        fetch: ReturnType<typeof vi.fn>;
+      };
+    };
+  };
   let mockServices: DataHandlerServices;
   let mockState: CacheState;
   let config: DataHandlerConfig;
@@ -29,7 +44,7 @@ describe("Data Handler", () => {
       depth: 1,
       url: "",
       parentId: null,
-      itemType: "BASE" as any,
+      itemType: "BASE" as const,
       ownerId: "test-owner",
     },
     {
@@ -40,7 +55,7 @@ describe("Data Handler", () => {
       depth: 2,
       url: "",
       parentId: null,
-      itemType: "BASE" as any,
+      itemType: "BASE" as const,
       ownerId: "test-owner",
     },
   ];
@@ -379,7 +394,7 @@ describe("Data Handler", () => {
       const handler = createDataHandlerWithMockableService(
         mockDispatch,
         mockState,
-        mockUtils,
+        mockUtils as Parameters<typeof createDataHandlerWithMockableService>[2],
         { retryAttempts: 1 },
       );
 
@@ -403,7 +418,7 @@ describe("Data Handler", () => {
       const handler = createDataHandlerWithMockableService(
         mockDispatch,
         mockState,
-        mockUtils,
+        mockUtils as Parameters<typeof createDataHandlerWithMockableService>[2],
         { enableRetry: false },
       );
 
@@ -416,7 +431,7 @@ describe("Data Handler", () => {
           message: "Server request failed",
           code: "NETWORK_ERROR",
           originalError: serverError,
-        })),
+        }) as Error),
       );
       expect(mockDispatch).toHaveBeenCalledWith(cacheActions.setLoading(false));
     });

@@ -30,9 +30,9 @@ interface AuthContextType {
 }
 
 interface SessionState {
-  data: { user: User | null; session: any | null } | null;
+  data: { user: User | null; session: unknown } | null;
   isPending: boolean;
-  error: any | null; // You might want to type this error more specifically if possible
+  error: Error | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
