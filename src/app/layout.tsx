@@ -4,6 +4,7 @@ import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "~/commons/trpc/react";
 import { AuthProvider } from "~/contexts/AuthContext";
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
   title: "Hexframe",
@@ -29,6 +30,7 @@ export default function RootLayout({
         )}
       </head>
       <body className="min-h-screen bg-gradient-to-br from-background via-background to-muted font-sans antialiased">
+        <Analytics/>
         <AuthProvider>
           <TRPCReactProvider>{children}</TRPCReactProvider>
         </AuthProvider>
