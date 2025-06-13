@@ -1,9 +1,11 @@
+// @ts-check
 /** @type {import("eslint").Linter.Config} */
-const config = {
+module.exports = {
   parser: "@typescript-eslint/parser",
   parserOptions: {
     project: true,
   },
+  // @ts-ignore - ESLint accepts string plugin names
   plugins: ["@typescript-eslint", "drizzle"],
   extends: [
     "next/core-web-vitals",
@@ -50,4 +52,3 @@ const config = {
     ],
   },
 };
-module.exports = config;

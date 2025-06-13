@@ -9,15 +9,6 @@ export {
 } from "./map-item";
 
 export {
-  HexMap,
-  type Attrs as MapAttrs,
-  type RelatedItems as MapRelatedItems,
-  type RelatedLists as MapRelatedLists,
-  type HexMapIdr,
-  type MapWithId,
-} from "./hex-map";
-
-export {
   BaseItem,
   type Attrs as BaseItemAttrs,
   type RelatedItems as BaseItemRelatedItems,

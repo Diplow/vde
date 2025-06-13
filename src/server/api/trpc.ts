@@ -12,8 +12,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 import { auth } from "~/server/auth";
 import { db } from "../db";
-import { MapService } from "~/lib/domains/mapping/services/hex-map";
-import { DbHexMapRepository } from "~/lib/domains/mapping/infrastructure/hex-map/db";
+import { MappingService } from "~/lib/domains/mapping/services/mapping.service";
 import { DbMapItemRepository } from "~/lib/domains/mapping/infrastructure/map-item/db";
 import { DbBaseItemRepository } from "~/lib/domains/mapping/infrastructure/base-item/db";
 import type { IncomingHttpHeaders } from "http";
@@ -60,9 +59,7 @@ export const createContext = async (opts: CreateNextContextOptions) => {
   } else {
     // Otherwise, assume it's IncomingHttpHeaders (e.g., from Pages Router or direct NextApiRequest)
     // and convert it.
-    sessionAPIAcceptableHeaders = convertToHeaders(
-      req.headers as IncomingHttpHeaders,
-    );
+    sessionAPIAcceptableHeaders = convertToHeaders(req.headers);
   }
 
   const sessionData = await auth.api.getSession({
@@ -83,14 +80,14 @@ export const createContext = async (opts: CreateNextContextOptions) => {
 /**
  * Inner context creator useful for testing - accepts db directly
  */
-export const createInnerTRPCContext = (opts: {}) => {
+export const createInnerTRPCContext = (_opts: Record<string, never>) => {
   return {
     headers: new Headers(),
     db: db,
     session: null,
     user: null,
-    req: undefined as any,
-    res: undefined as any,
+    req: undefined as unknown,
+    res: undefined as unknown,
   };
 };
 
@@ -194,11 +191,10 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
 // Service middlewares
 export const mappingServiceMiddleware = t.middleware(async ({ ctx, next }) => {
   const repositories = {
-    map: new DbHexMapRepository(db),
     mapItem: new DbMapItemRepository(db),
     baseItem: new DbBaseItemRepository(db),
   };
-  const mappingService = new MapService(repositories);
+  const mappingService = new MappingService(repositories);
   return next({
     ctx: {
       ...ctx,

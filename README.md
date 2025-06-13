@@ -1,46 +1,234 @@
-# Project VDE
+# Hexframe
 
-Project VDE is a knowledge platform that enables users to create, organize, and share ideas through interactive hexagonal maps. Think of it as a Wikipedia where each person maintains their own perspective, and trust emerges through references rather than centralized collaboration.
+A visual framework for building and sharing AI-powered systems through hierarchical hexagonal maps.
 
-## Core Concept
+## Vision
 
-VDE represents ideas as hexagonal tiles (HexTiles) in a spatial map:
+Hexframe aims to transform how humans and AI collaborate by creating a visual language for intent and context. Instead of crafting complex prompts, you build structured maps that both humans and AI can understand, share, and compose.
 
-- Each **HexTile** represents a single idea
-- Ideas can be **expanded** into a region (one central tile + six surrounding tiles)
-- **Collapsing** a region reduces it back to its central tile
-- Each surrounding tile in a HexRegion can itself be expanded further, enabling recursive exploration of ideas with increasing depth and detail
-- This structure enforces organizing thoughts into logical groups (maximum 6 directions)
-- The hierarchy creates parent-child relationships between ideas
+We envision an ecosystem where:
 
-## Key Features
+- AI workflows are transparent and inspectable
+- Complex systems are built from simple, reusable components
+- Knowledge and expertise are easily shared and composed
+- The gap between human intent and AI execution is visually bridged
 
-- **Personal Knowledge Spaces**: Each user has their own finite map to develop ideas
-- **Idea Importing**: Reference or import tiles/regions from other users' maps
-- **Trust Networks**: Trust is built through who references whose ideas, rather than collaborative editing
-- **Hierarchical Context**: Quickly understand an idea by viewing its parent hierarchy
-- **Perspective Representation**: The hexagonal structure reveals thinking patterns, strengths, and blind spots
-- **Idea Metrics**: Track popularity, foundational value, expert adoption, and trends
-- **Tagging System**: Each idea can have up to 6 tags plus author/date metadata
-- **Multiple Navigation Views**: Browse by trending, foundational impact, or discussion activity
+## Product
 
-## Purpose
+Hexframe is built on a simple yet powerful concept: hierarchical hexagonal maps that represent structured thinking.
 
-VDE aims to create a network of interconnected personal knowledge spaces where:
+### Core Components
 
-- Everyone can express their unique perspective
-- Quality and trust emerge through references rather than centralized authority
-- Ideas are structured in ways that reveal thinking patterns and relationships
-- Users can follow thinkers they respect while building their own perspective
-- The spatial organization provides context and reveals conceptual tensions
+**Tile**
+A hexagonal unit representing a single concept, task, or function. Like a function in programming, a Tile has a clear name that conveys WHAT it does.
 
-Each map serves as both a personal thinking tool and a public contribution to a broader knowledge ecosystem.
+**Frame**
+When a Tile is expanded, it becomes a Frame: one CenterTile surrounded by up to 6 child Tiles. This reveals HOW the Tile accomplishes its purpose.
 
-## Technologies
+**Map**
+A view centered on a specific tile, showing its descendants through expanded frames, but maintaining abstraction boundaries at CenterTiles.
 
-- [Next15](https://nextjs.org/) using [app router](https://nextjs.org/docs#app-router-and-pages-router)
-- Typescript
-- Tailwind
-- Shadcn, radix-ui, storybook
-- Drizzle
-- Postgresql
+**System**
+The complete hierarchical structure including all nested Maps, providing full transparency without abstraction boundaries.
+
+### Spatial Meaning in Frames
+
+The hexagonal arrangement isn't arbitrary - the spatial relationships convey meaning:
+
+- **Opposite tiles** represent tensions or complementary aspects (e.g., Vision ↔ Usage)
+- **Neighboring tiles** share natural connections and often work together
+- **The center** is what unifies the surrounding concepts
+
+This creates a rich semantic structure where each tile has:
+
+- 1 opposite (maximum conceptual distance)
+- 0-2 neighbors (natural collaborators)
+- 1 center (unifying purpose)
+
+The spatial arrangement itself becomes a form of documentation, revealing how concepts relate and interact.
+
+### The Power of 6
+
+Each Frame can have **at most** 6 child Tiles. This constraint:
+
+- **Forces Prioritization**: Identify what truly matters
+- **Maintains Cognitive Load**: Humans effectively track 5-9 items (Miller's Law)
+- **Encourages Abstraction**: Complex ideas must be properly nested
+- **Enables Visual Clarity**: Hexagonal layouts remain navigable
+
+You don't need all 6 slots - use what clarifies your intent:
+
+- 2 tiles for binary distinctions
+- 3 for pillars or phases
+- 4 for quadrants
+- 6 for complete frameworks
+
+The "right" structure depends on your context, audience, and goals. Hexframe makes these choices explicit and shareable.
+
+### Visual Composition System
+
+Hexframe enables building complex AI systems through drag-and-drop composition:
+
+**Tool Tiles**
+
+- **LLM Tools**: Configure AI models (Claude, GPT-4, etc.) as reusable tiles
+- **Specialized Tools**: Code execution, web search, databases, APIs
+- **Custom Tools**: Any capability wrapped in a tile interface
+
+**Composition Mechanics**
+
+- **Drag to Center**: Compose tiles to create new systems
+  - Example: Drag LLM onto PromptTile → Creates a reusable AI component
+- **Drag to Neighbor**: Augment tiles with additional capabilities
+  - Example: Drag CodeExecution next to LLM → LLM can now write and run code
+
+**CollaborativeMaps**
+Pre-designed communication templates where:
+
+- Multiple empty frames await LLM composition
+- Connections define how agents communicate
+- Drag different LLMs/tools to create custom multi-agent systems
+
+**Example: Building a Product Team**
+
+1. Start with CollaborativeMap template
+2. Drag Claude onto Strategist position
+3. Drag GPT-4 + CodeExecution onto Developer position
+4. Drag Gemini + Database onto Architect position
+5. System automatically orchestrates based on predefined protocols
+
+No code required - complex AI orchestration through visual programming.
+
+## Users
+
+Hexframe is designed for:
+
+- **Developers** building AI-powered applications who need structured workflows
+- **Product Managers** designing complex systems with clear abstraction levels
+- **Teams** sharing and standardizing their approaches to common tasks
+- **Educators** teaching systematic thinking and decomposition
+- **Anyone** who wants to collaborate with AI beyond simple prompts
+
+The framework grows with you - from simple task decomposition to complex multi-agent orchestration.
+
+## Usage
+
+### Core Workflow
+
+1. **Start with Intent**: Create a CenterTile describing what you want
+2. **Expand for Context**: If too complex for AI, expand into a Frame showing HOW
+3. **Progressive Refinement**: Continue expanding until AI has sufficient context
+4. **Execute**: AI can now understand and execute the entire structured intent
+
+### Example: Product Development
+
+A "Product Crew" frame orchestrates the entire development lifecycle:
+
+- **Strategist**: Vision, context, needs, prioritization
+- **Problem**: Feedback analysis, data, client insights
+- **Solution**: Ideation, simplification, validation
+- **Architecture**: System design, technology choices
+- **Development**: Planning, TDD, implementation, refactoring
+- **Deployment**: Release planning, feature flags, monitoring
+
+Each tile can be:
+
+- A simple task for AI to execute
+- A reference to another user's proven framework
+- An orchestrator coordinating multiple specialized AI agents
+
+### Composition Power
+
+- **Import & Adapt**: Use others' frames as tiles in your system
+- **Specialize**: Each tile can have its own AI with specific expertise
+- **Orchestrate**: Define how tiles communicate and collaborate
+- **Maintain Control**: Always see and modify what's inside
+
+### Offline Mode
+
+Hexframe supports working offline without network connectivity:
+
+- **Local Storage**: Your maps are cached in browser storage
+- **Optimistic Updates**: Changes are applied instantly
+- **Background Sync**: Automatically syncs when connection returns
+- **Data Persistence**: Work continues seamlessly offline
+
+## Tech
+
+### Architecture
+
+Hexframe follows a clean, layered architecture:
+
+**Frontend** (Next.js 15 App Router)
+
+- Progressive enhancement with static, progressive, and dynamic components
+- See: `/src/app/map/ARCHITECTURE.md` for detailed component patterns
+
+**Backend** (tRPC + Next.js API)
+
+- Type-safe API layer with tRPC routers
+- Server-side caching and optimizations
+- See: `/src/server/README.md` for backend architecture
+
+**Domain Layer** (Domain-Driven Design)
+
+- Isolated business logic in `/src/lib/domains/`
+- Clear boundaries between mapping, IAM, and other domains
+- See: `/src/lib/domains/README.md` for DDD implementation
+
+**Data Layer** (Drizzle ORM + PostgreSQL)
+
+- Type-safe database queries with Drizzle
+- PostgreSQL for reliable data storage
+- Migrations in `/drizzle/migrations/`
+- Offline mode with localStorage persistence
+
+### Quick Start
+
+```bash
+# Prerequisites: Node.js 20+, PostgreSQL 15+, pnpm
+
+# Setup
+git clone https://github.com/diplow/hexframe.git
+cd hexframe
+pnpm install
+cp scripts/example.env .env
+
+# Run
+./scripts/start-database.sh
+pnpm db:migrate
+pnpm dev
+```
+
+### Development
+
+```bash
+pnpm dev          # Development server (port 3000)
+pnpm build        # Production build
+pnpm lint         # Linting
+pnpm typecheck    # Type checking
+pnpm test         # Run tests
+```
+
+### Tech Stack
+
+- **Frontend**: Next.js 15, React, TypeScript
+- **Backend**: tRPC, Drizzle ORM, PostgreSQL
+- **Styling**: Tailwind CSS
+- **Testing**: Vitest, React Testing Library
+
+## Team
+
+Hexframe is currently developed by a single passionate developer who believes in the power of visual thinking and structured AI collaboration.
+
+While it's a solo project now, the vision is to build a community of contributors who share the belief that AI interaction can be more than just prompting - it can be a structured, shareable, and composable process.
+
+### Get Involved
+
+- **GitHub**: [Contribute to the codebase](https://github.com/diplow/hexframe)
+- **Issues**: [Report bugs or suggest features](https://github.com/diplow/hexframe/issues)
+- **Discussions**: [Join the conversation](https://github.com/diplow/hexframe/discussions)
+
+---
+
+_Hexframe: Where human intent meets AI capability through strategic mapping._

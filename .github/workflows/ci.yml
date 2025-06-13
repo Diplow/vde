@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+
+jobs:
+  test:
+    name: Lint, Type Check, and Test
+    runs-on: ubuntu-latest
+
+    services:
+      # Setup PostgreSQL service for integration tests
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run linter
+        run: pnpm lint
+        env:
+          SKIP_ENV_VALIDATION: true
+
+      - name: Run type checking
+        run: pnpm typecheck
+        env:
+          SKIP_ENV_VALIDATION: true
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Setup test database
+        run: |
+          # Create .env.test file with test database configuration
+          echo "TEST_DATABASE_URL=postgres://postgres:postgres@localhost:5432/test_db" > .env.test
+          echo "DATABASE_URL=postgres://postgres:postgres@localhost:5432/test_db" >> .env.test
+          echo "SKIP_ENV_VALIDATION=true" >> .env.test
+
+      - name: Run database migrations
+        run: pnpm db:push
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
+          SKIP_ENV_VALIDATION: true
+
+      - name: Run tests
+        run: pnpm test
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
+          SKIP_ENV_VALIDATION: true
+
+      - name: Build project
+        run: pnpm build
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
+          SKIP_ENV_VALIDATION: true

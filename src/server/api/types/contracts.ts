@@ -12,40 +12,43 @@ import type {
 export const mapItemContractToApiAdapter = (contract: MapItemContract) => {
   return {
     id: contract.id,
-    mapId: contract.mapId,
     coordinates: contract.coords,
-    color: contract.color,
     depth: contract.depth,
     name: contract.name,
     descr: contract.descr,
     url: contract.url,
-    neighbors: contract.neighborIds,
     parentId: contract.parentId,
+    itemType: contract.itemType,
+    ownerId: contract.ownerId,
   };
 };
 
 export type MapItemAPIContract = ReturnType<typeof mapItemContractToApiAdapter>;
 
 /**
- * Transform a domain map contract to an API map contract
+ * Transform a root MapItem (USER type) to represent what was formerly a "map"
  */
-export const mapContractToApiAdapter = (contract: MapContract) => {
+export const mapRootItemContractToApiAdapter = (contract: MapContract) => {
   return {
     id: contract.id,
+    userId: contract.userId,
+    groupId: contract.groupId,
     title: contract.title,
     descr: contract.descr,
-    radius: contract.radius,
     itemCount: contract.itemCount,
-    center: mapItemContractToApiAdapter(contract.center),
+    coordinates: contract.coords,
+    itemType: contract.itemType,
   };
 };
 
-export type MapAPIContract = ReturnType<typeof mapContractToApiAdapter>;
+export type MapRootItemAPIContract = ReturnType<
+  typeof mapRootItemContractToApiAdapter
+>;
 
 /**
  * Export all adapters in a single object
  */
 export const contractToApiAdapters = {
   mapItem: mapItemContractToApiAdapter,
-  map: mapContractToApiAdapter,
+  mapRootItem: mapRootItemContractToApiAdapter,
 };

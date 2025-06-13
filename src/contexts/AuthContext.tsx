@@ -3,7 +3,7 @@
 import React, {
   createContext,
   useContext,
-  ReactNode,
+  type ReactNode,
   useState,
   useEffect,
 } from "react";
@@ -30,9 +30,9 @@ interface AuthContextType {
 }
 
 interface SessionState {
-  data: { user: User | null; session: any | null } | null;
+  data: { user: User | null; session: unknown } | null;
   isPending: boolean;
-  error: any | null; // You might want to type this error more specifically if possible
+  error: Error | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   // The user object is typically at authState.data.user
-  const user = authState.data?.user as User | null | undefined;
+  const user = authState.data?.user;
   const isLoading = authState.isPending;
 
   return (

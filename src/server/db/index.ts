@@ -9,7 +9,7 @@ const getDatabaseUrl = () => {
   if (process.env.NODE_ENV === "test" || process.env.VITEST) {
     // Use test database URL
     const testUrl =
-      process.env.TEST_DATABASE_URL ||
+      process.env.TEST_DATABASE_URL ??
       "postgres://postgres:postgres@localhost:5432/test_db";
     console.log("🔍 USING TEST DATABASE:", testUrl);
     return testUrl;

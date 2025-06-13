@@ -1,8 +1,8 @@
 import {
-  GenericAggregate,
-  GenericAttributes,
-  GenericRelatedLists,
-  GenericRelatedItems,
+  type GenericAggregate,
+  type GenericAttributes,
+  type GenericRelatedLists,
+  type GenericRelatedItems,
 } from "./generic-objects";
 
 export interface GenericRepository<
