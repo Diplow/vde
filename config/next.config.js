@@ -20,6 +20,22 @@ const config = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Handle www to non-www redirect at the application level
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'www.hexframe.ai',
+          },
+        ],
+        destination: 'https://hexframe.ai/:path*',
+        permanent: true,
+      },
+    ];
+  },
   webpack: (config, { isServer }) => {
     if (!isServer) {
       // Don't resolve these Node.js modules on the client
