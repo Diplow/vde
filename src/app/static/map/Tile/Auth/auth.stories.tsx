@@ -29,7 +29,10 @@ const meta: Meta<typeof StaticAuthTile> = {
         isLoading={false}
         onEmailChange={fn()}
         onPasswordChange={fn()}
-        onSubmit={fn((e) => e.preventDefault())}
+        onSubmit={(e: React.FormEvent) => {
+          e.preventDefault();
+          fn()(e);
+        }}
       />
     ),
     registerFormComponent: (
@@ -41,7 +44,10 @@ const meta: Meta<typeof StaticAuthTile> = {
         onNameChange={fn()}
         onEmailChange={fn()}
         onPasswordChange={fn()}
-        onSubmit={fn((e) => e.preventDefault())}
+        onSubmit={(e: React.FormEvent) => {
+          e.preventDefault();
+          fn()(e);
+        }}
       />
     ),
   },

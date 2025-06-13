@@ -153,7 +153,7 @@ export function createNavigationHandler(config: NavigationHandlerConfig) {
     const currentSearchParams = new URLSearchParams();
 
     // Extract center item ID from query params
-    const centerItemId = currentSearchParams.get("center") || "";
+    const centerItemId = currentSearchParams.get("center") ?? "";
 
     // Parse expanded items from query parameters
     const expandedItemsParam = currentSearchParams.get("expandedItems");
@@ -227,19 +227,16 @@ function buildMapUrl(centerItemId: string, expandedItems: string[]): string {
   return url.pathname + url.search;
 }
 
-// Hook-based factory for use in React components - with optional overrides
+// Hook-based factory for use in React components
 export function useNavigationHandler(
   dispatch: React.Dispatch<CacheAction>,
   state: CacheState,
   dataHandler: DataOperations,
-  mockRouter?: any,
-  mockSearchParams?: URLSearchParams,
-  mockPathname?: string,
 ) {
-  // Only call hooks if we don't have mocked values
-  const router = mockRouter ?? useRouter();
-  const searchParams = mockSearchParams ?? useSearchParams();
-  const pathname = mockPathname ?? usePathname();
+  // Always call hooks unconditionally
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   return createNavigationHandler({
     dispatch,

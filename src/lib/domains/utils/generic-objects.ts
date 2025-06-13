@@ -3,7 +3,7 @@ export type GenericHistory = {
   updatedAt: Date;
 };
 
-export type GenericAttributes = Record<string, any>;
+export type GenericAttributes = Record<string, unknown>;
 
 export type GenericRelatedItems =
   | {
@@ -15,7 +15,7 @@ export type GenericRelatedItems =
           > & { id: number })
         | null;
     }
-  | {};
+  | Record<string, never>;
 
 export type GenericRelatedLists =
   | {
@@ -27,7 +27,7 @@ export type GenericRelatedLists =
         > & { id: number }
       >;
     }
-  | {};
+  | Record<string, never>;
 
 export type GenericAggregateConstructorArgs<
   A extends GenericAttributes,

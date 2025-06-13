@@ -1,4 +1,4 @@
-import { eq, SQL, sql, and } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type * as schemaImport from "~/server/db/schema";
 import { mapItems } from "~/server/db/schema";
@@ -7,7 +7,6 @@ import type {
   MapItemIdr,
   Attrs,
 } from "~/lib/domains/mapping/_objects/map-item";
-import type { HexDirection } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { CreateMapItemDbAttrs, UpdateMapItemDbAttrs } from "../types";
 import { pathToString } from "../mappers";
 

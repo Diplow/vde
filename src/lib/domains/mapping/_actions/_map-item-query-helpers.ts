@@ -89,7 +89,7 @@ export class MapItemQueryHelpers {
           },
         },
       });
-    } catch (error) {
+    } catch {
       throw new Error(
         `${MAPPING_ERRORS.ITEM_NOT_FOUND} at coords: ${CoordSystem.createId(coords)}`,
       );

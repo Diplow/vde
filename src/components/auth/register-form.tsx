@@ -35,7 +35,7 @@ export function RegisterForm() {
       };
 
       await authClient.signUp.email(signUpData, {
-        onSuccess: async (ctx) => {
+        onSuccess: async (_ctx) => {
           try {
             await trpcUtils.auth.getSession.invalidate();
 
@@ -53,19 +53,18 @@ export function RegisterForm() {
               setError(
                 (mapCreationResult.success === false
                   ? mapCreationResult.error
-                  : null) ||
+                  : null) ??
                   "Signup successful, but failed to create your map. Please try logging in or contact support.",
               );
               setIsLoading(false);
             }
-          } catch (mutationError: any) {
+          } catch (mutationError) {
             console.error(
               "Error during createDefaultMapForCurrentUser mutation:",
               mutationError,
             );
             setError(
-              mutationError.message ||
-                "An error occurred while setting up your map.",
+              mutationError instanceof Error ? mutationError.message : "An error occurred while setting up your map.",
             );
             setIsLoading(false);
           }
@@ -78,9 +77,10 @@ export function RegisterForm() {
           setIsLoading(false);
         },
       });
-    } catch (err: any) {
+    } catch (err) {
       console.error("handleSubmit error:", err);
-      setError(err.message || "An unexpected error occurred.");
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred.";
+      setError(errorMessage);
       setIsLoading(false);
     }
   };

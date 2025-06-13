@@ -7,6 +7,7 @@ import {
 } from "~/app/map/constants";
 import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 import { getColor } from "~/app/map/types/tile-data";
+import type { TileColor } from "~/app/static/map/Tile/Base/base";
 
 // Mock hierarchy tile component for stories
 const MockHierarchyTile = ({
@@ -19,9 +20,9 @@ const MockHierarchyTile = ({
   const coords = CoordSystem.parseId(coordId);
   const colorString = getColor(coords);
   const [colorName, tint] = colorString.split("-");
-  const color = {
-    color: colorName as any,
-    tint: tint as any,
+  const color: TileColor = {
+    color: colorName as "zinc" | "amber" | "lime" | "fuchsia" | "rose" | "indigo" | "cyan",
+    tint: (tint ?? "400") as "50" | "100" | "200" | "300" | "400" | "500" | "600" | "700" | "800" | "900" | "950",
   };
 
   return (

@@ -1,6 +1,7 @@
 import { type api } from "~/commons/trpc/react";
 import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { CacheAction, CacheState } from "../State/types";
+import type { MapItemType } from "~/server/db/schema";
 import { cacheActions } from "../State/actions";
 import {
   createServerService,
@@ -13,7 +14,17 @@ export interface DataHandlerServices {
     fetchItemsForCoordinate: (params: {
       centerCoordId: string;
       maxDepth: number;
-    }) => Promise<any[]>;
+    }) => Promise<{
+      id: string;
+      coordinates: string;
+      depth: number;
+      name: string;
+      descr: string;
+      url: string;
+      parentId: string | null;
+      itemType: MapItemType;
+      ownerId: string;
+    }[]>;
   };
 }
 
@@ -52,7 +63,7 @@ export function createDataHandler(config: DataHandlerConfig) {
         maxDepth,
       });
 
-      dispatch(cacheActions.loadRegion(items, centerCoordId, maxDepth));
+      dispatch(cacheActions.loadRegion(items as Parameters<typeof cacheActions.loadRegion>[0], centerCoordId, maxDepth));
 
       return { success: true, itemsLoaded: items.length };
     } catch (error) {
@@ -76,7 +87,7 @@ export function createDataHandler(config: DataHandlerConfig) {
         maxDepth,
       });
 
-      dispatch(cacheActions.loadItemChildren(items, parentCoordId, maxDepth));
+      dispatch(cacheActions.loadItemChildren(items as Parameters<typeof cacheActions.loadItemChildren>[0], parentCoordId, maxDepth));
 
       return { success: true, itemsLoaded: items.length };
     } catch (error) {
@@ -97,7 +108,7 @@ export function createDataHandler(config: DataHandlerConfig) {
 
       dispatch(
         cacheActions.loadRegion(
-          items,
+          items as Parameters<typeof cacheActions.loadRegion>[0],
           centerCoordId,
           state.cacheConfig.maxDepth,
         ),

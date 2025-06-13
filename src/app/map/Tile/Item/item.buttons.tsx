@@ -8,7 +8,6 @@ import { testLogger } from "~/lib/test-logger";
 import {
   getButtonPositioning,
   getButtonsSizing,
-  getExpandUrl,
   type TileButtonsProps,
 } from "~/app/static/map/Tile/Item/item.buttons";
 
@@ -22,7 +21,7 @@ export const DynamicTileButtons = ({
   item,
   displayConfig,
   expansionState,
-  urlInfo,
+  urlInfo: _urlInfo,
   onEditClick,
   onDeleteClick,
   canEdit = false,

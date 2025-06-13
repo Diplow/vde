@@ -13,7 +13,7 @@ export async function _validateItemMovementToEmptyCell(
   movementSetup: {
     userId: number;
     groupId: number;
-    item: any;
+    item: { id: string };
     initialCoords: HexCoord;
   },
   newCoords: HexCoord,
@@ -53,9 +53,9 @@ export async function _validateNewLocationOccupied(
 export async function _validateItemSwapping(
   testEnv: TestEnvironment,
   swapSetup: {
-    firstItem: any;
+    firstItem: { id: string };
     firstItemCoords: HexCoord;
-    secondItem: any;
+    secondItem: { id: string };
     secondItemCoords: HexCoord;
   },
 ) {
@@ -80,10 +80,10 @@ export async function _validateParentChildMovement(
   hierarchySetup: {
     userId: number;
     groupId: number;
-    parentItem: any;
+    parentItem: { id: string };
     parentInitialCoords: HexCoord;
     parentNewCoords: HexCoord;
-    childItem: any;
+    childItem: { id: string };
     childInitialCoords: HexCoord;
   },
 ) {
@@ -122,8 +122,8 @@ export async function _validateChildRelativePosition(
     userId: number;
     groupId: number;
     parentNewCoords: HexCoord;
-    parentItem: any;
-    childItem: any;
+    parentItem: { id: string };
+    childItem: { id: string };
     childInitialCoords: HexCoord;
     parentInitialCoords: HexCoord;
   },

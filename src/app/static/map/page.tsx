@@ -31,7 +31,7 @@ export default async function StaticMapPage({
   const urlInfo: URLInfo = {
     pathname: `/static/map`,
     searchParamsString: new URLSearchParams(
-      searchParamsString as any,
+      searchParamsString as Record<string, string>,
     ).toString(),
     rootItemId,
     scale: searchParamsString.scale,
@@ -57,7 +57,7 @@ export default async function StaticMapPage({
   if (!urlInfo.focus) {
     const defaultFocus = rootItem.coordinates;
     const currentPath = `/static/map`;
-    const newSearchParams = new URLSearchParams(searchParamsString as any);
+    const newSearchParams = new URLSearchParams(searchParamsString as string);
     newSearchParams.set("center", urlInfo.rootItemId);
     newSearchParams.set("focus", defaultFocus);
     testLogger.info('Redirecting to set default focus', { defaultFocus });
@@ -70,7 +70,7 @@ export default async function StaticMapPage({
 
   if (itemsError) {
     testLogger.error('Failed to load map items', itemsError);
-    return <ErrorComponent error={itemsError} reset={() => {}} />;
+    return <ErrorComponent error={itemsError} reset={() => { /* Static page has no reset */ }} />;
   }
 
   if (!items) {

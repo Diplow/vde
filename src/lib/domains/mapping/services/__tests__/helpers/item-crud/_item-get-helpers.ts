@@ -29,8 +29,12 @@ export async function _setupItemForRetrieval(
 
 export async function _validateItemRetrieval(
   testEnv: TestEnvironment,
-  itemCoords: any,
-  expectedItemData: any,
+  itemCoords: Parameters<typeof CoordSystem.createId>[0],
+  expectedItemData: {
+    title: string;
+    descr: string;
+    url: string;
+  },
 ) {
   const retrievedItem = await testEnv.service.items.crud.getItem({
     coords: itemCoords,
@@ -48,7 +52,7 @@ export async function _validateItemRetrieval(
 
 export async function _validateItemNotFoundError(
   testEnv: TestEnvironment,
-  nonExistentCoords: any,
+  nonExistentCoords: HexCoord,
 ) {
   await expect(
     testEnv.service.items.crud.getItem({ coords: nonExistentCoords }),

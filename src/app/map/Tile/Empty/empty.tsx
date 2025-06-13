@@ -22,15 +22,14 @@ interface DynamicEmptyTileProps {
 
 export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
   const [showModal, setShowModal] = useState(false);
-  const [useDynamicDialog, setUseDynamicDialog] = useState(true);
+  const [useDynamicDialog] = useState(true);
 
   // Safely check if we're within a DynamicMapCanvas context
   const tileActions = useContext(TileActionsContext);
 
   // Always call useMapCache hook - it will throw if not in provider
-  let mapCache = null;
   try {
-    mapCache = useMapCache();
+    useMapCache();
   } catch {
     // useMapCache will throw if not within MapCacheProvider
     console.log("DynamicEmptyTile: No map cache context");
@@ -72,7 +71,7 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
 
         <StaticBaseTileLayout
           coordId={props.coordId}
-          scale={props.scale || 1}
+          scale={props.scale ?? 1}
           color={{ color: "zinc", tint: "100" }}
           stroke={{ color: "zinc-950", width: 1 }}
           cursor="cursor-pointer"

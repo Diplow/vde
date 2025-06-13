@@ -41,19 +41,26 @@ export async function _validateMapInRepository(
 }
 
 export function _validateRetrievedMapData(
-  retrievedMapData: any,
-  createdMap: any,
+  retrievedMapData: unknown,
+  createdMap: { id: string; title: string; descr: string },
   params: { userId: number; groupId: number },
 ) {
   expect(retrievedMapData).not.toBeNull();
   if (retrievedMapData) {
-    expect(retrievedMapData.id).toBe(createdMap.id);
-    expect(retrievedMapData.title).toBe(createdMap.title);
-    expect(retrievedMapData.descr).toBe(createdMap.descr);
-    expect(retrievedMapData.coords).toEqual(
+    const mapData = retrievedMapData as {
+      id: string;
+      title: string;
+      descr: string;
+      coords: unknown;
+      itemCount: number;
+    };
+    expect(mapData.id).toBe(createdMap.id);
+    expect(mapData.title).toBe(createdMap.title);
+    expect(mapData.descr).toBe(createdMap.descr);
+    expect(mapData.coords).toEqual(
       CoordSystem.getCenterCoord(params.userId, params.groupId),
     );
-    expect(retrievedMapData.itemCount).toBe(1);
+    expect(mapData.itemCount).toBe(1);
   }
 }
 
@@ -81,8 +88,8 @@ export async function _setupMultipleUserMaps(
 }
 
 export function _validateUserMapsRetrieval(
-  retrievedMaps: any[],
-  expectedMaps: any[],
+  retrievedMaps: Array<{ id: string }>,
+  expectedMaps: Array<{ id: string }>,
 ) {
   expect(retrievedMaps).toHaveLength(2);
   expect(retrievedMaps.map((m) => m.id).sort()).toEqual(

@@ -1,34 +1,41 @@
 import { TRPCError } from "@trpc/server";
 import { UserMappingService } from "../services/user-mapping.service";
 
+interface AuthUser {
+  id: string;
+  name?: string;
+  email?: string;
+}
+
 export function _ensureUserAuthenticated(
-  user: any,
-): asserts user is NonNullable<typeof user> {
-  if (!user) {
+  user: unknown,
+): asserts user is AuthUser {
+  if (!user || typeof user !== 'object') {
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "User not authenticated",
     });
   }
+  
+  const authUser = user as Record<string, unknown>;
+  if (!authUser.id || typeof authUser.id !== 'string') {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Invalid user format",
+    });
+  }
 }
 
-export async function _getUserId(user: any): Promise<number> {
+export async function _getUserId(user: unknown): Promise<number> {
   _ensureUserAuthenticated(user);
 
   // user.id is a string from better-auth, convert it to integer for mapping system
-  if (typeof user.id !== "string") {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "Invalid user ID format",
-    });
-  }
-
   return await UserMappingService.getOrCreateMappingUserId(user.id);
 }
 
-export function _getUserName(user: any): string {
+export function _getUserName(user: unknown): string {
   _ensureUserAuthenticated(user);
-  return user.name || user.email || "User";
+  return user.name ?? user.email ?? "User";
 }
 
 export function _createSuccessResponse<T = Record<string, unknown>>(

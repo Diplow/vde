@@ -95,7 +95,7 @@ async function getItemByCoords(coords: {
     return await callTrpcEndpoint<MapItem>("map.getItemByCoords", {
       coords,
     });
-  } catch (error) {
+  } catch {
     // Return null for missing items (expected behavior)
     return null;
   }
@@ -141,7 +141,7 @@ async function buildHierarchy(
     }
 
     return hierarchy;
-  } catch (error) {
+  } catch {
     // Return null if hierarchy can't be built
     return null;
   }

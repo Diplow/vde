@@ -1,34 +1,76 @@
 // Service interface types for dependency injection and mocking
 
+import type { MapItemType } from "~/server/db/schema";
+
 export interface ServerService {
   // Data fetching operations (primary purpose)
   fetchItemsForCoordinate: (params: {
     centerCoordId: string;
     maxDepth: number;
-  }) => Promise<any[]>;
+  }) => Promise<{
+    id: string;
+    coordinates: string;
+    depth: number;
+    name: string;
+    descr: string;
+    url: string;
+    parentId: string | null;
+    itemType: MapItemType;
+    ownerId: string;
+  }[]>;
 
   // Additional query operations
-  getItemByCoordinate: (coordId: string) => Promise<any>;
-  getRootItemById: (mapItemId: number) => Promise<any>;
-  getDescendants: (itemId: number) => Promise<any[]>;
+  getItemByCoordinate: (coordId: string) => Promise<{
+    id: string;
+    coordinates: string;
+    depth: number;
+    name: string;
+    descr: string;
+    url: string;
+    parentId: string | null;
+    itemType: MapItemType;
+    ownerId: string;
+  } | null>;
+  getRootItemById: (mapItemId: number) => Promise<{
+    id: string;
+    coordinates: string;
+    depth: number;
+    name: string;
+    descr: string;
+    url: string;
+    parentId: string | null;
+    itemType: MapItemType;
+    ownerId: string;
+  } | null>;
+  getDescendants: (itemId: number) => Promise<{
+    id: string;
+    coordinates: string;
+    depth: number;
+    name: string;
+    descr: string;
+    url: string;
+    parentId: string | null;
+    itemType: MapItemType;
+    ownerId: string;
+  }[]>;
 
   // Mutation operations (architectural placeholders - should use mutation layer)
-  createItem: (params: { coordId: string; data: any }) => Promise<any>;
-  updateItem: (params: { coordId: string; data: any }) => Promise<any>;
+  createItem: (params: { coordId: string; data: Record<string, unknown> }) => Promise<unknown>;
+  updateItem: (params: { coordId: string; data: Record<string, unknown> }) => Promise<unknown>;
   deleteItem: (params: { coordId: string }) => Promise<void>;
 }
 
 export interface StorageService {
-  save: (key: string, data: any) => Promise<void>;
-  load: (key: string) => Promise<any>;
+  save: (key: string, data: unknown) => Promise<void>;
+  load: (key: string) => Promise<unknown>;
   remove: (key: string) => Promise<void>;
   clear: () => Promise<void>;
 
   // Cache-specific operations for future enhancement
-  saveCacheData: (cacheData: any) => Promise<void>;
-  loadCacheData: () => Promise<any>;
-  saveUserPreferences: (preferences: any) => Promise<void>;
-  loadUserPreferences: () => Promise<any>;
+  saveCacheData: (cacheData: unknown) => Promise<void>;
+  loadCacheData: () => Promise<unknown>;
+  saveUserPreferences: (preferences: unknown) => Promise<void>;
+  loadUserPreferences: () => Promise<unknown>;
   saveExpandedItems: (expandedItems: string[]) => Promise<void>;
   loadExpandedItems: () => Promise<string[]>;
 

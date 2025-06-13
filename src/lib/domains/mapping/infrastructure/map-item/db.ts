@@ -1,4 +1,3 @@
-import { eq, inArray, SQL, sql, and, like, gte } from "drizzle-orm";
 
 import {
   type Attrs,
@@ -6,41 +5,19 @@ import {
   type MapItemWithId,
   type RelatedItems,
   type RelatedLists,
-  MapItem,
-  MapItemConstructorArgs,
-  type MapItemType,
 } from "~/lib/domains/mapping/_objects/map-item";
-import { BaseItem } from "~/lib/domains/mapping/_objects/base-item";
 import {
   type HexDirection,
-  CoordSystem,
 } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { MapItemRepository } from "~/lib/domains/mapping/_repositories";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type * as schemaImport from "~/server/db/schema";
-import { type mapItems, type baseItems } from "~/server/db/schema";
-import type { BaseItemWithId } from "~/lib/domains/mapping/_objects/base-item";
 
 import { ReadQueries } from "./queries/read-queries";
 import { WriteQueries } from "./queries/write-queries";
 import { SpecializedQueries } from "./queries/specialized-queries";
 import { RelationQueries } from "./queries/relation-queries";
 import { mapJoinedDbToDomain, pathToString } from "./mappers";
-
-// Infer DB types
-type DbMapItemSelect = Omit<typeof mapItems.$inferSelect, "path"> & {
-  coord_user_id: number;
-  coord_group_id: number;
-  path: string;
-  item_type: MapItemType;
-};
-type DbBaseItemSelect = typeof baseItems.$inferSelect;
-
-// Joined result type
-type DbMapItemWithBase = {
-  map_items: DbMapItemSelect;
-  base_items: DbBaseItemSelect;
-};
 
 export { parsePathString } from "./mappers";
 

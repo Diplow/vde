@@ -189,9 +189,11 @@ export const createTestCacheProvider = (
     ...props,
   };
 
-  return ({ children }: { children: React.ReactNode }) => (
+  const TestProvider = ({ children }: { children: React.ReactNode }) => (
     <MapCacheProviderComponent {...defaultProps}>{children}</MapCacheProviderComponent>
   );
+  TestProvider.displayName = 'TestMapCacheProvider';
+  return TestProvider;
 };
 
 // Cache health check utilities

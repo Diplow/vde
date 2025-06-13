@@ -83,7 +83,7 @@ export function useMapData(urlInfo: URLInfo | null) {
       }
     }
 
-    fetchMapData(urlInfo);
+    void fetchMapData(urlInfo);
   }, [urlInfo, utils]);
 
   return mapData;

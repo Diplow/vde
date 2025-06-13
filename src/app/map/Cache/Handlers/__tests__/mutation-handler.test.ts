@@ -9,7 +9,7 @@ import type {
   MutationHandlerConfig,
   MutationHandlerServices,
 } from "../mutation-handler";
-import type { CacheAction, CacheState } from "../../State/types";
+import type { CacheState } from "../../State/types";
 import type { DataOperations } from "../types";
 
 describe("Mutation Handler", () => {
@@ -32,6 +32,7 @@ describe("Mutation Handler", () => {
       depth: 1,
       parentId: undefined,
       coordinates: { userId: 1, groupId: 2, path: [1, 2] },
+      ownerId: "test-owner",
     },
     state: {
       isDragged: false,
@@ -100,7 +101,7 @@ describe("Mutation Handler", () => {
               coordinates: "2,3",
               name: "New Item",
             }),
-          ]),
+          ]) as Parameters<typeof cacheActions.loadRegion>[0],
           "2,3",
           1,
         ),
@@ -128,12 +129,12 @@ describe("Mutation Handler", () => {
 
       // Should dispatch error
       expect(mockDispatch).toHaveBeenCalledWith(
-        cacheActions.setError(expect.any(Error)),
+        cacheActions.setError(expect.any(Error) as Error),
       );
 
       expect(result).toEqual({
         success: false,
-        error: expect.any(Error),
+        error: expect.any(Error) as Error,
         optimisticApplied: false, // Failed before optimistic update could complete
         rolledBack: false,
       });
@@ -178,7 +179,7 @@ describe("Mutation Handler", () => {
               name: "Updated Name",
               coordinates: "1,2",
             }),
-          ]),
+          ]) as Parameters<typeof cacheActions.loadRegion>[0],
           "1,2",
           1,
         ),
@@ -254,7 +255,7 @@ describe("Mutation Handler", () => {
             expect.objectContaining({
               name: "Existing Item", // Original name restored
             }),
-          ]),
+          ]) as Parameters<typeof cacheActions.loadRegion>[0],
           "1,2",
           1,
         ),
@@ -325,7 +326,7 @@ describe("Mutation Handler", () => {
             expect.objectContaining({
               name: "New Item",
             }),
-          ]),
+          ]) as Parameters<typeof cacheActions.loadRegion>[0],
           "2,3",
           1,
         ),

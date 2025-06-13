@@ -80,14 +80,14 @@ export const createContext = async (opts: CreateNextContextOptions) => {
 /**
  * Inner context creator useful for testing - accepts db directly
  */
-export const createInnerTRPCContext = (opts: {}) => {
+export const createInnerTRPCContext = (_opts: Record<string, never>) => {
   return {
     headers: new Headers(),
     db: db,
     session: null,
     user: null,
-    req: undefined as any,
-    res: undefined as any,
+    req: undefined as unknown,
+    res: undefined as unknown,
   };
 };
 

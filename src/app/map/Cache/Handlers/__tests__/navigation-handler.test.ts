@@ -6,7 +6,7 @@ import {
 import { cacheActions } from "../../State/actions";
 import { initialCacheState } from "../../State/reducer";
 import type { NavigationHandlerConfig } from "../navigation-handler";
-import type { CacheAction, CacheState } from "../../State/types";
+import type { CacheState } from "../../State/types";
 import type { DataOperations } from "../types";
 
 describe("Navigation Handler", () => {

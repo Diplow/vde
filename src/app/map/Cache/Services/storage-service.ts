@@ -80,9 +80,15 @@ export const createBrowserStorageOperations = (): StorageOperations => ({
 // SSR-safe implementation (no-op)
 export const createSSRStorageOperations = (): StorageOperations => ({
   getItem: async () => null,
-  setItem: async () => {},
-  removeItem: async () => {},
-  clear: async () => {},
+  setItem: async () => {
+    // No-op for SSR
+  },
+  removeItem: async () => {
+    // No-op for SSR
+  },
+  clear: async () => {
+    // No-op for SSR
+  },
   getAllKeys: async () => [],
 });
 
@@ -93,7 +99,7 @@ export const createMockStorageOperations = (
   const storage = { ...mockData };
 
   return {
-    getItem: async (key: string) => storage[key] || null,
+    getItem: async (key: string) => storage[key] ?? null,
     setItem: async (key: string, value: string) => {
       storage[key] = value;
     },
@@ -114,6 +120,11 @@ interface StorageMetadata {
   userAgent?: string;
 }
 
+interface StorageEnvelope<T = unknown> {
+  metadata?: StorageMetadata;
+  data: T;
+}
+
 const CURRENT_STORAGE_VERSION = 1;
 
 /**
@@ -122,9 +133,9 @@ const CURRENT_STORAGE_VERSION = 1;
  */
 export function createStorageService(
   storageOperations: StorageOperations,
-  config: ServiceConfig = {},
+  _config: ServiceConfig = {},
 ): StorageService {
-  const save = async (key: string, data: any): Promise<void> => {
+  const save = async (key: string, data: unknown): Promise<void> => {
     try {
       const metadata: StorageMetadata = {
         version: CURRENT_STORAGE_VERSION,
@@ -145,14 +156,14 @@ export function createStorageService(
     }
   };
 
-  const load = async (key: string): Promise<any> => {
+  const load = async <T = unknown>(key: string): Promise<T | null> => {
     try {
       const serializedData = await storageOperations.getItem(key);
       if (!serializedData) {
         return null;
       }
 
-      const parsed = JSON.parse(serializedData);
+      const parsed = JSON.parse(serializedData) as StorageEnvelope<T>;
 
       // Version compatibility check for future migrations
       if (parsed.metadata?.version !== CURRENT_STORAGE_VERSION) {
@@ -187,19 +198,19 @@ export function createStorageService(
   };
 
   // Future enhancement: cache-specific operations
-  const saveCacheData = async (cacheData: any): Promise<void> => {
+  const saveCacheData = async (cacheData: unknown): Promise<void> => {
     await save(STORAGE_KEYS.CACHE_DATA, cacheData);
   };
 
-  const loadCacheData = async (): Promise<any> => {
+  const loadCacheData = async (): Promise<unknown> => {
     return load(STORAGE_KEYS.CACHE_DATA);
   };
 
-  const saveUserPreferences = async (preferences: any): Promise<void> => {
+  const saveUserPreferences = async (preferences: unknown): Promise<void> => {
     await save(STORAGE_KEYS.USER_PREFERENCES, preferences);
   };
 
-  const loadUserPreferences = async (): Promise<any> => {
+  const loadUserPreferences = async (): Promise<unknown> => {
     return load(STORAGE_KEYS.USER_PREFERENCES);
   };
 
@@ -208,7 +219,7 @@ export function createStorageService(
   };
 
   const loadExpandedItems = async (): Promise<string[]> => {
-    const items = await load(STORAGE_KEYS.EXPANDED_ITEMS);
+    const items = await load<string[]>(STORAGE_KEYS.EXPANDED_ITEMS);
     return Array.isArray(items) ? items : [];
   };
 

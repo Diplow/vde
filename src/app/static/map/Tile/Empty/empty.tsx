@@ -101,7 +101,7 @@ function EmptyTileContent({
         </Link>
       ) : (
         <div className="text-center text-xs text-zinc-400">
-          You don't own this space
+          You don&apos;t own this space
         </div>
       )}
     </div>

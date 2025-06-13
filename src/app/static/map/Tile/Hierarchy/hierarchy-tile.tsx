@@ -17,9 +17,9 @@ export interface HierarchyTileProps {
 
 const _createNavigationUrl = (
   item: TileData,
-  urlInfo: URLInfo,
-  hierarchy: TileData[],
-  itemIndex: number,
+  _urlInfo: URLInfo,
+  _hierarchy: TileData[],
+  _itemIndex: number,
 ): string => {
   // Navigate to map with center as query param
   return `/static/map?center=${item.metadata.dbId}`;

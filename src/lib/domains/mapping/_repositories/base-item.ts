@@ -7,11 +7,10 @@ import {
 } from "~/lib/domains/mapping/_objects";
 import { type GenericRepository } from "~/lib/domains/utils/generic-repository";
 
-export interface BaseItemRepository
-  extends GenericRepository<
-    BaseItemAttrs,
-    BaseItemRelatedItems,
-    BaseItemRelatedLists,
-    BaseItemWithId,
-    BaseItemIdr
-  > {}
+export type BaseItemRepository = GenericRepository<
+  BaseItemAttrs,
+  BaseItemRelatedItems,
+  BaseItemRelatedLists,
+  BaseItemWithId,
+  BaseItemIdr
+>;

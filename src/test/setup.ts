@@ -7,7 +7,7 @@ import "@testing-library/jest-dom";
 if (process.env.VITEST) {
   // Set test database URL if not already set
   process.env.TEST_DATABASE_URL =
-    process.env.TEST_DATABASE_URL ||
+    process.env.TEST_DATABASE_URL ??
     "postgres://postgres:postgres@localhost:5432/test_db";
 
   // Log database connection for debugging
@@ -23,44 +23,36 @@ if (typeof window !== "undefined") {
       matches: false,
       media: query,
       onchange: null,
-      addListener: () => {}, // deprecated
-      removeListener: () => {}, // deprecated
-      addEventListener: () => {},
-      removeEventListener: () => {},
+      addListener: () => { /* deprecated */ },
+      removeListener: () => { /* deprecated */ },
+      addEventListener: () => { /* noop */ },
+      removeEventListener: () => { /* noop */ },
       dispatchEvent: () => true,
     });
   }
 
   // Mock IntersectionObserver if not available
   if (!window.IntersectionObserver) {
-    window.IntersectionObserver = class {
-      constructor() {}
-      observe() {}
-      unobserve() {}
-      disconnect() {}
-      get root() {
-        return null;
-      }
-      get rootMargin() {
-        return "0px";
-      }
-      get thresholds() {
-        return [];
-      }
+    window.IntersectionObserver = class IntersectionObserver {
+      readonly root = null;
+      readonly rootMargin = "0px";
+      readonly thresholds: readonly number[] = [];
+      observe() { /* noop */ }
+      unobserve() { /* noop */ }
+      disconnect() { /* noop */ }
       takeRecords() {
         return [];
       }
-    } as any;
+    } as unknown as typeof IntersectionObserver;
   }
 
   // Mock ResizeObserver if not available
   if (!window.ResizeObserver) {
-    window.ResizeObserver = class {
-      constructor() {}
-      observe() {}
-      unobserve() {}
-      disconnect() {}
-    } as any;
+    window.ResizeObserver = class ResizeObserver {
+      observe() { /* noop */ }
+      unobserve() { /* noop */ }
+      disconnect() { /* noop */ }
+    } as unknown as typeof ResizeObserver;
   }
 }
 

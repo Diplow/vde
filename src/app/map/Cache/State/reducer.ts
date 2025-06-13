@@ -27,7 +27,7 @@ const formatItems = (items: MapItemAPIContract[]): TileData[] => {
     .map((item) => {
       try {
         return adapt(item);
-      } catch (error) {
+      } catch {
         // Skip items that can't be adapted (malformed coordinates, etc.)
         return null;
       }
@@ -113,7 +113,7 @@ export function cacheReducer(
     }
 
     case ACTION_TYPES.LOAD_ITEM_CHILDREN: {
-      const { items, parentCoordId, maxDepth } = action.payload;
+      const { items } = action.payload;
       const newItems = formatItems(items);
 
       // Check for changes to prevent unnecessary updates
@@ -240,6 +240,7 @@ export function cacheReducer(
     default: {
       // TypeScript exhaustiveness check
       const _exhaustiveCheck: never = action;
+      void _exhaustiveCheck; // Intentional exhaustiveness check
       return state;
     }
   }

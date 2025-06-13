@@ -1,10 +1,8 @@
 import { expect } from "vitest";
 import { HexDirection, CoordSystem } from "../../../../utils/hex-coordinates";
-import type { HexCoord } from "../../../../utils/hex-coordinates";
 import type { TestEnvironment } from "../_test-utilities";
 import {
   _setupBasicMap,
-  _createUniqueTestParams,
   _createTestCoordinates,
 } from "../_test-utilities";
 
@@ -44,7 +42,10 @@ export async function _setupItemHierarchyForRemoval(
 
 export async function _validateItemRemovalAndHierarchy(
   testEnv: TestEnvironment,
-  setupData: any,
+  setupData: {
+    setupParams: { userId: number; groupId: number };
+    child1Coords: Parameters<typeof CoordSystem.createId>[0];
+  },
 ) {
   let mapData = await testEnv.service.maps.getMapData(setupData.setupParams);
   expect(mapData.itemCount).toBe(3); // root + 2 children
@@ -61,7 +62,7 @@ export async function _validateRootItemRemoval(
   testEnv: TestEnvironment,
   setupParams: { userId: number; groupId: number },
 ) {
-  const setupData = await _setupBasicMap(testEnv.service, setupParams);
+  await _setupBasicMap(testEnv.service, setupParams);
   const rootCoords = CoordSystem.getCenterCoord(
     setupParams.userId,
     setupParams.groupId,

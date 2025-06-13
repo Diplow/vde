@@ -47,7 +47,7 @@ export function MapStateHandler({
   if (dataError || !hasData) {
     return (
       <MapErrorBoundary
-        error={dataError || new Error("Failed to load map data")}
+        error={dataError ?? new Error("Failed to load map data")}
         onRetry={() => window.location.reload()}
       />
     );

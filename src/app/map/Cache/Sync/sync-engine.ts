@@ -33,7 +33,7 @@ export interface SyncEngineConfig {
  * Handles periodic refresh, online/offline detection, and conflict resolution coordination
  */
 export function createSyncEngine(config: SyncEngineConfig): SyncOperations {
-  const { dispatch, state, dataHandler, eventHandler } = config;
+  const { state, dataHandler, eventHandler } = config;
   const syncConfig: SyncConfig = {
     ...DEFAULT_SYNC_CONFIG,
     ...config.syncConfig,
@@ -94,7 +94,7 @@ export function createSyncEngine(config: SyncEngineConfig): SyncOperations {
     }
 
     try {
-      const response = await fetch(syncConfig.onlineCheckUrl, {
+      await fetch(syncConfig.onlineCheckUrl, {
         method: "HEAD",
         mode: "no-cors",
         cache: "no-cache",
@@ -116,7 +116,7 @@ export function createSyncEngine(config: SyncEngineConfig): SyncOperations {
 
     syncTimer = setTimeout(() => {
       if (isStarted && !isPaused) {
-        performSyncInternal();
+        void performSyncInternal();
       }
     }, syncConfig.intervalMs);
   };
@@ -130,7 +130,7 @@ export function createSyncEngine(config: SyncEngineConfig): SyncOperations {
     // Small delay to avoid immediate execution in event handlers
     syncTimer = setTimeout(() => {
       if (isStarted && !isPaused) {
-        performSyncInternal();
+        void performSyncInternal();
       }
     }, 100);
   };
@@ -292,7 +292,7 @@ export function createSyncEngine(config: SyncEngineConfig): SyncOperations {
 
         retryTimer = setTimeout(() => {
           if (isStarted && !isPaused) {
-            performSyncInternal();
+            void performSyncInternal();
           }
         }, retryDelay);
       } else {

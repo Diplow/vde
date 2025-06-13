@@ -1,11 +1,10 @@
-import { describe, test, expect, beforeEach } from "vitest";
+import { describe, test, expect } from "vitest";
 import {
   selectAllItems,
   selectCurrentCenter,
   selectExpandedItemIds,
   selectIsLoading,
   selectError,
-  selectLastUpdated,
   selectItem,
   selectHasItem,
   selectItemsByIds,
@@ -14,7 +13,6 @@ import {
   selectShouldLoadRegion,
   selectRegionItems,
   selectRegionItemsOptimized,
-  selectItemsByDepth,
   selectMaxLoadedDepth,
   selectCacheValidation,
   selectIsItemExpanded,

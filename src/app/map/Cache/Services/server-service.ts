@@ -73,7 +73,7 @@ async function withRetry<T>(
     );
   }
 
-  throw lastError;
+  throw lastError ?? new Error('Unknown error occurred');
 }
 
 /**
@@ -151,7 +151,7 @@ export function createServerService(
           });
 
           // Then get its descendants if it exists
-          if (centerItem && centerItem.id) {
+          if (centerItem?.id) {
             const descendants = await utils.map.getDescendants.fetch({
               itemId: parseInt(centerItem.id),
             });
@@ -279,37 +279,37 @@ export function createMockServerService(
 ): ServerService {
   return {
     fetchItemsForCoordinate:
-      mockResponses.fetchItemsForCoordinate ||
+      mockResponses.fetchItemsForCoordinate ??
       (async () => {
         throw new ServiceErrorClass("Mock not implemented", "NOT_IMPLEMENTED");
       }),
     getItemByCoordinate:
-      mockResponses.getItemByCoordinate ||
+      mockResponses.getItemByCoordinate ??
       (async () => {
         throw new ServiceErrorClass("Mock not implemented", "NOT_IMPLEMENTED");
       }),
     getRootItemById:
-      mockResponses.getRootItemById ||
+      mockResponses.getRootItemById ??
       (async () => {
         throw new ServiceErrorClass("Mock not implemented", "NOT_IMPLEMENTED");
       }),
     getDescendants:
-      mockResponses.getDescendants ||
+      mockResponses.getDescendants ??
       (async () => {
         throw new ServiceErrorClass("Mock not implemented", "NOT_IMPLEMENTED");
       }),
     createItem:
-      mockResponses.createItem ||
+      mockResponses.createItem ??
       (async () => {
         throw new ServiceErrorClass("Mock not implemented", "NOT_IMPLEMENTED");
       }),
     updateItem:
-      mockResponses.updateItem ||
+      mockResponses.updateItem ??
       (async () => {
         throw new ServiceErrorClass("Mock not implemented", "NOT_IMPLEMENTED");
       }),
     deleteItem:
-      mockResponses.deleteItem ||
+      mockResponses.deleteItem ??
       (async () => {
         throw new ServiceErrorClass("Mock not implemented", "NOT_IMPLEMENTED");
       }),

@@ -52,5 +52,5 @@ export const _getCenterItem = (
   centerCoordId: string,
   items: Record<string, TileData>,
 ): TileData | null => {
-  return items[centerCoordId] || null;
+  return items[centerCoordId] ?? null;
 };

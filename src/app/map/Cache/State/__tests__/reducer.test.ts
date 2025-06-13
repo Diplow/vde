@@ -1,6 +1,6 @@
 import { cacheReducer, initialCacheState } from "../reducer";
 import { ACTION_TYPES } from "../types";
-import type { CacheState, CacheAction } from "../types";
+import type { CacheState, CacheAction, RegionMetadata } from "../types";
 import type { MapItemAPIContract } from "~/server/api/types/contracts";
 
 describe("Cache Reducer", () => {
@@ -14,7 +14,7 @@ describe("Cache Reducer", () => {
       depth: 1,
       url: "",
       parentId: null,
-      itemType: "BASE" as any,
+      itemType: "BASE" as const,
       ownerId: "test-owner",
     },
     {
@@ -25,7 +25,7 @@ describe("Cache Reducer", () => {
       depth: 2,
       url: "",
       parentId: null,
-      itemType: "BASE" as any,
+      itemType: "BASE" as const,
       ownerId: "test-owner",
     },
   ];
@@ -129,7 +129,7 @@ describe("Cache Reducer", () => {
       expect(result.regionMetadata["1,2"]).toEqual({
         centerCoordId: "1,2",
         maxDepth: 2,
-        loadedAt: expect.any(Number),
+        loadedAt: expect.any(Number) as number,
         itemCoordIds: ["1,2", "1,3"],
       });
       expect(result.error).toBeNull();
@@ -147,7 +147,7 @@ describe("Cache Reducer", () => {
           depth: 1,
           url: "",
           parentId: null,
-          itemType: "BASE" as any,
+          itemType: "BASE" as const,
           ownerId: "test-owner",
         },
       ];
@@ -499,8 +499,8 @@ describe("Cache Reducer", () => {
     test("clears all cache data", () => {
       const stateWithData: CacheState = {
         ...mockState,
-        itemsById: { "1,2": {} as any },
-        regionMetadata: { "1,2": {} as any },
+        itemsById: { "1,2": { items: [], centerCoordId: "1,2", metadata: { loadedAt: Date.now(), centerCoordId: "1,2", maxDepth: 1, itemCoordIds: [] } } },
+        regionMetadata: { "1,2": {} as RegionMetadata },
         lastUpdated: 5000,
       };
 
@@ -554,7 +554,7 @@ describe("Cache Reducer", () => {
 
   describe("Edge Cases", () => {
     test("handles unknown action gracefully", () => {
-      const unknownAction = { type: "UNKNOWN_ACTION" } as any;
+      const unknownAction = { type: "UNKNOWN_ACTION" } as CacheAction;
 
       // Reducer should return state unchanged for unknown actions
       const result = cacheReducer(mockState, unknownAction);
@@ -577,7 +577,7 @@ describe("Cache Reducer", () => {
       expect(result.regionMetadata["1,2"]).toEqual({
         centerCoordId: "1,2",
         maxDepth: 1,
-        loadedAt: expect.any(Number),
+        loadedAt: expect.any(Number) as number,
         itemCoordIds: [],
       });
     });
@@ -592,7 +592,7 @@ describe("Cache Reducer", () => {
           depth: -1,
           url: "",
           parentId: null,
-          itemType: "BASE" as any,
+          itemType: "BASE" as const,
           ownerId: "",
         },
       ];
@@ -642,7 +642,7 @@ describe("Cache Reducer", () => {
           depth: i % 5,
           url: "",
           parentId: null,
-          itemType: "BASE" as any,
+          itemType: "BASE" as const,
           ownerId: "test-owner",
         }),
       );

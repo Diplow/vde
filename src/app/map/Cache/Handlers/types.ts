@@ -1,4 +1,5 @@
 import type { CacheAction, CacheState } from "../State/types";
+import type { MapItemType } from "~/server/db/schema";
 
 // Common handler dependencies
 export interface HandlerConfig {
@@ -12,9 +13,19 @@ export interface HandlerServices {
     fetchItemsForCoordinate: (params: {
       centerCoordId: string;
       maxDepth: number;
-    }) => Promise<any[]>;
-    createItem?: (params: { coordId: string; data: any }) => Promise<any>;
-    updateItem?: (params: { coordId: string; data: any }) => Promise<any>;
+    }) => Promise<{
+      id: string;
+      coordinates: string;
+      depth: number;
+      name: string;
+      descr: string;
+      url: string;
+      parentId: string | null;
+      itemType: MapItemType;
+      ownerId: string;
+    }[]>;
+    createItem?: (params: { coordId: string; data: Record<string, unknown> }) => Promise<unknown>;
+    updateItem?: (params: { coordId: string; data: Record<string, unknown> }) => Promise<unknown>;
     deleteItem?: (params: { coordId: string }) => Promise<void>;
   };
   url?: {
@@ -22,8 +33,8 @@ export interface HandlerServices {
     getCurrentURL: () => { pathname: string; searchParams: URLSearchParams };
   };
   storage?: {
-    save: (key: string, data: any) => Promise<void>;
-    load: (key: string) => Promise<any>;
+    save: (key: string, data: unknown) => Promise<void>;
+    load: (key: string) => Promise<unknown>;
     remove: (key: string) => Promise<void>;
   };
 }
@@ -78,8 +89,8 @@ export interface NavigationOperations {
 }
 
 export interface MutationOperations {
-  createItem: (coordId: string, data: any) => Promise<MutationResult>;
-  updateItem: (coordId: string, data: any) => Promise<MutationResult>;
+  createItem: (coordId: string, data: Record<string, unknown>) => Promise<MutationResult>;
+  updateItem: (coordId: string, data: Record<string, unknown>) => Promise<MutationResult>;
   deleteItem: (coordId: string) => Promise<MutationResult>;
   rollbackOptimisticChange: (changeId: string) => void;
   rollbackAllOptimistic: () => void;
@@ -87,7 +98,7 @@ export interface MutationOperations {
     id: string;
     type: "create" | "update" | "delete";
     coordId: string;
-    previousState?: any;
+    previousState?: unknown;
     timestamp: number;
   }>;
 }

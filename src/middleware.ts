@@ -23,10 +23,10 @@ export default function middleware(request: NextRequest) {
       if (itemId) {
         const tileId = itemId; // In a real scenario, you might want to parse this to get the full tile ID
         testLogger.interaction(`static-${action}-click`, tileId, {
-          itemName: itemName || "Unknown",
+          itemName: itemName ?? "Unknown",
           action,
           url: request.nextUrl.pathname + request.nextUrl.search,
-          referrer: request.headers.get("referer") || "direct",
+          referrer: request.headers.get("referer") ?? "direct",
         });
 
         // Clean up the URL by removing the action metadata
@@ -47,10 +47,10 @@ export default function middleware(request: NextRequest) {
 
       if (coordId) {
         testLogger.interaction("static-create-click", coordId, {
-          parentName: parentName || "root",
+          parentName: parentName ?? "root",
           coordId,
           url: request.nextUrl.pathname + request.nextUrl.search,
-          referrer: request.headers.get("referer") || "direct",
+          referrer: request.headers.get("referer") ?? "direct",
         });
 
         // Clean up the URL by removing the action metadata

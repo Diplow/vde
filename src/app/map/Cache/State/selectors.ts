@@ -6,7 +6,7 @@ import type { RegionMetadata } from "./types";
 // Selector factory for creating memoized selectors
 function createMemoizedSelector<TInput, TOutput>(
   selectorFn: (input: TInput) => TOutput,
-  isEqual: (a: TOutput, b: TOutput) => boolean = (a, b) => a === b,
+  _isEqual: (a: TOutput, b: TOutput) => boolean = (a, b) => a === b,
 ) {
   let lastInput: TInput;
   let lastOutput: TOutput;
@@ -321,7 +321,7 @@ export const selectItemParent = (
   const parentCoordId = CoordSystem.getParentCoordFromId(coordId);
   if (!parentCoordId) return null;
 
-  return state.itemsById[parentCoordId] || null;
+  return state.itemsById[parentCoordId] ?? null;
 };
 
 export const selectItemChildren = (
@@ -420,7 +420,7 @@ export function cacheSelectors(state: CacheState) {
     },
 
     getItem: (coordId: string) => {
-      return state.itemsById[coordId] || null;
+      return state.itemsById[coordId] ?? null;
     },
 
     getItemsByCoordIds: (coordIds: string[]) => {
@@ -447,7 +447,7 @@ export function cacheSelectors(state: CacheState) {
     },
 
     getRegionMetadata: (centerCoordId: string) => {
-      return state.regionMetadata[centerCoordId] || null;
+      return state.regionMetadata[centerCoordId] ?? null;
     },
 
     getAllRegionMetadata: () => state.regionMetadata,
@@ -494,7 +494,7 @@ export function cacheSelectors(state: CacheState) {
       };
 
       const parentCoordId = CoordSystem.createId(parentCoords);
-      return state.itemsById[parentCoordId] || null;
+      return state.itemsById[parentCoordId] ?? null;
     },
 
     // Expanded state selectors
@@ -520,7 +520,7 @@ export function cacheSelectors(state: CacheState) {
       );
     },
 
-    filterItemsByType: (itemType: string) => {
+    filterItemsByType: (_itemType: string) => {
       return Object.values(state.itemsById).filter(
         (item) => item.metadata.coordinates.path.length === 0, // Assuming type is determined by depth
       );

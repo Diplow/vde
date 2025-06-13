@@ -20,8 +20,8 @@ const createContext = cache(async () => {
   const controller = new AbortController();
 
   return apiCreateContext({
-    req: { headers: heads } as any, // Mocking req object for RSC
-    res: undefined as any, // res is not available/needed in RSC context
+    req: { headers: heads } as unknown as Request, // Mocking req object for RSC
+    res: undefined as unknown as Response, // res is not available/needed in RSC context
     info: {
       accept: null,
       type: "query",

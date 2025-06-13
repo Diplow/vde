@@ -43,15 +43,15 @@ export interface SyncOperations {
 
 export interface ConflictResolutionStrategy {
   name: string;
-  resolve: (serverData: any, clientData: any) => any;
+  resolve: (serverData: unknown, clientData: unknown) => unknown;
   shouldApply: (conflict: DataConflict) => boolean;
 }
 
 export interface DataConflict {
   id: string;
   coordId: string;
-  serverData: any;
-  clientData: any;
+  serverData: unknown;
+  clientData: unknown;
   conflictType: "UPDATE" | "DELETE" | "CREATE";
   timestamp: number;
   serverTimestamp: number;
@@ -61,7 +61,7 @@ export interface DataConflict {
 export interface ConflictResolution {
   conflictId: string;
   strategy: string;
-  resolvedData: any;
+  resolvedData: unknown;
   timestamp: number;
   applied: boolean;
 }

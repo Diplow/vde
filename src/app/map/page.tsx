@@ -37,6 +37,19 @@ export default function MapPage({ searchParams }: MapPageProps) {
   const params = use(searchParams);
   
   // Handle missing center
+  const isOffline = params.offline === 'true';
+  
+  // Resolve mapItemId to coordinates BEFORE passing to cache
+  // This ensures the cache only ever sees proper coordinates
+  const { 
+    centerCoordinate, 
+    userId, 
+    groupId, 
+    rootItemId, 
+    isLoading: isResolving, 
+    error: resolutionError 
+  } = useMapIdResolution(params.center ?? '');
+
   if (!params.center) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -49,19 +62,6 @@ export default function MapPage({ searchParams }: MapPageProps) {
       </div>
     );
   }
-
-  const isOffline = params.offline === 'true';
-  
-  // Resolve mapItemId to coordinates BEFORE passing to cache
-  // This ensures the cache only ever sees proper coordinates
-  const { 
-    centerCoordinate, 
-    userId, 
-    groupId, 
-    rootItemId, 
-    isLoading: isResolving, 
-    error: resolutionError 
-  } = useMapIdResolution(params.center);
   
   // Show loading while resolving mapItemId
   if (isResolving) {
@@ -75,7 +75,7 @@ export default function MapPage({ searchParams }: MapPageProps) {
         <div className="text-center">
           <h1 className="text-2xl font-semibold">Map not found</h1>
           <p className="mt-2 text-gray-600">
-            {resolutionError?.message || "Unable to load the requested map"}
+            {resolutionError?.message ?? "Unable to load the requested map"}
           </p>
         </div>
       </div>
@@ -87,7 +87,7 @@ export default function MapPage({ searchParams }: MapPageProps) {
       <MapCacheProvider
         initialItems={{}} // Start with empty items - cache will load from server
         initialCenter={centerCoordinate} // Now always a proper coordinate!
-        initialExpandedItems={params.expandedItems?.split(",") || []}
+        initialExpandedItems={params.expandedItems?.split(",") ?? []}
         cacheConfig={CACHE_CONFIG}
         offlineMode={isOffline}
         mapContext={{
@@ -106,10 +106,10 @@ export default function MapPage({ searchParams }: MapPageProps) {
             userId,
             groupId,
           }}
-          expandedItemIds={params.expandedItems?.split(",") || []}
+          expandedItemIds={params.expandedItems?.split(",") ?? []}
           urlInfo={{
             pathname: `/map`,
-            searchParamsString: new URLSearchParams(params as any).toString(),
+            searchParamsString: new URLSearchParams(params as Record<string, string>).toString(),
             rootItemId: params.center,
             scale: params.scale,
             expandedItems: params.expandedItems,
@@ -125,7 +125,7 @@ export default function MapPage({ searchParams }: MapPageProps) {
           items={{}} // Will get items from cache context
           urlInfo={{
             pathname: `/map`,
-            searchParamsString: new URLSearchParams(params as any).toString(),
+            searchParamsString: new URLSearchParams(params as Record<string, string>).toString(),
             rootItemId: params.center,
             scale: params.scale,
             expandedItems: params.expandedItems,
@@ -136,13 +136,13 @@ export default function MapPage({ searchParams }: MapPageProps) {
         <MapControls
           urlInfo={{
             pathname: `/map`,
-            searchParamsString: new URLSearchParams(params as any).toString(),
+            searchParamsString: new URLSearchParams(params as Record<string, string>).toString(),
             rootItemId: params.center,
             scale: params.scale,
             expandedItems: params.expandedItems,
             focus: params.focus,
           }}
-          expandedItemIds={params.expandedItems?.split(",") || []}
+          expandedItemIds={params.expandedItems?.split(",") ?? []}
           minimapItemsData={{}} // Will get items from cache context
           currentMapCenterCoordId={centerCoordinate}
           cacheStatus={{

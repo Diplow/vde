@@ -4,10 +4,7 @@ import type { DataOperations } from "./types";
 
 // Note: Server mutations are NOT handled through the server service
 // They should use tRPC mutation hooks directly for proper client-side patterns
-export interface MutationHandlerServices {
-  // Future: could add optimistic update coordination services here
-  // For now, mutations use tRPC hooks directly
-}
+export type MutationHandlerServices = Record<string, never>;
 
 export interface MutationHandlerConfig {
   dispatch: React.Dispatch<CacheAction>;
@@ -27,13 +24,13 @@ export interface OptimisticChange {
   id: string;
   type: "create" | "update" | "delete";
   coordId: string;
-  previousData?: any;
+  previousData?: unknown;
   timestamp: number;
 }
 
 export interface MutationOperations {
-  createItem: (coordId: string, data: any) => Promise<MutationResult>;
-  updateItem: (coordId: string, data: any) => Promise<MutationResult>;
+  createItem: (coordId: string, data: Record<string, unknown>) => Promise<MutationResult>;
+  updateItem: (coordId: string, data: Record<string, unknown>) => Promise<MutationResult>;
   deleteItem: (coordId: string) => Promise<MutationResult>;
   rollbackOptimisticChange: (changeId: string) => void;
   rollbackAllOptimistic: () => void;
@@ -52,7 +49,7 @@ export function createMutationHandler(
 
   const createItem = async (
     coordId: string,
-    data: any,
+    data: Record<string, unknown>,
   ): Promise<MutationResult> => {
     try {
       // Apply optimistic update if enabled
@@ -75,11 +72,11 @@ export function createMutationHandler(
           depth: 1, // TODO: Calculate actual depth
           id: `optimistic_${changeId}`,
           parentId: null, // TODO: Determine parent
-          itemType: "BASE" as any,
+          itemType: "BASE" as const,
           ownerId: "current-user", // TODO: Get actual user
         };
 
-        dispatch(cacheActions.loadRegion([optimisticItem], coordId, 1));
+        dispatch(cacheActions.loadRegion([optimisticItem] as Parameters<typeof cacheActions.loadRegion>[0], coordId, 1));
 
         return { success: true, optimisticApplied: true };
       }
@@ -98,7 +95,7 @@ export function createMutationHandler(
 
   const updateItem = async (
     coordId: string,
-    data: any,
+    data: Record<string, unknown>,
   ): Promise<MutationResult> => {
     try {
       const existingItem = state.itemsById[coordId];
@@ -127,7 +124,7 @@ export function createMutationHandler(
           coordinates: coordId,
         };
 
-        dispatch(cacheActions.loadRegion([updatedItem], coordId, 1));
+        dispatch(cacheActions.loadRegion([updatedItem] as Parameters<typeof cacheActions.loadRegion>[0], coordId, 1));
 
         return { success: true, optimisticApplied: true };
       }
@@ -198,7 +195,7 @@ export function createMutationHandler(
               coordinates: change.coordId,
             };
             dispatch(
-              cacheActions.loadRegion([restoredItem], change.coordId, 1),
+              cacheActions.loadRegion([restoredItem] as Parameters<typeof cacheActions.loadRegion>[0], change.coordId, 1),
             );
           }
           break;
@@ -214,7 +211,7 @@ export function createMutationHandler(
               coordinates: change.coordId,
             };
             dispatch(
-              cacheActions.loadRegion([restoredItem], change.coordId, 1),
+              cacheActions.loadRegion([restoredItem] as Parameters<typeof cacheActions.loadRegion>[0], change.coordId, 1),
             );
           }
           break;
@@ -271,7 +268,7 @@ export function createMutationHandlerWithServerService(
   dispatch: React.Dispatch<CacheAction>,
   state: CacheState,
   dataHandler: DataOperations,
-  serviceConfig?: any, // Ignored - mutations don't use server service
+  _serviceConfig?: unknown, // Ignored - mutations don't use server service
 ) {
   console.warn(
     "createMutationHandlerWithServerService is deprecated. Use createMutationHandlerForCache instead. Mutations should use tRPC hooks directly.",

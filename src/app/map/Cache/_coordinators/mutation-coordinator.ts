@@ -1,5 +1,5 @@
 import { type Dispatch } from "react";
-import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
+import { CoordSystem, type HexCoord } from "~/lib/domains/mapping/utils/hex-coordinates";
 import { MapItemType } from "~/lib/domains/mapping/types/contracts";
 import type { MapItemAPIContract } from "~/server/api/types/contracts";
 import type { CacheAction } from "../State/types";
@@ -21,13 +21,26 @@ export interface MutationCoordinatorConfig {
   };
   // Pass mutations as dependencies
   addItemMutation: {
-    mutateAsync: (params: any) => Promise<MapItemAPIContract>;
+    mutateAsync: (params: {
+      coords: HexCoord;
+      parentId: number;
+      title?: string;
+      descr?: string;
+      url?: string;
+    }) => Promise<MapItemAPIContract>;
   };
   updateItemMutation: {
-    mutateAsync: (params: any) => Promise<MapItemAPIContract>;
+    mutateAsync: (params: {
+      coords: HexCoord;
+      title?: string;
+      descr?: string;
+      url?: string;
+    }) => Promise<MapItemAPIContract>;
   };
   deleteItemMutation: {
-    mutateAsync: (params: any) => Promise<{ success: true }>;
+    mutateAsync: (params: {
+      coords: HexCoord;
+    }) => Promise<{ success: true }>;
   };
 }
 
@@ -67,9 +80,9 @@ export class MutationCoordinator {
       // Make server call
       const result = await this.config.addItemMutation.mutateAsync({
         coords,
-        parentId: parseInt(parentId || "0"),
-        title: data.title || data.name,
-        descr: data.description || data.descr,
+        parentId: parseInt(parentId ?? "0"),
+        title: data.title ?? data.name,
+        descr: data.description ?? data.descr,
         url: data.url,
       });
       
@@ -103,8 +116,8 @@ export class MutationCoordinator {
       const result = await this.config.updateItemMutation.mutateAsync({
         coords,
         data: {
-          title: data.title || data.name,
-          descr: data.description || data.descr,
+          title: data.title ?? data.name,
+          descr: data.description ?? data.descr,
           url: data.url,
         },
       });
@@ -188,7 +201,7 @@ export class MutationCoordinator {
     const parentCoordId = CoordSystem.createId(parentCoords);
     const parentItem = this.config.getState().itemsById[parentCoordId];
     
-    return parentItem?.metadata.dbId || null;
+    return parentItem?.metadata.dbId ?? null;
   }
 
   private _createOptimisticItem(
@@ -206,13 +219,13 @@ export class MutationCoordinator {
     return {
       id: `temp_${Date.now()}`,
       coordinates: coordId,
-      name: data.title || data.name || "New Item",
-      descr: data.description || data.descr || "",
-      url: data.url || "",
+      name: data.title ?? data.name ?? "New Item",
+      descr: data.description ?? data.descr ?? "",
+      url: data.url ?? "",
       depth: coords.path.length,
       parentId,
       itemType: MapItemType.BASE,
-      ownerId: this.config.mapContext?.userId.toString() || "unknown",
+      ownerId: this.config.mapContext?.userId.toString() ?? "unknown",
     };
   }
 
@@ -262,9 +275,9 @@ export class MutationCoordinator {
     const previousData = this._reconstructApiData(existingItem);
     const optimisticItem: MapItemAPIContract = {
       ...previousData,
-      name: data.title || data.name || existingItem.data.name,
-      descr: data.description || data.descr || existingItem.data.description,
-      url: data.url || existingItem.data.url,
+      name: data.title ?? data.name ?? existingItem.data.name,
+      descr: data.description ?? data.descr ?? existingItem.data.description,
+      url: data.url ?? existingItem.data.url,
     };
     return { optimisticItem, previousData };
   }
@@ -329,7 +342,7 @@ export class MutationCoordinator {
       url: tile.data.url,
       parentId: null, // We don't store this in TileData
       itemType: MapItemType.BASE,
-      ownerId: tile.metadata.ownerId || this.config.mapContext?.userId.toString() || "unknown",
+      ownerId: tile.metadata.ownerId ?? this.config.mapContext?.userId.toString() ?? "unknown",
     };
   }
 }

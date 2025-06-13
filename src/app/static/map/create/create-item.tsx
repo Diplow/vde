@@ -10,6 +10,7 @@ import {
 import type { MapItemAPIContract } from "~/server/api/types/contracts";
 import type { TileData } from "~/app/map/types/tile-data";
 import { getColor } from "~/app/map/types/tile-data";
+import type { TILE_COLORS } from "~/app/map/Tile/Item/item.styles";
 import { api } from "~/commons/trpc/server";
 import { _getParentHierarchy } from "~/app/map/Controls/ParentHierarchy/hierarchy.utils";
 import {
@@ -37,8 +38,8 @@ export async function StaticCreateItemForm({
   const colorString = getColor(targetCoords);
   const [colorName, tint] = colorString.split("-");
   const tileColor = {
-    color: colorName as any,
-    tint: tint as any,
+    color: colorName as keyof typeof TILE_COLORS,
+    tint: tint as keyof typeof TILE_COLORS[keyof typeof TILE_COLORS],
   };
 
   // Get all items for hierarchy building
@@ -76,7 +77,7 @@ export async function StaticCreateItemForm({
             dbId: item.id,
             coordId: item.coordinates,
             coordinates: coords,
-            parentId: parentId || undefined,
+            parentId: parentId ?? undefined,
             depth: coords.path.length,
           },
           state: {
@@ -101,13 +102,12 @@ export async function StaticCreateItemForm({
 
   // Build URLInfo for hierarchy tiles
   const urlInfo = {
-    pathname: returnUrl.split("?")[0] || "",
-    searchParamsString: returnUrl.split("?")[1] || "",
+    pathname: returnUrl.split("?")[0] ?? "",
+    searchParamsString: returnUrl.split("?")[1] ?? "",
     rootItemId,
   };
 
   // Find where the "Creating child of" component should start
-  const hasParentInfo = parentItem !== null;
 
   return (
     <div className="flex flex-col gap-8">
@@ -161,7 +161,7 @@ export async function StaticCreateItemForm({
         {/* Right Column - Hierarchy Panel */}
         <div className="lg:w-96">
           {/* Hierarchy */}
-          {(hierarchy.length > 0 || parentItem || true) && (
+          {(hierarchy.length > 0 ?? parentItem ?? true) && (
             <div className="rounded-lg border border-gray-700 bg-gray-800 p-6">
               <h2 className="mb-4 text-lg font-semibold text-white">Hierarchy</h2>
               <div className="flex flex-col items-center gap-2">
