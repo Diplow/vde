@@ -83,7 +83,7 @@ export function DynamicMapCanvas({
     updateCenter,
   } = useMapCache();
   const [isHydrated, setIsHydrated] = useState(false);
-  const { user } = useAuth();
+  const { user, mappingUserId } = useAuth();
 
   useEffect(() => {
     // Initialize hydration
@@ -174,7 +174,7 @@ export function DynamicMapCanvas({
             expandedItemIds={currentExpandedItems}
             scale={3 as TileScale}
             urlInfo={urlInfo}
-            currentUserId={user ? parseInt(user.id, 10) : undefined}
+            currentUserId={mappingUserId}
           />
         </div>
       </div>
