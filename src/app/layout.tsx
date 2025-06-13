@@ -4,6 +4,7 @@ import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "~/commons/trpc/react";
 import { AuthProvider } from "~/contexts/AuthContext";
+import { MappingUserProvider } from "~/contexts/MappingUserProvider";
 import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
@@ -32,7 +33,11 @@ export default function RootLayout({
       <body className="min-h-screen bg-gradient-to-br from-background via-background to-muted font-sans antialiased">
         <Analytics/>
         <AuthProvider>
-          <TRPCReactProvider>{children}</TRPCReactProvider>
+          <TRPCReactProvider>
+            <MappingUserProvider>
+              {children}
+            </MappingUserProvider>
+          </TRPCReactProvider>
         </AuthProvider>
       </body>
     </html>
