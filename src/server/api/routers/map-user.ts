@@ -121,4 +121,11 @@ export const mapUserRouter = createTRPCRouter({
         return _createErrorResponse("Failed to fetch user map", { map: null });
       }
     }),
+    
+  // Get current user's mapping ID
+  getCurrentUserMappingId: protectedProcedure
+    .query(async ({ ctx }) => {
+      const mappingUserId = await _getUserId(ctx.user);
+      return { mappingUserId };
+    }),
 });
