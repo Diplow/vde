@@ -74,3 +74,25 @@ For production, always:
 1. Test migrations on a development branch first
 2. Backup your database before running migrations
 3. Use migrations (`db:migrate`) instead of push for better version control
+4. **NEVER hardcode credentials in scripts** - always use environment variables
+
+### Running Production Migrations
+
+```bash
+# Set the DATABASE_URL environment variable (get from Vercel dashboard)
+export DATABASE_URL="postgresql://..."
+
+# Run migrations
+pnpm db:migrate
+
+# Or use the migration script template
+DATABASE_URL="postgresql://..." ./scripts/migrate-production-template.sh
+```
+
+### Security Best Practices
+
+1. **Never commit credentials** to Git
+2. Use environment variables for all sensitive data
+3. Add production scripts to `.gitignore`
+4. Use secret management tools like Vercel environment variables
+5. Rotate credentials immediately if exposed
