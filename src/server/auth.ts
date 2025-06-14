@@ -22,7 +22,12 @@ export const auth = betterAuth({
   secret: process.env.AUTH_SECRET, // Needs to be added to .env
   basePath: "/api/auth", // Standard Next.js API route
   trustedOrigins: process.env.NODE_ENV === "production" 
-    ? ["https://your-production-domain.com"] 
+    ? [
+        process.env.BETTER_AUTH_URL ?? "https://hexframe.ai",
+        "https://www.hexframe.ai", // Add www subdomain
+        // Add any Vercel preview URLs if needed
+        ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : [])
+      ] 
     : ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002"],
   plugins: [nextCookies()],
 });

@@ -49,7 +49,6 @@ export function createNavigationHandler(config: NavigationHandlerConfig) {
           console.error('[NAV] Background region load failed:', error);
         });
       } else {
-        console.log('[NAV] Item already in cache, skipping load');
       }
 
       // 3. Get the item from state (it should have been loaded by loadRegion)
@@ -57,19 +56,7 @@ export function createNavigationHandler(config: NavigationHandlerConfig) {
       
       let urlUpdated = false;
 
-      // Debug logging for all environments during development
-      if (typeof window !== 'undefined') {
-        console.log('[NAV] navigateToItem:', {
-          itemCoordId,
-          itemFound: !!item,
-          itemDbId: item?.metadata?.dbId,
-          routerAvailable: !!router,
-          pushToHistory
-        });
-      }
-
       // Skip URL updates for now - just update cache state
-      console.log('[NAV] Navigation completed without URL update');
       urlUpdated = false;
 
       return {
@@ -194,7 +181,6 @@ export function createNavigationHandler(config: NavigationHandlerConfig) {
     dispatch(cacheActions.toggleItemExpansion(itemId));
     
     // Skip URL updates for now
-    console.log('[NAV] Expansion toggled without URL update');
   };
 
   return {

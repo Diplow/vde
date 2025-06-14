@@ -73,7 +73,6 @@ export const DynamicTileButtons = ({
     e.preventDefault();
     e.stopPropagation(); // Prevent event bubbling
 
-    console.log("[DEBUG] Dynamic expansion handler triggered");
     setIsToggling(true);
 
     testLogger.interaction(
@@ -100,7 +99,6 @@ export const DynamicTileButtons = ({
     e.preventDefault();
     e.stopPropagation(); // Prevent event bubbling
 
-    console.log("[DEBUG] Dynamic navigation handler triggered");
     setIsNavigating(true);
 
     testLogger.interaction("navigate", `tile-${item.metadata.dbId}`, {
@@ -117,7 +115,6 @@ export const DynamicTileButtons = ({
       );
       await navigateToItem(item.metadata.coordId, { pushToHistory: true });
       testLogger.info(`Navigation successful to ${item.metadata.coordId}`);
-      console.log("[DEBUG] navigateToItem completed");
     } catch (error) {
       testLogger.error(
         `Dynamic navigation failed for ${item.metadata.dbId}`,

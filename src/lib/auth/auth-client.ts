@@ -9,7 +9,7 @@ export const authClient = createAuthClient({
    */
   baseURL:
     process.env.NEXT_PUBLIC_BETTER_AUTH_URL ??
-    process.env.NEXT_PUBLIC_VERCEL_URL ??
+    (process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : undefined) ??
     "http://localhost:3000",
   basePath: "/api/auth", // Must match the server configuration
   // Client-side configuration if any based on better-auth documentation.

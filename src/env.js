@@ -15,8 +15,10 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
-    MISTRAL_API_KEY: z.string(),
-    YOUTUBE_API_KEY: z.string(),
+    MISTRAL_API_KEY: z.string().optional(),
+    YOUTUBE_API_KEY: z.string().optional(),
+    AUTH_SECRET: z.string().min(1),
+    BETTER_AUTH_URL: z.string().url(),
   },
 
   /**
@@ -25,7 +27,7 @@ export const env = createEnv({
    * `NEXT_PUBLIC_`.
    */
   client: {
-    // NEXT_PUBLIC_CLIENTVAR: z.string(),
+    NEXT_PUBLIC_BETTER_AUTH_URL: z.string().url().optional(),
   },
 
   /**
@@ -38,7 +40,9 @@ export const env = createEnv({
     TEST_DATABASE_URL: process.env.TEST_DATABASE_URL,
     MISTRAL_API_KEY: process.env.MISTRAL_API_KEY,
     YOUTUBE_API_KEY: process.env.YOUTUBE_API_KEY,
-    // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
+    AUTH_SECRET: process.env.AUTH_SECRET,
+    BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+    NEXT_PUBLIC_BETTER_AUTH_URL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

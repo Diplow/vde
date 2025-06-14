@@ -63,6 +63,7 @@ export const DynamicItemTile = ({
   
   // Check if current user owns this item
   const canEdit = currentUserId !== undefined && item.metadata.ownerId === currentUserId.toString();
+  
   // Generate test ID from coordinates
   const pathPart = item.metadata.coordinates.path.length > 0 ? `-${item.metadata.coordinates.path.join("-")}` : '';
   const testId = `tile-${item.metadata.coordinates.userId}-${item.metadata.coordinates.groupId}${pathPart}`;

@@ -8,6 +8,7 @@ import {
   useContext,
   type ReactNode,
 } from "react";
+import { useAuth } from "~/contexts/AuthContext";
 import type { CenterInfo } from "~/app/static/map/Canvas/index";
 import { DynamicFrame } from "./frame";
 import type { TileScale } from "~/app/static/map/Tile/Base/base";
@@ -82,6 +83,7 @@ export function DynamicMapCanvas({
     updateCenter,
   } = useMapCache();
   const [isHydrated, setIsHydrated] = useState(false);
+  const { mappingUserId } = useAuth();
 
   useEffect(() => {
     // Initialize hydration
@@ -172,7 +174,7 @@ export function DynamicMapCanvas({
             expandedItemIds={currentExpandedItems}
             scale={3 as TileScale}
             urlInfo={urlInfo}
-            currentUserId={centerInfo.userId}
+            currentUserId={mappingUserId}
           />
         </div>
       </div>
