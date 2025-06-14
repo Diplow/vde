@@ -44,6 +44,10 @@ yarn-error.log*
 .env
 .env*.local
 
+# Scripts with credentials
+scripts/migrate-production.sh
+scripts/*-production.sh
+
 # vercel
 .vercel
 
