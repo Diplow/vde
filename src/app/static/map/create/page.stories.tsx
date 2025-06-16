@@ -21,7 +21,7 @@ const MockHierarchyTile = ({
   const colorString = getColor(coords);
   const [colorName, tint] = colorString.split("-");
   const color: TileColor = {
-    color: colorName as "zinc" | "amber" | "lime" | "fuchsia" | "rose" | "indigo" | "cyan",
+    color: colorName as "zinc" | "amber" | "green" | "fuchsia" | "rose" | "indigo" | "cyan",
     tint: (tint ?? "400") as "50" | "100" | "200" | "300" | "400" | "500" | "600" | "700" | "800" | "900" | "950",
   };
 
