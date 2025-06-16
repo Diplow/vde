@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, lazy, Suspense } from "react";
+import { useState, lazy, Suspense, useContext } from "react";
 import type { TileData } from "../../types/tile-data";
 import {
   DynamicBaseTileLayout,
@@ -13,6 +13,7 @@ import { DynamicTileContent } from "./content";
 import { DynamicTileButtons } from "./item.buttons";
 import type { URLInfo } from "../../types/url-info";
 import { testLogger } from "~/lib/test-logger";
+import { TileActionsContext } from "../../Canvas";
 
 // Lazy load the modals
 const UpdateItemDialog = lazy(() =>
@@ -61,6 +62,9 @@ export const DynamicItemTile = ({
   const [showUpdateDialog, setShowUpdateDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
+  // Get tile actions from context (may be null if not within Canvas)
+  const tileActions = useContext(TileActionsContext);
+  
   // Check if current user owns this item
   const canEdit = currentUserId !== undefined && item.metadata.ownerId === currentUserId.toString();
   
@@ -79,10 +83,29 @@ export const DynamicItemTile = ({
     isCenter,
     scale,
   });
+  
+  // Determine if this tile can be dragged
+  const isDraggable = interactive && tileActions?.canDragTile(item.metadata.coordId) === true;
+  const isBeingDragged = tileActions?.isDraggingTile(item.metadata.coordId) === true;
+  const isDropTargetActive = tileActions?.isDropTarget(item.metadata.coordId) === true;
+  
+  // Prepare drag handlers if draggable
+  const dragProps = isDraggable && tileActions ? {
+    draggable: true,
+    onDragStart: (e: React.DragEvent<HTMLDivElement>) => tileActions.dragHandlers.onDragStart(item.metadata.coordId, e),
+    onDragEnd: tileActions.dragHandlers.onDragEnd,
+    style: {
+      opacity: isBeingDragged ? 0.5 : 1,
+      cursor: isBeingDragged ? 'grabbing' : (isDraggable ? 'grab' : 'default'),
+    }
+  } : {};
 
   return (
     <>
-    <div className="group relative hover:z-10" data-testid={testId}>
+    <div 
+      className={`group relative hover:z-10`} 
+      data-testid={testId}
+      {...dragProps}>
       {/* Hexagon tile with full hover area */}
       <DynamicBaseTileLayout
         coordId={item.metadata.coordId}

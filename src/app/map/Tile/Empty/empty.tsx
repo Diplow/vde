@@ -37,6 +37,10 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
 
   // If context is not available, we'll still render but without the context actions
   const onCreateTileRequested = tileActions?.onCreateTileRequested;
+  
+  // Check if this tile is a valid drop target
+  const isValidDropTarget = tileActions?.isValidDropTarget(props.coordId) === true;
+  const isDropTargetActive = tileActions?.isDropTarget(props.coordId) === true;
 
 
   // Handle create button click
@@ -62,17 +66,31 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
   const coord = CoordSystem.parseId(props.coordId);
   const userOwnsThisSpace =
     props.currentUserId !== undefined && coord.userId === props.currentUserId;
+  
+  // Prepare drop handlers if this is a valid drop target
+  const dropProps = isValidDropTarget && tileActions ? {
+    onDragOver: (e: React.DragEvent<HTMLDivElement>) => {
+      tileActions.dragHandlers.onDragOver(props.coordId, e);
+    },
+    onDragLeave: tileActions.dragHandlers.onDragLeave,
+    onDrop: (e: React.DragEvent<HTMLDivElement>) => {
+      tileActions.dragHandlers.onDrop(props.coordId, e);
+    },
+  } : {};
 
   return (
     <>
-      <div className="group relative hover:z-10" data-testid={`empty-tile-${props.coordId}`}>
+      <div 
+        className={`group relative hover:z-10`} 
+        data-testid={`empty-tile-${props.coordId}`}
+        {...dropProps}>
         {/* Invisible hover area overlay to ensure full tile responds to hover */}
         <div className="pointer-events-auto absolute inset-0 z-10" />
 
         <StaticBaseTileLayout
           coordId={props.coordId}
           scale={props.scale ?? 1}
-          color={{ color: "zinc", tint: "100" }}
+          color={{ color: isDropTargetActive ? "zinc" : "zinc", tint: isDropTargetActive ? "300" : "100" }}
           stroke={{ color: "zinc-950", width: 1 }}
           cursor="cursor-pointer"
           baseHexSize={props.baseHexSize}
