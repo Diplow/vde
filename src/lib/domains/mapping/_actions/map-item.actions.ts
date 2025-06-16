@@ -109,6 +109,9 @@ export class MapItemActions {
       oldCoords,
     );
 
+    // Collect all items that will be modified
+    const modifiedItems: MapItemWithId[] = [];
+    
     await this._moveSourceItem(sourceItem, newCoords, targetParent);
     await this._restoreDisplacedItem(
       targetItem,
@@ -117,7 +120,22 @@ export class MapItemActions {
       sourceParent,
     );
 
-    return this.mapItems.getOne(sourceItem.id);
+    // Get the moved item with new coordinates
+    const movedItem = await this.mapItems.getOne(sourceItem.id);
+    if (!movedItem) {
+      throw new Error("Failed to retrieve moved item");
+    }
+    modifiedItems.push(movedItem);
+    
+    // Get all descendants with their new coordinates
+    const updatedDescendants = await this.getDescendants(sourceItem.id);
+    modifiedItems.push(...updatedDescendants);
+    
+    return {
+      modifiedItems,
+      movedItemId: sourceItem.id,
+      affectedCount: modifiedItems.length,
+    };
   }
 
   public async getDescendants(parentId: number): Promise<MapItemWithId[]> {

@@ -23,7 +23,7 @@ interface MoveMapItemMutation {
   }) => Promise<{
     modifiedItems: Array<{
       id: string;
-      coordinates: string;
+      coords: string;
       depth: number;
       name: string;
       descr: string;
@@ -293,10 +293,10 @@ export function useDragAndDrop({
         const updatedItems = { ...state.itemsById };
         
         result.modifiedItems.forEach(item => {
-          const existingTile = updatedItems[item.coordinates];
+          const existingTile = updatedItems[item.coords];
           if (existingTile) {
             // Update with server-confirmed metadata
-            updatedItems[item.coordinates] = {
+            updatedItems[item.coords] = {
               ...existingTile,
               metadata: {
                 ...existingTile.metadata,

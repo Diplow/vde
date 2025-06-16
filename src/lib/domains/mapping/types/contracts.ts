@@ -24,6 +24,12 @@ export const mapItemDomainToContractAdapter = (
 export type MapItemContract = ReturnType<typeof mapItemDomainToContractAdapter>;
 export { MapItemType };
 
+export interface MoveMapItemResult {
+  modifiedItems: MapItemContract[];
+  movedItemId: string;
+  affectedCount: number;
+}
+
 /**
  * Adapts a root USER MapItem and its descendants to a MapContract.
  * MapContract represents a view of a single "map" tree.
