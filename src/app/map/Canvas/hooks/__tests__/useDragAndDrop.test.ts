@@ -233,7 +233,7 @@ describe("useDragAndDrop", () => {
     } as unknown as DragEvent<HTMLDivElement>;
 
     await act(async () => {
-      await result.current.dragHandlers.onDrop("0,0:2", dropEvent);
+      result.current.dragHandlers.onDrop("0,0:2", dropEvent);
     });
 
     // Verify the mutation was called with correct coordinates

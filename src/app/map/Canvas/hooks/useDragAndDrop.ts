@@ -2,50 +2,13 @@ import { useState, useCallback } from "react";
 import type { DragEvent } from "react";
 import type { TileData } from "~/app/map/types/tile-data";
 import { getColor } from "~/app/map/types/tile-data";
-import type { CacheState } from "~/app/map/Cache/State/types";
-import { 
-  CoordSystem,
-  type Coord
-} from "~/lib/domains/mapping/utils/hex-coordinates";
+import { CoordSystem, type Coord } from "~/lib/domains/mapping/utils/hex-coordinates";
 import { cacheSelectors } from "~/app/map/Cache/State/selectors";
-
-interface DragState {
-  isDragging: boolean;
-  draggedTileId: string | null;
-  draggedTileData: TileData | null;
-  dropTargetId: string | null;
-  dragOffset: { x: number; y: number };
-}
-
-interface MoveMapItemMutation {
-  mutateAsync: (params: {
-    oldCoords: Coord;
-    newCoords: Coord;
-  }) => Promise<{
-    modifiedItems: Array<{
-      id: string;
-      coords: string;
-      depth: number;
-      name: string;
-      descr: string;
-      url: string;
-      parentId: string | null;
-      itemType: string;
-      ownerId: string;
-    }>;
-    movedItemId: string;
-    affectedCount: number;
-  }>;
-}
-
-interface UseDragAndDropConfig {
-  cacheState: CacheState;
-  currentUserId: number | null;
-  moveMapItemMutation: MoveMapItemMutation;
-  onMoveComplete?: (movedItemId: string) => void;
-  onMoveError?: (error: Error) => void;
-  updateCache?: (updater: (state: CacheState) => CacheState) => void;
-}
+import type {
+  DragState,
+  UseDragAndDropConfig,
+  UseDragAndDropReturn,
+} from "./types";
 
 const initialDragState: DragState = {
   isDragging: false,
@@ -62,7 +25,7 @@ export function useDragAndDrop({
   onMoveComplete,
   onMoveError,
   updateCache,
-}: UseDragAndDropConfig) {
+}: UseDragAndDropConfig): UseDragAndDropReturn {
   const [dragState, setDragState] = useState<DragState>(initialDragState);
   
   const selectors = cacheSelectors(cacheState);
@@ -136,21 +99,17 @@ export function useDragAndDrop({
   }, [dragState.draggedTileId, getValidDropTargets]);
 
   const handleDragStart = useCallback((coordId: string, event: DragEvent<HTMLDivElement>) => {
-    console.log('[DragAndDrop] handleDragStart called for:', coordId);
     
     if (!canDragTile(coordId)) {
-      console.log('[DragAndDrop] Cannot drag tile:', coordId);
       event.preventDefault();
       return;
     }
     
     const tile = selectors.getItem(coordId);
     if (!tile) {
-      console.log('[DragAndDrop] Tile not found:', coordId);
       return;
     }
     
-    console.log('[DragAndDrop] Starting drag for tile:', tile.data.name);
     
     setDragState({
       isDragging: true,
@@ -189,6 +148,11 @@ export function useDragAndDrop({
   ) => {
     const oldCoords = CoordSystem.parseId(tile.metadata.coordId);
     const newCoords = CoordSystem.parseId(newCoordsId);
+    
+    if (!oldCoords || !newCoords) {
+      onMoveError?.(new Error("Invalid coordinates"));
+      return;
+    }
     
     if (!updateCache) {
       // No optimistic update, just call API
@@ -333,7 +297,7 @@ export function useDragAndDrop({
     }
   }, [cacheState, selectors, updateCache, moveMapItemMutation, onMoveComplete, onMoveError]);
 
-  const handleDrop = useCallback(async (targetCoordId: string, event: DragEvent<HTMLDivElement>) => {
+  const handleDrop = useCallback((targetCoordId: string, event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     
     
@@ -341,7 +305,8 @@ export function useDragAndDrop({
       return;
     }
     
-    await performOptimisticMove(dragState.draggedTileData, targetCoordId);
+    // Perform the move asynchronously without blocking
+    void performOptimisticMove(dragState.draggedTileData, targetCoordId);
     
     // Reset drag state
     setDragState(initialDragState);

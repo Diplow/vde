@@ -4,12 +4,13 @@ import { useMapCacheContext } from "../../Cache/map-cache";
 import { useDragAndDrop } from "./useDragAndDrop";
 import { ACTION_TYPES } from "../../Cache/State/types";
 import type { CacheState } from "../../Cache/State/types";
+import type { UseDragAndDropReturn } from "./types";
 
 /**
  * Hook that combines drag and drop functionality with tRPC mutation
  * This wraps the useDragAndDrop hook and provides the mutation integration
  */
-export function useDragAndDropWithMutation() {
+export function useDragAndDropWithMutation(): Omit<UseDragAndDropReturn, 'dragState'> {
   const { state: cacheState, dispatch } = useMapCacheContext();
   const { mappingUserId } = useAuth();
   
@@ -19,8 +20,7 @@ export function useDragAndDropWithMutation() {
       // Don't invalidate region - our optimistic update is already correct
       // and invalidating would cause a reload that might get stale data
     },
-    onError: (error: unknown) => {
-      console.error('Failed to move item:', error);
+    onError: (_error: unknown) => {
       // TODO: Show error toast or notification
     },
   });
@@ -40,8 +40,7 @@ export function useDragAndDropWithMutation() {
     onMoveComplete: (_movedItemId) => {
       // Move completed successfully
     },
-    onMoveError: (error) => {
-      console.error('Failed to move tile:', error);
+    onMoveError: (_error) => {
       // TODO: Show error toast or notification
     },
     updateCache: (updater) => {

@@ -87,7 +87,6 @@ export const DynamicItemTile = ({
   // Determine if this tile can be dragged
   const isDraggable = interactive && tileActions?.canDragTile(item.metadata.coordId) === true;
   const isBeingDragged = tileActions?.isDraggingTile(item.metadata.coordId) === true;
-  const isDropTargetActive = tileActions?.isDropTarget(item.metadata.coordId) === true;
   
   // Prepare drag handlers if draggable
   const dragProps = isDraggable && tileActions ? {

@@ -6,7 +6,6 @@ import { StaticBaseTileLayout, type TileScale } from "~/app/static/map/Tile/Base
 import { CreateItemModal } from "../../Dialogs/create-item.modal";
 import { DynamicCreateItemDialog } from "../../Dialogs/create-item";
 import { TileActionsContext } from "../../Canvas";
-import { useMapCache } from "../../Cache/map-cache";
 import type { URLInfo } from "../../types/url-info";
 import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 
@@ -20,6 +19,26 @@ interface DynamicEmptyTileProps {
   currentUserId?: number;
 }
 
+function getDropHandlers(
+  coordId: string,
+  isValidDropTarget: boolean,
+  tileActions: React.ContextType<typeof TileActionsContext>
+) {
+  if (!isValidDropTarget || !tileActions) {
+    return {};
+  }
+  
+  return {
+    onDragOver: (e: React.DragEvent<HTMLDivElement>) => {
+      tileActions.dragHandlers.onDragOver(coordId, e);
+    },
+    onDragLeave: tileActions.dragHandlers.onDragLeave,
+    onDrop: (e: React.DragEvent<HTMLDivElement>) => {
+      tileActions.dragHandlers.onDrop(coordId, e);
+    },
+  };
+}
+
 export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
   const [showModal, setShowModal] = useState(false);
   const [useDynamicDialog] = useState(true);
@@ -27,13 +46,6 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
   // Safely check if we're within a DynamicMapCanvas context
   const tileActions = useContext(TileActionsContext);
 
-  // Always call useMapCache hook - it will throw if not in provider
-  try {
-    useMapCache();
-  } catch {
-    // useMapCache will throw if not within MapCacheProvider
-    console.log("DynamicEmptyTile: No map cache context");
-  }
 
   // If context is not available, we'll still render but without the context actions
   const onCreateTileRequested = tileActions?.onCreateTileRequested;
@@ -59,7 +71,6 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
   const handleCreateSuccess = () => {
     setShowModal(false);
     // Don't invalidate the cache - the optimistic update handles everything
-    console.log("Item created successfully in dynamic mode");
   };
 
   // Enhanced empty tile with simplified action integration
@@ -67,16 +78,8 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
   const userOwnsThisSpace =
     props.currentUserId !== undefined && coord.userId === props.currentUserId;
   
-  // Prepare drop handlers if this is a valid drop target
-  const dropProps = isValidDropTarget && tileActions ? {
-    onDragOver: (e: React.DragEvent<HTMLDivElement>) => {
-      tileActions.dragHandlers.onDragOver(props.coordId, e);
-    },
-    onDragLeave: tileActions.dragHandlers.onDragLeave,
-    onDrop: (e: React.DragEvent<HTMLDivElement>) => {
-      tileActions.dragHandlers.onDrop(props.coordId, e);
-    },
-  } : {};
+  // Get drop handlers using helper function
+  const dropProps = getDropHandlers(props.coordId, isValidDropTarget, tileActions);
 
   return (
     <>
