@@ -54,13 +54,22 @@ export async function performOptimisticMove({
   // Capture current state for rollback
   const rollbackState = { ...cacheState };
   
-  // Optimistically update parent tile
-  updateOptimisticParent(tile, newCoordsId, newCoords, updateCache);
+  // Check if this is a swap (target position is occupied)
+  const targetTile = selectors.getItem(newCoordsId);
+  const isSwap = targetTile !== null && targetTile !== undefined;
   
-  // Update children if any
-  const children = selectors.getItemChildren(tile.metadata.coordId);
-  if (children.length > 0) {
-    updateOptimisticChildren(children, newCoords, newCoordsId, updateCache);
+  if (isSwap) {
+    // Handle swap: exchange positions of both tiles
+    updateOptimisticSwap(tile, targetTile, oldCoords, newCoords, updateCache, selectors);
+  } else {
+    // Handle regular move
+    updateOptimisticParent(tile, newCoordsId, newCoords, updateCache);
+    
+    // Update children if any
+    const children = selectors.getItemChildren(tile.metadata.coordId);
+    if (children.length > 0) {
+      updateOptimisticChildren(children, newCoords, newCoordsId, updateCache);
+    }
   }
   
   try {
@@ -70,8 +79,13 @@ export async function performOptimisticMove({
       newCoords,
     });
     
-    // Update with server-confirmed values
-    confirmServerUpdate(result.modifiedItems, updateCache);
+    // For swaps, skip the server confirmation update
+    // Our optimistic update already has the correct state and the server
+    // response might not include all the data we need (like proper colors)
+    if (!isSwap && updateCache) {
+      // For regular moves, update with server data
+      confirmServerUpdate(result.modifiedItems, updateCache);
+    }
     
     onMoveComplete?.(result.movedItemId);
     
@@ -80,6 +94,12 @@ export async function performOptimisticMove({
     updateCache(() => rollbackState);
     
     const errorMessage = error instanceof Error ? error.message : "Failed to move tile";
+    console.error(`Move/swap failed: ${tile.metadata.coordId} -> ${newCoordsId}`, {
+      isSwap,
+      oldCoords,
+      newCoords,
+      error: errorMessage
+    });
     onMoveError?.(new Error(errorMessage));
   }
 }
@@ -172,30 +192,195 @@ function updateOptimisticChildren(
   });
 }
 
+function updateOptimisticSwap(
+  tileA: TileData,
+  tileB: TileData,
+  coordsA: Coord,
+  coordsB: Coord,
+  updateCache: (updater: (state: CacheState) => CacheState) => void,
+  selectors: CacheSelectors
+): void {
+  updateCache((state) => {
+    const updatedItems = { ...state.itemsById };
+    
+    const coordIdA = tileA.metadata.coordId;
+    const coordIdB = tileB.metadata.coordId;
+    
+    // Get children before swap
+    const childrenA = selectors.getItemChildren(coordIdA);
+    const childrenB = selectors.getItemChildren(coordIdB);
+    
+    // Remove both tiles from their current positions
+    delete updatedItems[coordIdA];
+    delete updatedItems[coordIdB];
+    
+    // Swap the tiles
+    updatedItems[coordIdB] = {
+      ...tileA,
+      metadata: {
+        ...tileA.metadata,
+        coordId: coordIdB,
+        coordinates: coordsB,
+        parentId: coordsB.path.length > 0 
+          ? CoordSystem.createId({
+              ...coordsB,
+              path: coordsB.path.slice(0, -1)
+            })
+          : undefined,
+      },
+      data: {
+        ...tileA.data,
+        color: getColor(coordsB),
+      },
+    };
+    
+    updatedItems[coordIdA] = {
+      ...tileB,
+      metadata: {
+        ...tileB.metadata,
+        coordId: coordIdA,
+        coordinates: coordsA,
+        parentId: coordsA.path.length > 0 
+          ? CoordSystem.createId({
+              ...coordsA,
+              path: coordsA.path.slice(0, -1)
+            })
+          : undefined,
+      },
+      data: {
+        ...tileB.data,
+        color: getColor(coordsA),
+      },
+    };
+    
+    // Update children of A to follow their parent to position B
+    childrenA.forEach(child => {
+      const childCoords = CoordSystem.parseId(child.metadata.coordId);
+      const relativePath = childCoords.path.slice(coordsA.path.length);
+      const newChildCoords: Coord = {
+        ...coordsB,
+        path: [...coordsB.path, ...relativePath],
+      };
+      const newChildId = CoordSystem.createId(newChildCoords);
+      
+      delete updatedItems[child.metadata.coordId];
+      updatedItems[newChildId] = {
+        ...child,
+        metadata: {
+          ...child.metadata,
+          coordId: newChildId,
+          coordinates: newChildCoords,
+          parentId: coordIdB,
+        },
+        data: {
+          ...child.data,
+          color: getColor(newChildCoords),
+        },
+      };
+    });
+    
+    // Update children of B to follow their parent to position A
+    childrenB.forEach(child => {
+      const childCoords = CoordSystem.parseId(child.metadata.coordId);
+      const relativePath = childCoords.path.slice(coordsB.path.length);
+      const newChildCoords: Coord = {
+        ...coordsA,
+        path: [...coordsA.path, ...relativePath],
+      };
+      const newChildId = CoordSystem.createId(newChildCoords);
+      
+      delete updatedItems[child.metadata.coordId];
+      updatedItems[newChildId] = {
+        ...child,
+        metadata: {
+          ...child.metadata,
+          coordId: newChildId,
+          coordinates: newChildCoords,
+          parentId: coordIdA,
+        },
+        data: {
+          ...child.data,
+          color: getColor(newChildCoords),
+        },
+      };
+    });
+    
+    return {
+      ...state,
+      itemsById: updatedItems,
+    };
+  });
+}
+
 function confirmServerUpdate(
   modifiedItems: Array<{
     id: string;
     coords: string;
+    depth: number;
+    name: string;
+    descr: string;
+    url: string;
     parentId: string | null;
+    itemType: string;
+    ownerId: string;
   }>,
   updateCache: (updater: (state: CacheState) => CacheState) => void
 ): void {
   updateCache((state) => {
     const updatedItems = { ...state.itemsById };
     
-    modifiedItems.forEach(item => {
-      const existingTile = updatedItems[item.coords];
-      if (existingTile) {
-        // Update with server-confirmed metadata
-        updatedItems[item.coords] = {
-          ...existingTile,
-          metadata: {
-            ...existingTile.metadata,
-            dbId: item.id,
-            parentId: item.parentId ?? undefined,
-          },
-        };
+    // Clear all items that were modified (they might have moved)
+    const modifiedIds = new Set(modifiedItems.map(item => item.id));
+    Object.entries(updatedItems).forEach(([coordId, tile]) => {
+      if (tile && modifiedIds.has(tile.metadata.dbId)) {
+        delete updatedItems[coordId];
       }
+    });
+    
+    // Add all modified items at their new positions
+    modifiedItems.forEach(item => {
+      const coords = CoordSystem.parseId(item.coords);
+      
+      // For parentId, we need to handle the case where it's already a coordinate string
+      let parentId: string | undefined;
+      if (item.parentId) {
+        try {
+          // If parentId is already in coordinate format, use it directly
+          if (item.parentId.includes(',') || item.parentId.includes(':')) {
+            parentId = item.parentId;
+          } else {
+            // Otherwise parse and create the coordinate string
+            parentId = CoordSystem.createId(CoordSystem.parseId(item.parentId));
+          }
+        } catch {
+          parentId = item.parentId;
+        }
+      }
+        
+      updatedItems[item.coords] = {
+        metadata: {
+          dbId: item.id,
+          coordId: item.coords,
+          coordinates: coords,
+          parentId,
+          depth: item.depth,
+          ownerId: item.ownerId,
+        },
+        data: {
+          name: item.name,
+          description: item.descr,
+          url: item.url,
+          color: getColor(coords),
+        },
+        state: {
+          isDragged: false,
+          isHovered: false,
+          isSelected: false,
+          isExpanded: false,
+          isDragOver: false,
+          isHovering: false,
+        },
+      };
     });
     
     return {

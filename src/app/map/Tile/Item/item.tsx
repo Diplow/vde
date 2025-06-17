@@ -14,6 +14,8 @@ import { DynamicTileButtons } from "./item.buttons";
 import type { URLInfo } from "../../types/url-info";
 import { testLogger } from "~/lib/test-logger";
 import { TileActionsContext } from "../../Canvas";
+import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
+import { getColor as calculateColor } from "../../types/tile-data";
 
 // Lazy load the modals
 const UpdateItemDialog = lazy(() =>
@@ -88,28 +90,56 @@ export const DynamicItemTile = ({
   const isDraggable = interactive && tileActions?.canDragTile(item.metadata.coordId) === true;
   const isBeingDragged = tileActions?.isDraggingTile(item.metadata.coordId) === true;
   
+  // Check if this tile is a valid drop target for swapping
+  const isValidDropTarget = tileActions?.isValidDropTarget(item.metadata.coordId) === true;
+  const isDropTargetActive = tileActions?.isDropTarget(item.metadata.coordId) === true;
+  const dropOperation = tileActions?.getDropOperation(item.metadata.coordId) ?? null;
+  
+  // For swap operations, show preview of the color it would have after swap
+  let swapPreviewColor = getColorFromItem(item);
+  if (isDropTargetActive && dropOperation === 'swap') {
+    // The dragged tile would take this position's coordinates
+    const targetCoords = CoordSystem.parseId(item.metadata.coordId);
+    const previewColorString = calculateColor(targetCoords);
+    const [colorName, tint] = previewColorString.split("-");
+    swapPreviewColor = {
+      color: colorName as TileColor["color"],
+      tint: tint as TileColor["tint"]
+    };
+  }
+  
   // Prepare drag handlers if draggable
   const dragProps = isDraggable && tileActions ? {
     draggable: true,
     onDragStart: (e: React.DragEvent<HTMLDivElement>) => tileActions.dragHandlers.onDragStart(item.metadata.coordId, e),
     onDragEnd: tileActions.dragHandlers.onDragEnd,
-    style: {
-      opacity: isBeingDragged ? 0.5 : 1,
-      cursor: isBeingDragged ? 'grabbing' : (isDraggable ? 'grab' : 'default'),
-    }
+  } : {};
+  
+  // Prepare style for drag state
+  const dragStyle = {
+    cursor: isBeingDragged ? 'grabbing' : (isDraggable ? 'grab' : 'default'),
+  };
+  
+  // Add drop handlers if this is a valid drop target
+  const dropProps = isValidDropTarget && tileActions ? {
+    onDragOver: (e: React.DragEvent<HTMLDivElement>) => tileActions.dragHandlers.onDragOver(item.metadata.coordId, e),
+    onDragLeave: tileActions.dragHandlers.onDragLeave,
+    onDrop: (e: React.DragEvent<HTMLDivElement>) => tileActions.dragHandlers.onDrop(item.metadata.coordId, e),
   } : {};
 
   return (
     <>
     <div 
-      className={`group relative hover:z-10`} 
+      className={`group relative hover:z-10 ${isBeingDragged ? 'dragging' : ''}`} 
       data-testid={testId}
-      {...dragProps}>
+      style={dragStyle}
+      {...dragProps}
+      {...dropProps}>
       {/* Hexagon tile with full hover area */}
       <DynamicBaseTileLayout
         coordId={item.metadata.coordId}
         scale={scale}
-        color={getColorFromItem(item)}
+        color={isDropTargetActive && dropOperation === 'swap' ? swapPreviewColor : getColorFromItem(item)}
         baseHexSize={baseHexSize}
         isFocusable={false}
       >

@@ -44,6 +44,28 @@ export class MapItemMovementHelpers {
     ) => Promise<void>,
   ): Promise<Coord> {
     const tempCoords = this._generateTemporaryCoords(targetItem, targetParent);
+    
+    // Check if there's already an item at the temporary position
+    // This can happen if a previous swap failed and left an orphaned item
+    try {
+      const existingTempItem = await this.mapItems
+        .getOneByIdr({ idr: { attrs: { coords: tempCoords } } })
+        .catch(() => null);
+        
+      if (existingTempItem) {
+        console.warn(`[MOVE CLEANUP] Found orphaned item ${existingTempItem.id} at temporary position ${CoordSystem.createId(tempCoords)}. This likely resulted from a previous failed swap operation.`);
+        // Note: We don't automatically delete it as it might be legitimate data
+        // Instead, we'll use a different temporary position
+        const alternativeTempCoords = this._generateAlternativeTemporaryCoords(targetItem, targetParent);
+        console.log(`[MOVE CLEANUP] Using alternative temporary position ${CoordSystem.createId(alternativeTempCoords)}`);
+        await move(targetItem, alternativeTempCoords, targetParent);
+        return alternativeTempCoords;
+      }
+    } catch (error) {
+      console.error(`[MOVE CLEANUP] Error checking temporary position:`, error);
+      // Continue with original temp coords if check fails
+    }
+    
     await move(targetItem, tempCoords, targetParent);
     return tempCoords;
   }
@@ -110,6 +132,28 @@ export class MapItemMovementHelpers {
     const tempPath: Direction[] = [
       ...parentPath,
       NON_EXISTING_DIRECTION,
+    ];
+
+    const targetCoords = targetItem.attrs.coords;
+    return {
+      userId: targetCoords.userId,
+      groupId: targetCoords.groupId,
+      path: tempPath,
+    };
+  }
+
+  private _generateAlternativeTemporaryCoords(
+    targetItem: MapItemWithId,
+    targetParent: MapItemWithId | null,
+  ): Coord {
+    // Use direction 8 as alternative temporary position
+    // In hexagonal coordinate system, we typically use directions 1-6,
+    // so 7 and 8 are both outside the normal range
+    const ALTERNATIVE_NON_EXISTING_DIRECTION = 8 as Direction;
+    const parentPath: Direction[] = targetParent ? targetParent.attrs.coords.path : [];
+    const tempPath: Direction[] = [
+      ...parentPath,
+      ALTERNATIVE_NON_EXISTING_DIRECTION,
     ];
 
     const targetCoords = targetItem.attrs.coords;

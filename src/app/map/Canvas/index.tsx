@@ -37,6 +37,7 @@ export interface TileActionsContextValue {
   isDropTarget: (coordId: string) => boolean;
   isValidDropTarget: (coordId: string) => boolean;
   isDragging: boolean;
+  getDropOperation: (coordId: string) => 'move' | 'swap' | null;
 }
 
 export const TileActionsContext = createContext<TileActionsContextValue | null>(
@@ -107,6 +108,7 @@ export function DynamicMapCanvas({
     isDropTarget,
     isValidDropTarget,
     isDragging,
+    getDropOperation,
   } = useDragAndDropWithMutation();
 
   useEffect(() => {
@@ -145,8 +147,9 @@ export function DynamicMapCanvas({
       isDropTarget,
       isValidDropTarget,
       isDragging,
+      getDropOperation,
     }),
-    [dragHandlers, canDragTile, isDraggingTile, isDropTarget, isValidDropTarget, isDragging],
+    [dragHandlers, canDragTile, isDraggingTile, isDropTarget, isValidDropTarget, isDragging, getDropOperation],
   );
 
   // Canvas should just display, not manage loading

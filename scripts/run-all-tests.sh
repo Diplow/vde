@@ -6,13 +6,13 @@ echo "🧪 Running all tests with proper isolation..."
 
 # First, run all tests except the problematic ones
 echo "📦 Running main test suite (excluding drag-and-drop tests)..."
-pnpm vitest run --exclude "**/useDragAndDrop.test.ts"
+pnpm vitest run --exclude "**/useDragAndDrop.test.ts" --exclude "**/enhanced-drag-drop.test.ts"
 
 MAIN_EXIT_CODE=$?
 
 # Then run the problematic tests in isolation
 echo "🎯 Running drag-and-drop tests in isolation..."
-pnpm vitest run src/app/map/Canvas/hooks/__tests__/useDragAndDrop.test.ts
+pnpm vitest run src/app/map/Canvas/hooks/__tests__/useDragAndDrop.test.ts src/app/map/Canvas/hooks/__tests__/enhanced-drag-drop.test.ts
 
 DRAG_EXIT_CODE=$?
 

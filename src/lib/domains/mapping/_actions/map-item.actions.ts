@@ -8,7 +8,7 @@ import {
   type MapItemWithId,
   MapItemType,
 } from "~/lib/domains/mapping/_objects";
-import { type Coord } from "~/lib/domains/mapping/utils/hex-coordinates";
+import { type Coord, CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { MapItemIdr } from "../_repositories/map-item";
 import { MapItemCreationHelpers } from "./_map-item-creation-helpers";
 import { MapItemQueryHelpers } from "./_map-item-query-helpers";
@@ -121,6 +121,14 @@ export class MapItemActions {
       .getOneByIdr({ idr: { attrs: { coords: newCoords } } })
       .catch(() => null);
       
+    // Log the swap operation details
+    const isSwap = targetItem !== null;
+    console.log(`[MOVE OPERATION] Starting ${isSwap ? 'SWAP' : 'MOVE'} operation:`, {
+      source: `${sourceItem.id} at ${CoordSystem.createId(oldCoords)}`,
+      target: isSwap ? `${targetItem.id} at ${CoordSystem.createId(newCoords)}` : `empty position at ${CoordSystem.createId(newCoords)}`,
+      operation: isSwap ? 'swap' : 'move'
+    });
+      
     const tempCoordsHoldingTarget = await this._handleTargetItemDisplacement(
       targetItem,
       sourceParent,
@@ -132,20 +140,44 @@ export class MapItemActions {
     // Collect all items that will be modified
     const modifiedItems: MapItemWithId[] = [];
     
-    await movementHelpers.move(
-      sourceItem,
-      newCoords,
-      targetParent,
-      (parentId) => queryHelpers.getDescendants(parentId),
-    );
-    
-    if (targetItem && tempCoordsHoldingTarget) {
+    // Step 2: Move source item to target position
+    console.log(`[MOVE STEP 2] Moving source item ${sourceItem.id} from ${CoordSystem.createId(oldCoords)} to ${CoordSystem.createId(newCoords)}`);
+    try {
       await movementHelpers.move(
-        targetItem,
-        oldCoords,
-        sourceParent,
+        sourceItem,
+        newCoords,
+        targetParent,
         (parentId) => queryHelpers.getDescendants(parentId),
       );
+      console.log(`[MOVE STEP 2] ✓ Successfully moved source item ${sourceItem.id} to ${CoordSystem.createId(newCoords)}`);
+    } catch (error) {
+      console.error(`[MOVE STEP 2] ✗ Failed to move source item ${sourceItem.id}:`, error);
+      throw error;
+    }
+    
+    if (targetItem && tempCoordsHoldingTarget) {
+      // Step 3: Move target item from temp to source's original position
+      console.log(`[MOVE STEP 3] Moving target item ${targetItem.id} from temp position ${CoordSystem.createId(tempCoordsHoldingTarget)} to ${CoordSystem.createId(oldCoords)}`);
+      
+      // Refetch the target item with its temporary coordinates
+      const targetItemAtTemp = await mapItems.getOne(targetItem.id);
+      if (!targetItemAtTemp) {
+        console.error(`[MOVE STEP 3] ✗ Failed to retrieve target item ${targetItem.id} after moving to temporary position`);
+        throw new Error("Failed to retrieve target item after moving to temporary position");
+      }
+      
+      try {
+        await movementHelpers.move(
+          targetItemAtTemp,
+          oldCoords,
+          sourceParent,
+          (parentId) => queryHelpers.getDescendants(parentId),
+        );
+        console.log(`[MOVE STEP 3] ✓ Successfully moved target item ${targetItem.id} to ${CoordSystem.createId(oldCoords)}`);
+      } catch (error) {
+        console.error(`[MOVE STEP 3] ✗ Failed to move target item ${targetItem.id} from temp to source position:`, error);
+        throw error;
+      }
     }
 
     // Get the moved item with new coordinates
@@ -158,6 +190,27 @@ export class MapItemActions {
     // Get all descendants with their new coordinates
     const updatedDescendants = await queryHelpers.getDescendants(sourceItem.id);
     modifiedItems.push(...updatedDescendants);
+    
+    // If we swapped, also include the target item and its descendants
+    if (targetItem && tempCoordsHoldingTarget) {
+      const swappedTargetItem = await mapItems.getOne(targetItem.id);
+      if (swappedTargetItem) {
+        modifiedItems.push(swappedTargetItem);
+        const targetDescendants = await queryHelpers.getDescendants(targetItem.id);
+        modifiedItems.push(...targetDescendants);
+      }
+    }
+    
+    console.log(`[MOVE OPERATION] ✓ ${isSwap ? 'SWAP' : 'MOVE'} operation completed successfully:`, {
+      movedItemId: sourceItem.id,
+      affectedCount: modifiedItems.length,
+      finalPositions: isSwap ? {
+        [`item ${sourceItem.id}`]: CoordSystem.createId(newCoords),
+        [`item ${targetItem?.id}`]: CoordSystem.createId(oldCoords)
+      } : {
+        [`item ${sourceItem.id}`]: CoordSystem.createId(newCoords)
+      }
+    });
     
     return {
       modifiedItems,
@@ -245,14 +298,23 @@ export class MapItemActions {
       throw new Error("Cannot displace a USER (root) item with a child item.");
     }
 
-    return await movementHelpers.moveItemToTemporaryLocation(
-      targetItem,
-      sourceParent,
-      (item, coords, parent) =>
-        movementHelpers.move(item, coords, parent, (parentId) =>
-          queryHelpers.getDescendants(parentId),
-        ),
-    );
+    // Step 1: Move target item to temporary position
+    console.log(`[MOVE STEP 1] Moving target item ${targetItem.id} from ${CoordSystem.createId(targetItem.attrs.coords)} to temporary position`);
+    try {
+      const tempCoords = await movementHelpers.moveItemToTemporaryLocation(
+        targetItem,
+        sourceParent,
+        (item, coords, parent) =>
+          movementHelpers.move(item, coords, parent, (parentId) =>
+            queryHelpers.getDescendants(parentId),
+          ),
+      );
+      console.log(`[MOVE STEP 1] ✓ Successfully moved target item ${targetItem.id} to temp position ${CoordSystem.createId(tempCoords)}`);
+      return tempCoords;
+    } catch (error) {
+      console.error(`[MOVE STEP 1] ✗ Failed to move target item ${targetItem.id} to temporary position:`, error);
+      throw error;
+    }
   }
 
 

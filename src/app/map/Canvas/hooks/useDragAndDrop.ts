@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import type { DragEvent } from "react";
 import { cacheSelectors } from "~/app/map/Cache/State/selectors";
 import { canDragTile } from "./_validators";
-import { getValidDropTargets, isValidDropTarget } from "./_calculators";
+import { isValidDropTarget, getDropOperationType } from "./_calculators";
 import { performOptimisticMove } from "./_orchestrators";
 import {
   setupDragStart,
@@ -15,6 +15,7 @@ import type {
   DragState,
   UseDragAndDropConfig,
   UseDragAndDropReturn,
+  DropOperation,
 } from "./types";
 
 const initialDragState: DragState = {
@@ -22,6 +23,7 @@ const initialDragState: DragState = {
   draggedTileId: null,
   draggedTileData: null,
   dropTargetId: null,
+  dropOperation: null,
   dragOffset: { x: 0, y: 0 },
 };
 
@@ -42,8 +44,8 @@ export function useDragAndDrop({
   }, [selectors, currentUserId]);
 
   const checkDropTarget = useCallback((targetCoordId: string): boolean => {
-    return isValidDropTarget(targetCoordId, dragState.draggedTileId, selectors);
-  }, [dragState.draggedTileId, selectors]);
+    return isValidDropTarget(targetCoordId, dragState.draggedTileId, selectors, currentUserId);
+  }, [dragState.draggedTileId, selectors, currentUserId]);
 
   const handleDragStart = useCallback((coordId: string, event: DragEvent<HTMLDivElement>) => {
     if (!checkCanDrag(coordId)) {
@@ -65,12 +67,20 @@ export function useDragAndDrop({
     setupDragOver(event, isValid);
     
     if (isValid) {
-      setDragState(prev => updateDropTarget(prev, targetCoordId));
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+      const operation: DropOperation = getDropOperationType(targetCoordId, selectors);
+      setDragState(prev => ({
+        ...updateDropTarget(prev, targetCoordId),
+        dropOperation: operation
+      }));
     }
-  }, [checkDropTarget]);
+  }, [checkDropTarget, selectors]);
 
   const handleDragLeave = useCallback(() => {
-    setDragState(prev => updateDropTarget(prev, null));
+    setDragState(prev => ({
+      ...updateDropTarget(prev, null),
+      dropOperation: null
+    }));
   }, []);
 
   const handleDrop = useCallback((targetCoordId: string, event: DragEvent<HTMLDivElement>) => {
@@ -80,17 +90,36 @@ export function useDragAndDrop({
       return;
     }
     
-    // Perform the move asynchronously without blocking
-    void performOptimisticMove({
-      tile: dragState.draggedTileData,
-      newCoordsId: targetCoordId,
-      cacheState,
-      selectors,
-      updateCache,
-      moveMapItemMutation,
-      onMoveComplete,
-      onMoveError,
-    });
+    // Determine operation type
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    const operation: DropOperation = getDropOperationType(targetCoordId, selectors);
+    
+    if (operation === 'move') {
+      // Perform the move asynchronously without blocking
+      void performOptimisticMove({
+        tile: dragState.draggedTileData,
+        newCoordsId: targetCoordId,
+        cacheState,
+        selectors,
+        updateCache,
+        moveMapItemMutation,
+        onMoveComplete,
+        onMoveError,
+      });
+    } else {
+      // Perform swap operation - the moveMapItem API handles swapping automatically
+      // when moving to an occupied position
+      void performOptimisticMove({
+        tile: dragState.draggedTileData,
+        newCoordsId: targetCoordId,
+        cacheState,
+        selectors,
+        updateCache,
+        moveMapItemMutation,
+        onMoveComplete,
+        onMoveError,
+      });
+    }
     
     // Reset drag state
     setDragState(initialDragState);
@@ -99,6 +128,14 @@ export function useDragAndDrop({
   const handleDragEnd = useCallback(() => {
     setDragState(initialDragState);
   }, []);
+
+  const getDropOperation = useCallback((coordId: string): 'move' | 'swap' | null => {
+    if (!dragState.isDragging || !checkDropTarget(coordId)) {
+      return null;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
+    return getDropOperationType(coordId, selectors);
+  }, [dragState.isDragging, checkDropTarget, selectors]);
 
   return {
     dragState,
@@ -114,5 +151,6 @@ export function useDragAndDrop({
     isDraggingTile: (id: string) => dragState.draggedTileId === id,
     isDropTarget: (id: string) => dragState.dropTargetId === id,
     isDragging: dragState.isDragging,
+    getDropOperation,
   };
 }

@@ -2,12 +2,13 @@
 
 import { useState, useContext } from "react";
 import { Plus } from "lucide-react";
-import { StaticBaseTileLayout, type TileScale } from "~/app/static/map/Tile/Base/base";
+import { StaticBaseTileLayout, type TileScale, type TileColor } from "~/app/static/map/Tile/Base/base";
 import { CreateItemModal } from "../../Dialogs/create-item.modal";
 import { DynamicCreateItemDialog } from "../../Dialogs/create-item";
 import { TileActionsContext } from "../../Canvas";
 import type { URLInfo } from "../../types/url-info";
 import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
+import { getColor } from "../../types/tile-data";
 
 interface DynamicEmptyTileProps {
   coordId: string;
@@ -53,6 +54,11 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
   // Check if this tile is a valid drop target
   const isValidDropTarget = tileActions?.isValidDropTarget(props.coordId) === true;
   const isDropTargetActive = tileActions?.isDropTarget(props.coordId) === true;
+  const dropOperation = tileActions?.getDropOperation(props.coordId) ?? null;
+  
+  // Calculate the color this tile would have if something was moved here
+  const targetCoords = CoordSystem.parseId(props.coordId);
+  const previewColor = getColor(targetCoords);
 
 
   // Handle create button click
@@ -93,7 +99,17 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
         <StaticBaseTileLayout
           coordId={props.coordId}
           scale={props.scale ?? 1}
-          color={{ color: isDropTargetActive ? "zinc" : "zinc", tint: isDropTargetActive ? "300" : "100" }}
+          color={(() => {
+            if (isDropTargetActive && dropOperation === 'move') {
+              // Show the color the tile would have after the move
+              const [colorName, tint] = previewColor.split("-");
+              return {
+                color: colorName as TileColor["color"],
+                tint: tint as TileColor["tint"]
+              };
+            }
+            return { color: "zinc", tint: "100" };
+          })()}
           stroke={{ color: "zinc-950", width: 1 }}
           cursor="cursor-pointer"
           baseHexSize={props.baseHexSize}
