@@ -41,12 +41,19 @@ The Canvas component serves as the main container for the hexagonal map visualiz
 ```
 Canvas/
 ├── index.tsx                  # Main DynamicMapCanvas component
-├── StaticMapCanvas.tsx        # Read-only version for performance
 ├── hooks/
-│   └── useDragAndDrop.ts     # Drag and drop logic
-├── components/
-│   └── DragPreview.tsx       # Visual feedback during drag
-└── TileActionsContext.tsx    # Interaction handlers provider
+│   ├── useDragAndDrop.ts     # Main drag and drop orchestration hook
+│   ├── useDragAndDropWithMutation.ts  # Wrapper with tRPC mutation
+│   ├── types.ts              # TypeScript interfaces
+│   ├── _validators/          # Permission and validation logic
+│   │   └── drag-permission.ts
+│   ├── _calculators/         # Drop target calculations
+│   │   └── drop-targets.ts
+│   ├── _orchestrators/       # Complex operation orchestration
+│   │   └── optimistic-move.ts
+│   └── _coordinators/        # Event handling coordination
+│       └── drag-events.ts
+└── types.ts                  # Canvas-specific types
 ```
 
 ### Component Hierarchy
@@ -82,6 +89,7 @@ The Canvas maintains two types of state:
 2. **Context Distribution**: Tiles receive handlers via context, not props
 3. **Optimistic Updates**: Immediate visual feedback with API synchronization
 4. **Progressive Enhancement**: Basic functionality first, advanced features later
+5. **Modular Architecture**: Separated concerns into focused modules following the Rule of 6
 
 ### Drag State Structure
 
@@ -95,23 +103,53 @@ interface DragState {
 }
 ```
 
+### Module Responsibilities
+
+#### Validators (`_validators/`)
+- **drag-permission.ts**: Checks if a tile can be dragged based on:
+  - User ownership (currentUserId must match tile's ownerId)
+  - Tile type (root tiles cannot be dragged)
+  - Tile existence
+
+#### Calculators (`_calculators/`)
+- **drop-targets.ts**: Determines valid drop locations:
+  - Finds empty sibling positions
+  - Validates drop target compatibility
+  - Returns array of valid coordinate IDs
+
+#### Orchestrators (`_orchestrators/`)
+- **optimistic-move.ts**: Manages the entire move operation:
+  - Captures rollback state before changes
+  - Updates parent tile coordinates and color
+  - Updates all child tiles recursively
+  - Handles API calls and rollback on failure
+  - Confirms server updates after success
+
+#### Coordinators (`_coordinators/`)
+- **drag-events.ts**: Thin wrappers for browser events:
+  - Sets data transfer properties
+  - Prevents default behaviors
+  - Creates and updates drag state
+
 ### Event Flow
 
-1. **Drag Start**
-   - Validate ownership and draggability
-   - Capture tile data and position
-   - Show drag preview
+1. **Drag Start** (`handleDragStart`)
+   - Calls `canDragTile` validator to check permissions
+   - Creates drag state with `createDragState`
+   - Sets up data transfer with `setupDragStart`
 
-2. **Drag Over**
-   - Calculate valid drop targets
-   - Highlight drop zones
-   - Update cursor feedback
+2. **Drag Over** (`handleDragOver`)
+   - Calls `isValidDropTarget` to check if drop is allowed
+   - Updates visual feedback with `setupDragOver`
+   - Updates drop target in state
 
-3. **Drop**
-   - Validate drop target
-   - Trigger optimistic update
-   - Call moveMapItem API
-   - Handle success/failure
+3. **Drop** (`handleDrop`)
+   - Validates drop target one final time
+   - Calls `performOptimisticMove` to execute the move
+   - Resets drag state after operation
+
+4. **Drag End** (`handleDragEnd`)
+   - Resets drag state to initial values
 
 ## Usage
 
@@ -131,15 +169,26 @@ function MapPage() {
 }
 ```
 
-### With Custom Handlers
+### Hook API
 
-```tsx
-<DynamicMapCanvas 
-  userId={userId}
-  groupId={groupId}
-  onTileSelect={(tileId) => console.log('Selected:', tileId)}
-  onTileMove={(from, to) => console.log('Moved:', from, to)}
-/>
+The `useDragAndDrop` hook returns:
+
+```typescript
+interface UseDragAndDropReturn {
+  dragState: DragState;                          // Current drag state
+  dragHandlers: {
+    onDragStart: (coordId, event) => void;      // Start dragging
+    onDragOver: (targetId, event) => void;      // Drag over target
+    onDragLeave: () => void;                    // Leave drop target
+    onDrop: (targetId, event) => void;          // Drop on target
+    onDragEnd: () => void;                      // End drag operation
+  };
+  canDragTile: (id: string) => boolean;         // Check if draggable
+  isValidDropTarget: (id: string) => boolean;   // Check if valid target
+  isDraggingTile: (id: string) => boolean;      // Check if tile is being dragged
+  isDropTarget: (id: string) => boolean;        // Check if tile is drop target
+  isDragging: boolean;                          // Global dragging state
+}
 ```
 
 ## API Integration
@@ -170,20 +219,29 @@ The Canvas integrates with the following tRPC endpoints:
 
 ## Testing
 
-### Unit Tests
-- Drag state management
-- Permission validation
-- Coordinate calculations
+### Unit Tests (`hooks/__tests__/useDragAndDrop.test.ts`)
+- Drag state management and transitions
+- Permission validation (ownership, tile type)
+- Drop target calculations
+- Event handler behavior
+- State updates and resets
+
+### Module Tests
+- **Validators**: Test permission logic in isolation
+- **Calculators**: Test drop target algorithms
+- **Orchestrators**: Test optimistic update logic
+- **Coordinators**: Test event handling
 
 ### Integration Tests
-- API interaction mocking
-- Optimistic update scenarios
-- Error handling and rollback
+- API interaction with mocked tRPC
+- Optimistic update and rollback scenarios
+- Multi-tile move operations (parent + children)
+- Error handling and recovery
 
 ### E2E Tests
-- Full drag and drop flows
-- Multi-user scenarios
-- Edge cases and error states
+- Full drag and drop user flows
+- Multi-user permission scenarios
+- Edge cases (network failures, race conditions)
 
 ## Future Enhancements
 
@@ -193,8 +251,23 @@ The Canvas integrates with the following tRPC endpoints:
 4. **Undo/Redo** - Action history management
 5. **Animation** - Smooth transitions during moves
 
+## Code Organization
+
+### Following the Rule of 6
+
+The drag and drop implementation follows Hexframe's Rule of 6 principle:
+
+- **Main Hook**: 122 lines (high-level orchestration)
+- **Validators**: ~23 lines per file (single responsibility)
+- **Calculators**: ~47 lines per file (focused algorithms)
+- **Orchestrators**: ~167 lines (acceptable for low-level implementation)
+- **Coordinators**: ~44 lines per file (thin wrappers)
+
+Each module maintains a single level of abstraction and clear responsibility boundaries.
+
 ## Related Documentation
 
-- [Tiles Documentation](../Tiles/README.md)
+- [Tiles Documentation](../Tile/README.md)
 - [Cache Documentation](../Cache/README.md)
 - [Mapping Domain](../../../lib/domains/mapping/README.md)
+- [Refactoring Session](../../../../prompts/refactors/2025-01-17-drag-drop-hook-clarity.md)
