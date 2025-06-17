@@ -20,7 +20,8 @@ export function useDragAndDropWithMutation(): Omit<UseDragAndDropReturn, 'dragSt
       // Don't invalidate region - our optimistic update is already correct
       // and invalidating would cause a reload that might get stale data
     },
-    onError: (_error: unknown) => {
+    onError: (error: unknown) => {
+      console.error('Failed to move item:', error);
       // TODO: Show error toast or notification
     },
   });
@@ -40,7 +41,8 @@ export function useDragAndDropWithMutation(): Omit<UseDragAndDropReturn, 'dragSt
     onMoveComplete: (_movedItemId) => {
       // Move completed successfully
     },
-    onMoveError: (_error) => {
+    onMoveError: (error) => {
+      console.error('Failed to move tile:', error);
       // TODO: Show error toast or notification
     },
     updateCache: (updater) => {
