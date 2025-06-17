@@ -5,6 +5,13 @@ import {
   type GenericRelatedItems,
 } from "./generic-objects";
 
+/**
+ * Transaction context that can be passed to repository methods
+ */
+export interface TransactionContext {
+  tx?: any; // Generic transaction type, specific implementations will define their own
+}
+
 export interface GenericRepository<
   A extends GenericAttributes,
   I extends GenericRelatedItems,
@@ -18,15 +25,17 @@ export interface GenericRepository<
   }>,
 > {
   handleCascading(): boolean;
-  getOne(id: number): Promise<T>;
+  getOne(id: number, ctx?: TransactionContext): Promise<T>;
   getOneByIdr({
     idr,
     limit,
     offset,
+    ctx,
   }: {
     idr: Idr;
     limit?: number;
     offset?: number;
+    ctx?: TransactionContext;
   }): Promise<T>;
   getMany({ limit, offset }: { limit?: number; offset?: number }): Promise<T[]>;
   getManyByIdr({
@@ -47,8 +56,8 @@ export interface GenericRepository<
     relatedItems: I;
     relatedLists: L;
   }): Promise<T>;
-  update({ aggregate, attrs }: { aggregate: T; attrs: Partial<A> }): Promise<T>;
-  updateByIdr({ idr, attrs }: { idr: Idr; attrs: Partial<A> }): Promise<T>;
+  update({ aggregate, attrs, ctx }: { aggregate: T; attrs: Partial<A>; ctx?: TransactionContext }): Promise<T>;
+  updateByIdr({ idr, attrs, ctx }: { idr: Idr; attrs: Partial<A>; ctx?: TransactionContext }): Promise<T>;
   updateRelatedItem<K extends keyof I>({
     aggregate,
     key,

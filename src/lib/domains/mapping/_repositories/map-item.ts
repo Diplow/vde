@@ -4,7 +4,7 @@ import {
   type MapItemRelatedLists,
   type MapItemWithId,
 } from "~/lib/domains/mapping/_objects";
-import { type GenericRepository } from "../../utils/generic-repository";
+import { type GenericRepository, type TransactionContext } from "../../utils/generic-repository";
 import { type Coord } from "../utils/hex-coordinates";
 
 export type MapItemIdr =
@@ -26,7 +26,7 @@ export interface MapItemRepository
   /**
    * Get the root MapItem (type USER) for a specific user and group.
    */
-  getRootItem(userId: number, groupId: number): Promise<MapItemWithId | null>;
+  getRootItem(userId: number, groupId: number, ctx?: TransactionContext): Promise<MapItemWithId | null>;
 
   /**
    * Get all root MapItems (type USER) for a specific user across all their groups.
