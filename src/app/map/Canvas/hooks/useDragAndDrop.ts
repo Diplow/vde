@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import type { DragEvent } from "react";
 import { cacheSelectors } from "~/app/map/Cache/State/selectors";
 import { canDragTile } from "./_validators";
-import { getValidDropTargets, isValidDropTarget } from "./_calculators";
+import { isValidDropTarget } from "./_calculators";
 import { performOptimisticMove } from "./_orchestrators";
 import {
   setupDragStart,

@@ -175,7 +175,7 @@ function updateOptimisticChildren(
 function confirmServerUpdate(
   modifiedItems: Array<{
     id: string;
-    coords: string;
+    coordinates: string;
     parentId: string | null;
   }>,
   updateCache: (updater: (state: CacheState) => CacheState) => void
@@ -184,10 +184,10 @@ function confirmServerUpdate(
     const updatedItems = { ...state.itemsById };
     
     modifiedItems.forEach(item => {
-      const existingTile = updatedItems[item.coords];
+      const existingTile = updatedItems[item.coordinates];
       if (existingTile) {
         // Update with server-confirmed metadata
-        updatedItems[item.coords] = {
+        updatedItems[item.coordinates] = {
           ...existingTile,
           metadata: {
             ...existingTile.metadata,

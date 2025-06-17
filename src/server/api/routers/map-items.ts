@@ -198,9 +198,9 @@ export const mapItemsRouter = createTRPCRouter({
         newCoords: newCoords,
       });
       
-      // The service already returns API contracts, just ensure IDs are strings
+      // Convert domain objects to API contracts
       return {
-        modifiedItems: result.modifiedItems,
+        modifiedItems: result.modifiedItems.map(contractToApiAdapters.mapItem),
         movedItemId: String(result.movedItemId),
         affectedCount: result.affectedCount,
       };

@@ -18,7 +18,7 @@ export interface MoveMapItemMutation {
   }) => Promise<{
     modifiedItems: Array<{
       id: string;
-      coords: string;
+      coordinates: string;
       depth: number;
       name: string;
       descr: string;

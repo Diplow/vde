@@ -1,8 +1,5 @@
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import type * as schema from "~/server/db/schema";
 import { db } from "~/server/db";
-
-export type DbConnection = PostgresJsDatabase<typeof schema>;
+import type { DatabaseConnection, DatabaseTransaction } from "../types/transaction";
 
 /**
  * Manages database transactions for mapping domain operations
@@ -13,7 +10,7 @@ export class TransactionManager {
    * All database operations within the function will be atomic
    */
   static async runInTransaction<T>(
-    fn: (tx: DbConnection) => Promise<T>
+    fn: (tx: DatabaseTransaction) => Promise<T>
   ): Promise<T> {
     return await db.transaction(async (tx) => {
       return await fn(tx);
@@ -24,7 +21,7 @@ export class TransactionManager {
    * Get the appropriate database connection (transaction or main db)
    * This allows repository methods to work with or without transactions
    */
-  static getConnection(tx?: DbConnection): DbConnection {
+  static getConnection(tx?: DatabaseConnection): DatabaseConnection {
     return tx ?? db;
   }
 }

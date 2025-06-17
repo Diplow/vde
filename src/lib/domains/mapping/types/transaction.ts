@@ -1,11 +1,17 @@
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type * as schema from "~/server/db/schema";
+import type { ExtractTablesWithRelations } from "drizzle-orm";
 
 /**
  * Transaction type for database operations
  * This allows repository methods to participate in transactions
  */
 export type DatabaseTransaction = PostgresJsDatabase<typeof schema>;
+
+/**
+ * Database connection type that can be either a transaction or the main database
+ */
+export type DatabaseConnection = PostgresJsDatabase<typeof schema> | DatabaseTransaction;
 
 /**
  * Options that can be passed to repository methods

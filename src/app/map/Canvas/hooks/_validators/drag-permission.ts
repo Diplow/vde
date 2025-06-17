@@ -5,7 +5,8 @@ export function canDragTile(
   tile: TileData | null | undefined,
   currentUserId: number | null
 ): boolean {
-  if (!currentUserId || !tile) {
+  // Handle null/undefined cases - userId 0 is valid
+  if (currentUserId === null || currentUserId === undefined || !tile) {
     return false;
   }
   
@@ -15,8 +16,14 @@ export function canDragTile(
   }
   
   // Check if it's not a root tile (UserTile)
-  const coords = CoordSystem.parseId(tile.metadata.coordId);
-  if (coords.path.length === 0) {
+  try {
+    const coords = CoordSystem.parseId(tile.metadata.coordId);
+    if (coords.path.length === 0) {
+      return false;
+    }
+  } catch (error) {
+    // Invalid coordinate format
+    console.error('Invalid coordinate ID:', tile.metadata.coordId, error);
     return false;
   }
   
