@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { db } from "~/server/db";
-import { baseItems, mapItems } from "~/server/db/schema";
+import { mapItems } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
 import { DbMapItemRepository } from "../../infrastructure/map-item/db";
 import { DbBaseItemRepository } from "../../infrastructure/base-item/db";
@@ -13,8 +13,8 @@ describe("Item Movement - Transaction Integration Tests", () => {
   let baseItemRepo: DbBaseItemRepository;
   let service: ItemCrudService;
   let actions: MapItemActions;
-  let testUserId: number;
-  let testGroupId: number;
+  const testUserId = 1;
+  const testGroupId = 99999; // Use a high group ID to avoid conflicts
 
   beforeEach(async () => {
     // Clean up any existing test data
@@ -34,8 +34,6 @@ describe("Item Movement - Transaction Integration Tests", () => {
       baseItem: baseItemRepo,
     });
 
-    testUserId = 1;
-    testGroupId = 99999; // Use a high group ID to avoid conflicts
   });
 
   afterEach(async () => {
@@ -66,7 +64,7 @@ describe("Item Movement - Transaction Integration Tests", () => {
     });
 
     // Add children to item1
-    const child1 = await actions.createMapItem({
+    await actions.createMapItem({
       itemType: MapItemType.BASE,
       coords: { userId: testUserId, groupId: testGroupId, path: [1, 1] },
       title: "Child 1",
@@ -92,7 +90,7 @@ describe("Item Movement - Transaction Integration Tests", () => {
     const movedChild = await actions.getMapItem({
       coords: { userId: testUserId, groupId: testGroupId, path: [3, 1] },
     });
-    expect(movedChild.id).toBe(child1.id);
+    expect(movedChild.ref.attrs.title).toBe("Child 1");
 
     // Verify item2 is still at its original position
     const unchangedItem2 = await actions.getMapItem({
@@ -124,14 +122,14 @@ describe("Item Movement - Transaction Integration Tests", () => {
     });
 
     // Add children to both items
-    const child1 = await actions.createMapItem({
+    await actions.createMapItem({
       itemType: MapItemType.BASE,
       coords: { userId: testUserId, groupId: testGroupId, path: [1, 1] },
       title: "Child of Item 1",
       parentId: item1.id,
     });
 
-    const child2 = await actions.createMapItem({
+    await actions.createMapItem({
       itemType: MapItemType.BASE,
       coords: { userId: testUserId, groupId: testGroupId, path: [2, 1] },
       title: "Child of Item 2",
@@ -162,12 +160,12 @@ describe("Item Movement - Transaction Integration Tests", () => {
     const movedChild1 = await actions.getMapItem({
       coords: { userId: testUserId, groupId: testGroupId, path: [2, 1] },
     });
-    expect(movedChild1.id).toBe(child1.id);
+    expect(movedChild1.ref.attrs.title).toBe("Child of Item 1");
 
     const movedChild2 = await actions.getMapItem({
       coords: { userId: testUserId, groupId: testGroupId, path: [1, 1] },
     });
-    expect(movedChild2.id).toBe(child2.id);
+    expect(movedChild2.ref.attrs.title).toBe("Child of Item 2");
   });
 
   it("should rollback all changes if any operation fails", async () => {

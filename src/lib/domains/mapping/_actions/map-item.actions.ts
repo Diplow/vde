@@ -95,10 +95,10 @@ export class MapItemActions {
   }) {
     // Get appropriate repositories (transaction-scoped if tx provided)
     const mapItems = tx && 'withTransaction' in this.mapItems 
-      ? (this.mapItems as any).withTransaction(tx)
+      ? (this.mapItems as MapItemRepository & { withTransaction: (tx: DatabaseTransaction) => MapItemRepository }).withTransaction(tx)
       : this.mapItems;
     const baseItems = tx && 'withTransaction' in this.baseItems
-      ? (this.baseItems as any).withTransaction(tx)
+      ? (this.baseItems as BaseItemRepository & { withTransaction: (tx: DatabaseTransaction) => BaseItemRepository }).withTransaction(tx)
       : this.baseItems;
       
     // Create helpers with appropriate repositories
@@ -228,11 +228,6 @@ export class MapItemActions {
     }
   }
 
-  private async _getTargetItem(newCoords: Coord) {
-    return await this.mapItems
-      .getOneByIdr({ idr: { attrs: { coords: newCoords } } })
-      .catch(() => null);
-  }
 
   private async _handleTargetItemDisplacement(
     targetItem: MapItemWithId | null,
@@ -260,33 +255,5 @@ export class MapItemActions {
     );
   }
 
-  private async _moveSourceItem(
-    sourceItem: MapItemWithId,
-    newCoords: Coord,
-    targetParent: MapItemWithId | null,
-  ) {
-    await this.movementHelpers.move(
-      sourceItem,
-      newCoords,
-      targetParent,
-      (parentId) => this.getDescendants(parentId),
-    );
-  }
-
-  private async _restoreDisplacedItem(
-    targetItem: MapItemWithId | null,
-    tempCoordsHoldingTarget: Coord | null,
-    oldCoords: Coord,
-    sourceParent: MapItemWithId | null,
-  ) {
-    if (targetItem && tempCoordsHoldingTarget) {
-      await this.movementHelpers.move(
-        targetItem,
-        oldCoords,
-        sourceParent,
-        (parentId) => this.getDescendants(parentId),
-      );
-    }
-  }
 
 }

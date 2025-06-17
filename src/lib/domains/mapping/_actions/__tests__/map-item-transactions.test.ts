@@ -2,18 +2,21 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MapItemActions } from "../map-item.actions";
 import { ItemCrudService } from "../../services/_item-crud.service";
 import { MapItemType } from "../../_objects";
+import type { MapItemWithId } from "../../_objects";
 import { TransactionManager } from "../../infrastructure/transaction-manager";
 import type { MapItemRepository, BaseItemRepository } from "../../_repositories";
+import type { DatabaseTransaction } from "../../types/transaction";
+import type { MapItemIdr } from "../../_repositories/map-item";
 
 describe("MapItemActions - Transaction Support", () => {
-  let mapItemRepo: MapItemRepository & { withTransaction?: any };
-  let baseItemRepo: BaseItemRepository & { withTransaction?: any };
+  let mapItemRepo: MapItemRepository & { withTransaction: (tx: DatabaseTransaction) => MapItemRepository };
+  let baseItemRepo: BaseItemRepository & { withTransaction: (tx: DatabaseTransaction) => BaseItemRepository };
   let actions: MapItemActions;
   let service: ItemCrudService;
 
   beforeEach(() => {
     // Create mock repositories with transaction support
-    mapItemRepo = {
+    const baseMapItemRepo: MapItemRepository = {
       handleCascading: vi.fn(() => true),
       getOne: vi.fn(),
       getOneByIdr: vi.fn(),
@@ -33,10 +36,14 @@ describe("MapItemActions - Transaction Support", () => {
       getRootItem: vi.fn(),
       getRootItemsForUser: vi.fn(),
       getDescendantsByParent: vi.fn(),
+    };
+    
+    mapItemRepo = {
+      ...baseMapItemRepo,
       withTransaction: vi.fn(),
-    } as any;
+    } as MapItemRepository & { withTransaction: (tx: DatabaseTransaction) => MapItemRepository };
 
-    baseItemRepo = {
+    const baseBaseItemRepo: BaseItemRepository = {
       handleCascading: vi.fn(() => true),
       getOne: vi.fn(),
       getOneByIdr: vi.fn(),
@@ -53,8 +60,12 @@ describe("MapItemActions - Transaction Support", () => {
       removeFromRelatedListByIdr: vi.fn(),
       remove: vi.fn(),
       removeByIdr: vi.fn(),
+    };
+    
+    baseItemRepo = {
+      ...baseBaseItemRepo,
       withTransaction: vi.fn(),
-    } as any;
+    } as BaseItemRepository & { withTransaction: (tx: DatabaseTransaction) => BaseItemRepository };
 
     actions = new MapItemActions({
       mapItem: mapItemRepo,
@@ -75,26 +86,30 @@ describe("MapItemActions - Transaction Support", () => {
         coords: { userId: 1, groupId: 1, path: [1] },
         itemType: MapItemType.BASE,
       },
-      ref: { id: 1 },
-      data: { name: "Source Item" },
-    };
+    } as unknown as MapItemWithId;
 
     // Mock repository behavior for getOneByIdr
-    vi.mocked(mapItemRepo.getOneByIdr).mockImplementation(async ({ idr }) => {
-      const coords = (idr as any).attrs?.coords;
-      if (coords?.path[0] === 1) return sourceItem as any;
-      return null;
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const getOneByIdrFn = mapItemRepo.getOneByIdr;
+    vi.mocked(getOneByIdrFn).mockImplementation(async ({ idr }: { idr: MapItemIdr }) => {
+      if ('attrs' in idr && idr.attrs && 'coords' in idr.attrs) {
+        const coords = idr.attrs.coords;
+        if (coords.path.length > 0 && Number(coords.path[0]) === 1) return sourceItem;
+      }
+      throw new Error('Item not found');
     });
 
     // Create a mock transaction
-    const mockTx = {} as any;
+    const mockTx = {} as DatabaseTransaction;
     
     // Create transaction-aware repository mocks
     const txMapItemRepo = { ...mapItemRepo };
     const txBaseItemRepo = { ...baseItemRepo };
     
-    vi.mocked(mapItemRepo.withTransaction).mockReturnValue(txMapItemRepo);
-    vi.mocked(baseItemRepo.withTransaction).mockReturnValue(txBaseItemRepo);
+    const withTransactionMock = vi.mocked(mapItemRepo.withTransaction!);
+    withTransactionMock.mockReturnValue(txMapItemRepo);
+    const baseWithTransactionMock = vi.mocked(baseItemRepo.withTransaction!);
+    baseWithTransactionMock.mockReturnValue(txBaseItemRepo);
 
     // Call action with transaction
     const oldCoords = { userId: 1, groupId: 1, path: [1] };
@@ -102,7 +117,7 @@ describe("MapItemActions - Transaction Support", () => {
 
     try {
       await actions.moveMapItem({ oldCoords, newCoords, tx: mockTx });
-    } catch (error) {
+    } catch {
       // Expected to fail due to incomplete mocking
     }
 
@@ -114,25 +129,28 @@ describe("MapItemActions - Transaction Support", () => {
   it("service should wrap operations in transaction", async () => {
     // Mock the TransactionManager
     const runInTransactionSpy = vi.spyOn(TransactionManager, "runInTransaction");
-    runInTransactionSpy.mockImplementation(async (fn) => {
-      const mockTx = {} as any;
+    runInTransactionSpy.mockImplementation(async <T>(fn: (tx: DatabaseTransaction) => Promise<T>) => {
+      const mockTx = {} as DatabaseTransaction;
       return await fn(mockTx);
     });
     
     // Mock repository behavior
-    vi.mocked(mapItemRepo.getOneByIdr).mockImplementation(async () => {
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const getOneByIdrFn2 = mapItemRepo.getOneByIdr;
+    vi.mocked(getOneByIdrFn2).mockImplementation(async () => {
       return {
         id: 1,
         attrs: {
           coords: { userId: 1, groupId: 1, path: [1] },
           itemType: MapItemType.BASE,
         },
-        ref: { id: 1 },
-      } as any;
+      } as unknown as MapItemWithId;
     });
     
-    vi.mocked(mapItemRepo.withTransaction).mockReturnValue(mapItemRepo);
-    vi.mocked(baseItemRepo.withTransaction).mockReturnValue(baseItemRepo);
+    const withTransactionMock2 = vi.mocked(mapItemRepo.withTransaction!);
+    withTransactionMock2.mockReturnValue(mapItemRepo);
+    const baseWithTransactionMock2 = vi.mocked(baseItemRepo.withTransaction!);
+    baseWithTransactionMock2.mockReturnValue(baseItemRepo);
 
     // Call service method
     const oldCoords = { userId: 1, groupId: 1, path: [1] };
@@ -140,7 +158,7 @@ describe("MapItemActions - Transaction Support", () => {
 
     try {
       await service.moveMapItem({ oldCoords, newCoords });
-    } catch (error) {
+    } catch {
       // Expected to fail due to incomplete mocking
     }
 

@@ -107,6 +107,9 @@ export class ItemCrudService {
       });
     }
     const updatedItem = await this.actions.mapItems.getOne(item.id);
+    if (!updatedItem) {
+      throw new Error(`Failed to retrieve updated item with ID ${item.id}`);
+    }
     return adapt.mapItem(updatedItem, updatedItem.attrs.coords.userId);
   }
 
