@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MapItemActions } from "../map-item.actions";
+import { ItemCrudService } from "../../services/_item-crud.service";
 import { MapItemType } from "../../_objects";
 import { TransactionManager } from "../../infrastructure/transaction-manager";
 import type { MapItemRepository, BaseItemRepository } from "../../_repositories";
@@ -8,6 +9,7 @@ describe("MapItemActions - Transaction Support", () => {
   let mapItemRepo: MapItemRepository & { withTransaction?: any };
   let baseItemRepo: BaseItemRepository & { withTransaction?: any };
   let actions: MapItemActions;
+  let service: ItemCrudService;
 
   beforeEach(() => {
     // Create mock repositories with transaction support
@@ -58,9 +60,14 @@ describe("MapItemActions - Transaction Support", () => {
       mapItem: mapItemRepo,
       baseItem: baseItemRepo,
     });
+    
+    service = new ItemCrudService({
+      mapItem: mapItemRepo,
+      baseItem: baseItemRepo,
+    });
   });
 
-  it("should use transaction when moving items", async () => {
+  it("should accept transaction parameter in moveMapItem", async () => {
     // Setup mock data
     const sourceItem = {
       id: 1,
@@ -68,28 +75,20 @@ describe("MapItemActions - Transaction Support", () => {
         coords: { userId: 1, groupId: 1, path: [1] },
         itemType: MapItemType.BASE,
       },
+      ref: { id: 1 },
       data: { name: "Source Item" },
     };
 
-    const targetItem = {
-      id: 2,
-      attrs: {
-        coords: { userId: 1, groupId: 1, path: [2] },
-        itemType: MapItemType.BASE,
-      },
-      data: { name: "Target Item" },
-    };
-
-    // Mock repository behavior
+    // Mock repository behavior for getOneByIdr
     vi.mocked(mapItemRepo.getOneByIdr).mockImplementation(async ({ idr }) => {
       const coords = (idr as any).attrs?.coords;
       if (coords?.path[0] === 1) return sourceItem as any;
-      if (coords?.path[0] === 2) return targetItem as any;
       return null;
     });
 
-    vi.mocked(mapItemRepo.getOne).mockResolvedValue(sourceItem as any);
-
+    // Create a mock transaction
+    const mockTx = {} as any;
+    
     // Create transaction-aware repository mocks
     const txMapItemRepo = { ...mapItemRepo };
     const txBaseItemRepo = { ...baseItemRepo };
@@ -97,77 +96,55 @@ describe("MapItemActions - Transaction Support", () => {
     vi.mocked(mapItemRepo.withTransaction).mockReturnValue(txMapItemRepo);
     vi.mocked(baseItemRepo.withTransaction).mockReturnValue(txBaseItemRepo);
 
-    // Mock transaction manager
+    // Call action with transaction
+    const oldCoords = { userId: 1, groupId: 1, path: [1] };
+    const newCoords = { userId: 1, groupId: 1, path: [2] };
+
+    try {
+      await actions.moveMapItem({ oldCoords, newCoords, tx: mockTx });
+    } catch (error) {
+      // Expected to fail due to incomplete mocking
+    }
+
+    // Verify withTransaction was called when tx was provided
+    expect(mapItemRepo.withTransaction).toHaveBeenCalledWith(mockTx);
+    expect(baseItemRepo.withTransaction).toHaveBeenCalledWith(mockTx);
+  });
+
+  it("service should wrap operations in transaction", async () => {
+    // Mock the TransactionManager
     const runInTransactionSpy = vi.spyOn(TransactionManager, "runInTransaction");
     runInTransactionSpy.mockImplementation(async (fn) => {
       const mockTx = {} as any;
       return await fn(mockTx);
     });
+    
+    // Mock repository behavior
+    vi.mocked(mapItemRepo.getOneByIdr).mockImplementation(async () => {
+      return {
+        id: 1,
+        attrs: {
+          coords: { userId: 1, groupId: 1, path: [1] },
+          itemType: MapItemType.BASE,
+        },
+        ref: { id: 1 },
+      } as any;
+    });
+    
+    vi.mocked(mapItemRepo.withTransaction).mockReturnValue(mapItemRepo);
+    vi.mocked(baseItemRepo.withTransaction).mockReturnValue(baseItemRepo);
 
-    // Execute move operation
+    // Call service method
     const oldCoords = { userId: 1, groupId: 1, path: [1] };
     const newCoords = { userId: 1, groupId: 1, path: [2] };
 
     try {
-      await actions.moveMapItem({ oldCoords, newCoords });
+      await service.moveMapItem({ oldCoords, newCoords });
     } catch (error) {
-      // Expected to fail due to incomplete mocking, but we're testing transaction usage
+      // Expected to fail due to incomplete mocking
     }
 
-    // Verify transaction was used
+    // Verify TransactionManager was used
     expect(runInTransactionSpy).toHaveBeenCalled();
-    expect(mapItemRepo.withTransaction).toHaveBeenCalled();
-    expect(baseItemRepo.withTransaction).toHaveBeenCalled();
-  });
-
-  it("should rollback transaction on failure", async () => {
-    // Setup to simulate a failure during move
-    const sourceItem = {
-      id: 1,
-      attrs: {
-        coords: { userId: 1, groupId: 1, path: [1] },
-        itemType: MapItemType.BASE,
-      },
-      data: { name: "Source Item" },
-    };
-
-    vi.mocked(mapItemRepo.getOneByIdr).mockImplementation(async ({ idr }) => {
-      const coords = (idr as any).attrs?.coords;
-      if (coords?.path[0] === 1) return sourceItem as any;
-      return null;
-    });
-
-    // Make updateByIdr throw an error to simulate failure
-    const txMapItemRepo = {
-      ...mapItemRepo,
-      updateByIdr: vi.fn().mockRejectedValue(new Error("Database error")),
-    };
-    
-    vi.mocked(mapItemRepo.withTransaction).mockReturnValue(txMapItemRepo);
-    vi.mocked(baseItemRepo.withTransaction).mockReturnValue(baseItemRepo);
-
-    // Mock transaction manager to track rollback
-    let transactionRolledBack = false;
-    const runInTransactionSpy = vi.spyOn(TransactionManager, "runInTransaction");
-    runInTransactionSpy.mockImplementation(async (fn) => {
-      const mockTx = {} as any;
-      try {
-        return await fn(mockTx);
-      } catch (error) {
-        transactionRolledBack = true;
-        throw error;
-      }
-    });
-
-    // Execute move operation and expect it to fail
-    const oldCoords = { userId: 1, groupId: 1, path: [1] };
-    const newCoords = { userId: 1, groupId: 1, path: [2] };
-
-    await expect(
-      actions.moveMapItem({ oldCoords, newCoords })
-    ).rejects.toThrow();
-
-    // Verify transaction was rolled back
-    expect(transactionRolledBack).toBe(true);
   });
 });

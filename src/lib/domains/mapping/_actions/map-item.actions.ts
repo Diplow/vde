@@ -13,9 +13,7 @@ import type { MapItemIdr } from "../_repositories/map-item";
 import { MapItemCreationHelpers } from "./_map-item-creation-helpers";
 import { MapItemQueryHelpers } from "./_map-item-query-helpers";
 import { MapItemMovementHelpers } from "./_map-item-movement-helpers";
-import { TransactionManager } from "../infrastructure/transaction-manager";
-import type { DbMapItemRepository } from "../infrastructure/map-item/db";
-import type { DbBaseItemRepository } from "../infrastructure/base-item/db";
+import type { DatabaseTransaction } from "../types/transaction";
 
 export class MapItemActions {
   public readonly mapItems: MapItemRepository;
@@ -89,133 +87,83 @@ export class MapItemActions {
   public async moveMapItem({
     oldCoords,
     newCoords,
+    tx,
   }: {
     oldCoords: Coord;
     newCoords: Coord;
+    tx?: DatabaseTransaction;
   }) {
-    // Perform initial validations outside of transaction
-    const sourceItem = await this.getMapItem({ coords: oldCoords });
+    // Get appropriate repositories (transaction-scoped if tx provided)
+    const mapItems = tx && 'withTransaction' in this.mapItems 
+      ? (this.mapItems as any).withTransaction(tx)
+      : this.mapItems;
+    const baseItems = tx && 'withTransaction' in this.baseItems
+      ? (this.baseItems as any).withTransaction(tx)
+      : this.baseItems;
+      
+    // Create helpers with appropriate repositories
+    const queryHelpers = new MapItemQueryHelpers(mapItems, baseItems);
+    const movementHelpers = new MapItemMovementHelpers(mapItems, baseItems);
+    
+    const sourceItem = await queryHelpers.getMapItem({ coords: oldCoords });
     this._validateUserItemMove(sourceItem, newCoords);
     this._validateUserSpaceMove(sourceItem, newCoords);
 
-    // Check if repositories support transactions
-    const mapItemRepo = this.mapItems as any;
-    const baseItemRepo = this.baseItems as any;
+    const { sourceParent, targetParent } =
+      await movementHelpers.validateCoordsForMove(
+        oldCoords,
+        newCoords,
+        (coords) => queryHelpers.getMapItem({ coords }),
+        (coords) => queryHelpers.getParent(coords),
+      );
+
+    const targetItem = await mapItems
+      .getOneByIdr({ idr: { attrs: { coords: newCoords } } })
+      .catch(() => null);
+      
+    const tempCoordsHoldingTarget = await this._handleTargetItemDisplacement(
+      targetItem,
+      sourceParent,
+      oldCoords,
+      movementHelpers,
+      queryHelpers,
+    );
+
+    // Collect all items that will be modified
+    const modifiedItems: MapItemWithId[] = [];
     
-    // If repositories support transactions, use them
-    if (mapItemRepo.withTransaction && baseItemRepo.withTransaction) {
-      return await TransactionManager.runInTransaction(async (tx) => {
-        // Create transaction-aware repositories
-        const txMapItems = mapItemRepo.withTransaction(tx);
-        const txBaseItems = baseItemRepo.withTransaction(tx);
-        
-        // Create transaction-aware helpers
-        const txCreationHelpers = new MapItemCreationHelpers(txMapItems, txBaseItems);
-        const txQueryHelpers = new MapItemQueryHelpers(txMapItems, txBaseItems);
-        const txMovementHelpers = new MapItemMovementHelpers(txMapItems, txBaseItems);
-        
-        // Perform all operations within the transaction
-        const { sourceParent, targetParent } =
-          await txMovementHelpers.validateCoordsForMove(
-            oldCoords,
-            newCoords,
-            (coords) => txQueryHelpers.getMapItem({ coords }),
-            (coords) => txQueryHelpers.getParent(coords),
-          );
-
-        const targetItem = await txMapItems
-          .getOneByIdr({ idr: { attrs: { coords: newCoords } } })
-          .catch(() => null);
-          
-        const tempCoordsHoldingTarget = await this._handleTargetItemDisplacementWithHelpers(
-          targetItem,
-          sourceParent,
-          oldCoords,
-          txMovementHelpers,
-          txQueryHelpers,
-        );
-
-        // Collect all items that will be modified
-        const modifiedItems: MapItemWithId[] = [];
-        
-        await txMovementHelpers.move(
-          sourceItem,
-          newCoords,
-          targetParent,
-          (parentId) => txQueryHelpers.getDescendants(parentId),
-        );
-        
-        if (targetItem && tempCoordsHoldingTarget) {
-          await txMovementHelpers.move(
-            targetItem,
-            oldCoords,
-            sourceParent,
-            (parentId) => txQueryHelpers.getDescendants(parentId),
-          );
-        }
-
-        // Get the moved item with new coordinates
-        const movedItem = await txMapItems.getOne(sourceItem.id);
-        if (!movedItem) {
-          throw new Error("Failed to retrieve moved item");
-        }
-        modifiedItems.push(movedItem);
-        
-        // Get all descendants with their new coordinates
-        const updatedDescendants = await txQueryHelpers.getDescendants(sourceItem.id);
-        modifiedItems.push(...updatedDescendants);
-        
-        return {
-          modifiedItems,
-          movedItemId: sourceItem.id,
-          affectedCount: modifiedItems.length,
-        };
-      });
-    } else {
-      // Fallback to non-transactional behavior for compatibility
-      const { sourceParent, targetParent } =
-        await this.movementHelpers.validateCoordsForMove(
-          oldCoords,
-          newCoords,
-          (coords) => this.getMapItem({ coords }),
-          (coords) => this.queryHelpers.getParent(coords),
-        );
-
-      const targetItem = await this._getTargetItem(newCoords);
-      const tempCoordsHoldingTarget = await this._handleTargetItemDisplacement(
+    await movementHelpers.move(
+      sourceItem,
+      newCoords,
+      targetParent,
+      (parentId) => queryHelpers.getDescendants(parentId),
+    );
+    
+    if (targetItem && tempCoordsHoldingTarget) {
+      await movementHelpers.move(
         targetItem,
-        sourceParent,
-        oldCoords,
-      );
-
-      // Collect all items that will be modified
-      const modifiedItems: MapItemWithId[] = [];
-      
-      await this._moveSourceItem(sourceItem, newCoords, targetParent);
-      await this._restoreDisplacedItem(
-        targetItem,
-        tempCoordsHoldingTarget,
         oldCoords,
         sourceParent,
+        (parentId) => queryHelpers.getDescendants(parentId),
       );
-
-      // Get the moved item with new coordinates
-      const movedItem = await this.mapItems.getOne(sourceItem.id);
-      if (!movedItem) {
-        throw new Error("Failed to retrieve moved item");
-      }
-      modifiedItems.push(movedItem);
-      
-      // Get all descendants with their new coordinates
-      const updatedDescendants = await this.getDescendants(sourceItem.id);
-      modifiedItems.push(...updatedDescendants);
-      
-      return {
-        modifiedItems,
-        movedItemId: sourceItem.id,
-        affectedCount: modifiedItems.length,
-      };
     }
+
+    // Get the moved item with new coordinates
+    const movedItem = await mapItems.getOne(sourceItem.id);
+    if (!movedItem) {
+      throw new Error("Failed to retrieve moved item");
+    }
+    modifiedItems.push(movedItem);
+    
+    // Get all descendants with their new coordinates
+    const updatedDescendants = await queryHelpers.getDescendants(sourceItem.id);
+    modifiedItems.push(...updatedDescendants);
+    
+    return {
+      modifiedItems,
+      movedItemId: sourceItem.id,
+      affectedCount: modifiedItems.length,
+    };
   }
 
   public async getDescendants(parentId: number): Promise<MapItemWithId[]> {
@@ -290,6 +238,8 @@ export class MapItemActions {
     targetItem: MapItemWithId | null,
     sourceParent: MapItemWithId | null,
     oldCoords: Coord,
+    movementHelpers: MapItemMovementHelpers,
+    queryHelpers: MapItemQueryHelpers,
   ) {
     if (!targetItem) return null;
 
@@ -300,12 +250,12 @@ export class MapItemActions {
       throw new Error("Cannot displace a USER (root) item with a child item.");
     }
 
-    return await this.movementHelpers.moveItemToTemporaryLocation(
+    return await movementHelpers.moveItemToTemporaryLocation(
       targetItem,
       sourceParent,
       (item, coords, parent) =>
-        this.movementHelpers.move(item, coords, parent, (parentId) =>
-          this.getDescendants(parentId),
+        movementHelpers.move(item, coords, parent, (parentId) =>
+          queryHelpers.getDescendants(parentId),
         ),
     );
   }
@@ -339,29 +289,4 @@ export class MapItemActions {
     }
   }
 
-  private async _handleTargetItemDisplacementWithHelpers(
-    targetItem: MapItemWithId | null,
-    sourceParent: MapItemWithId | null,
-    oldCoords: Coord,
-    movementHelpers: MapItemMovementHelpers,
-    queryHelpers: MapItemQueryHelpers,
-  ) {
-    if (!targetItem) return null;
-
-    if (
-      targetItem.attrs.itemType === MapItemType.USER &&
-      oldCoords.path.length > 0
-    ) {
-      throw new Error("Cannot displace a USER (root) item with a child item.");
-    }
-
-    return await movementHelpers.moveItemToTemporaryLocation(
-      targetItem,
-      sourceParent,
-      (item, coords, parent) =>
-        movementHelpers.move(item, coords, parent, (parentId) =>
-          queryHelpers.getDescendants(parentId),
-        ),
-    );
-  }
 }

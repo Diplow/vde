@@ -4,12 +4,14 @@ import { baseItems, mapItems } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
 import { DbMapItemRepository } from "../../infrastructure/map-item/db";
 import { DbBaseItemRepository } from "../../infrastructure/base-item/db";
+import { ItemCrudService } from "../_item-crud.service";
 import { MapItemActions } from "../../_actions/map-item.actions";
 import { MapItemType } from "../../_objects";
 
 describe("Item Movement - Transaction Integration Tests", () => {
   let mapItemRepo: DbMapItemRepository;
   let baseItemRepo: DbBaseItemRepository;
+  let service: ItemCrudService;
   let actions: MapItemActions;
   let testUserId: number;
   let testGroupId: number;
@@ -21,6 +23,11 @@ describe("Item Movement - Transaction Integration Tests", () => {
     // Initialize repositories with main db connection
     mapItemRepo = new DbMapItemRepository(db);
     baseItemRepo = new DbBaseItemRepository(db);
+    
+    service = new ItemCrudService({
+      mapItem: mapItemRepo,
+      baseItem: baseItemRepo,
+    });
     
     actions = new MapItemActions({
       mapItem: mapItemRepo,
@@ -67,7 +74,7 @@ describe("Item Movement - Transaction Integration Tests", () => {
     });
 
     // Move item1 to position 3 (swapping with empty position)
-    const result = await actions.moveMapItem({
+    const result = await service.moveMapItem({
       oldCoords: { userId: testUserId, groupId: testGroupId, path: [1] },
       newCoords: { userId: testUserId, groupId: testGroupId, path: [3] },
     });
@@ -132,7 +139,7 @@ describe("Item Movement - Transaction Integration Tests", () => {
     });
 
     // Swap item1 and item2
-    const result = await actions.moveMapItem({
+    const result = await service.moveMapItem({
       oldCoords: { userId: testUserId, groupId: testGroupId, path: [1] },
       newCoords: { userId: testUserId, groupId: testGroupId, path: [2] },
     });
@@ -180,7 +187,7 @@ describe("Item Movement - Transaction Integration Tests", () => {
 
     // Try to move to an invalid location (e.g., trying to move to a position that would create an invalid hierarchy)
     try {
-      await actions.moveMapItem({
+      await service.moveMapItem({
         oldCoords: { userId: testUserId, groupId: testGroupId, path: [1] },
         newCoords: { userId: testUserId, groupId: testGroupId + 1, path: [1] }, // Different group - should fail
       });

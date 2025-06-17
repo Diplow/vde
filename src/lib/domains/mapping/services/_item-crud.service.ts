@@ -10,6 +10,7 @@ import {
 } from "~/lib/domains/mapping/utils/hex-coordinates";
 import { MapItemType } from "../_objects";
 import type { MapItemContract } from "../types/contracts";
+import { TransactionManager } from "../infrastructure/transaction-manager";
 
 export class ItemCrudService {
   private readonly actions: MapItemActions;
@@ -115,5 +116,38 @@ export class ItemCrudService {
   async removeItem({ coords }: { coords: Coord }): Promise<void> {
     const itemToRemove = await this.actions.getMapItem({ coords });
     await this.actions.removeItem({ idr: { id: itemToRemove.id } });
+  }
+
+  /**
+   * Move a map item to a new position with transaction support
+   * This ensures all operations are atomic - either all succeed or all fail
+   */
+  async moveMapItem({
+    oldCoords,
+    newCoords,
+  }: {
+    oldCoords: Coord;
+    newCoords: Coord;
+  }): Promise<{
+    modifiedItems: MapItemContract[];
+    movedItemId: number;
+    affectedCount: number;
+  }> {
+    // Wrap the operation in a transaction
+    return await TransactionManager.runInTransaction(async (tx) => {
+      const result = await this.actions.moveMapItem({
+        oldCoords,
+        newCoords,
+        tx, // Pass the transaction to the action
+      });
+      
+      // Convert to contracts
+      return {
+        ...result,
+        modifiedItems: result.modifiedItems.map(item => 
+          adapt.mapItem(item, item.attrs.coords.userId)
+        ),
+      };
+    });
   }
 }

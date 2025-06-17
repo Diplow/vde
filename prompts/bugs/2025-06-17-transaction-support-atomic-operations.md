@@ -48,16 +48,20 @@ After analyzing the architecture, I will implement a "transaction-by-default" pa
 
 ## Resolution
 
-The solution involves:
-1. Adding transaction support to the repository layer
-2. Creating a transaction-aware base repository class
-3. Modifying the `moveMapItem` action to use transactions
-4. Ensuring backward compatibility for non-transactional operations
+The solution implements a simple, explicit transaction pattern:
+
+1. **Actions accept transaction parameter**: The `moveMapItem` method now accepts an optional `tx` parameter
+2. **Repositories support transaction scoping**: Added `withTransaction` method to create transaction-scoped repository instances
+3. **Services manage transactions**: Services use `TransactionManager.runInTransaction` to wrap operations in transactions
+4. **Explicit over implicit**: Transactions are explicitly passed rather than hidden behind complex abstractions
 
 Key changes:
-- Repository methods will accept an optional `tx` parameter
-- Complex operations will be wrapped in transactions at the action level
-- All database operations within a transaction will use the same connection
+- `MapItemActions.moveMapItem` accepts `tx?: DatabaseTransaction` parameter
+- `DbMapItemRepository` and `DbBaseItemRepository` have `withTransaction(tx)` method
+- `ItemCrudService.moveMapItem` wraps the action call in a transaction
+- All operations within a transaction use the same database connection
+
+This approach is simpler and more transparent than the initial implementation, making it clear when transactions are being used.
 
 ## Tests Added
 
