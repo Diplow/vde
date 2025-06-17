@@ -237,6 +237,25 @@ export function cacheReducer(
       };
     }
 
+    case ACTION_TYPES.UPDATE_ITEMS: {
+      const updates = action.payload;
+      const newItemsById = { ...state.itemsById };
+      
+      Object.entries(updates).forEach(([coordId, item]) => {
+        if (item === undefined) {
+          delete newItemsById[coordId];
+        } else {
+          newItemsById[coordId] = item;
+        }
+      });
+      
+      return {
+        ...state,
+        itemsById: newItemsById,
+        lastUpdated: Date.now(),
+      };
+    }
+
     default: {
       // TypeScript exhaustiveness check
       const _exhaustiveCheck: never = action;

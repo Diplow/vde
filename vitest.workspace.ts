@@ -14,8 +14,7 @@ const dirname =
 export default defineWorkspace([
   // Main test configuration - extending the base config
   "vitest.config.ts",
-  // Storybook test configuration for story tests - DISABLED until Playwright is installed
-  // Uncomment the configuration below to enable Storybook tests
+  // Storybook test configuration for story tests
   {
     plugins: [
       // The plugin will run tests for the stories defined in your Storybook config

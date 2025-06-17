@@ -18,13 +18,15 @@ export async function _validateItemMovementToEmptyCell(
   },
   newCoords: Coord,
 ) {
-  const movedItemContract = await testEnv.service.items.query.moveMapItem({
+  const result = await testEnv.service.items.query.moveMapItem({
     oldCoords: movementSetup.initialCoords,
     newCoords,
   });
 
-  expect(movedItemContract.id).toBe(movementSetup.item.id);
-  expect(movedItemContract.coords).toBe(CoordSystem.createId(newCoords));
+  // Find the moved item in the results
+  const movedItem = result.modifiedItems.find(item => item.id === String(movementSetup.item.id));
+  expect(movedItem).toBeDefined();
+  expect(movedItem?.coords).toBe(CoordSystem.createId(newCoords));
 
   await _validateOldLocationEmpty(testEnv, movementSetup.initialCoords);
   await _validateNewLocationOccupied(testEnv, newCoords, movementSetup.item.id);

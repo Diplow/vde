@@ -16,13 +16,27 @@ import { useMapCache } from "../Cache/map-cache";
 import type { URLInfo } from "../types/url-info";
 import { MapLoadingSkeleton } from "./LifeCycle/loading-skeleton";
 import { MapErrorBoundary } from "./LifeCycle/error-boundary";
+import { useDragAndDropWithMutation } from "./hooks/useDragAndDropWithMutation";
+import type { DragEvent } from "react";
 
 // Simplified Tile Actions Context
 export interface TileActionsContextValue {
   handleTileClick: (coordId: string, event: MouseEvent) => void;
-  handleTileDrag: (coordId: string, event: DragEvent) => void;
   handleTileHover: (coordId: string, isHovering: boolean) => void;
   onCreateTileRequested?: (coordId: string) => void;
+  // Drag and drop handlers
+  dragHandlers: {
+    onDragStart: (coordId: string, event: DragEvent<HTMLDivElement>) => void;
+    onDragOver: (coordId: string, event: DragEvent<HTMLDivElement>) => void;
+    onDragLeave: () => void;
+    onDrop: (coordId: string, event: DragEvent<HTMLDivElement>) => void;
+    onDragEnd: () => void;
+  };
+  canDragTile: (coordId: string) => boolean;
+  isDraggingTile: (coordId: string) => boolean;
+  isDropTarget: (coordId: string) => boolean;
+  isValidDropTarget: (coordId: string) => boolean;
+  isDragging: boolean;
 }
 
 export const TileActionsContext = createContext<TileActionsContextValue | null>(
@@ -84,6 +98,16 @@ export function DynamicMapCanvas({
   } = useMapCache();
   const [isHydrated, setIsHydrated] = useState(false);
   const { mappingUserId } = useAuth();
+  
+  // Initialize drag and drop functionality
+  const {
+    dragHandlers,
+    canDragTile,
+    isDraggingTile,
+    isDropTarget,
+    isValidDropTarget,
+    isDragging,
+  } = useDragAndDropWithMutation();
 
   useEffect(() => {
     // Initialize hydration
@@ -99,16 +123,12 @@ export function DynamicMapCanvas({
     }
   }, [center, centerInfo.center, updateCenter]); // Include dependencies
 
-  // Simplified tile actions without interaction modes
+  // Tile actions with drag and drop support
   const tileActions = useMemo(
     () => ({
       handleTileClick: (_coordId: string, _event: MouseEvent) => {
         // handleTileClick called
         // Default tile click behavior (can be enhanced later)
-      },
-      handleTileDrag: (_coordId: string, _event: DragEvent) => {
-        // handleTileDrag called
-        // TODO: Handle drag operations
       },
       handleTileHover: (_coordId: string, _isHovering: boolean) => {
         // handleTileHover called
@@ -118,8 +138,15 @@ export function DynamicMapCanvas({
         // Create tile requested
         // This callback is used by empty tiles to signal create requests
       },
+      // Drag and drop functionality
+      dragHandlers,
+      canDragTile,
+      isDraggingTile,
+      isDropTarget,
+      isValidDropTarget,
+      isDragging,
     }),
-    [],
+    [dragHandlers, canDragTile, isDraggingTile, isDropTarget, isValidDropTarget, isDragging],
   );
 
   // Canvas should just display, not manage loading
