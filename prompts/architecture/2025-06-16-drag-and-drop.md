@@ -1,6 +1,7 @@
 # Drag and Drop Architecture
 
-*Note: This document was created by Claude AI working with @Diplow*
+*Note: This document was created by Claude AI working with @Diplow*  
+*Updated: June 2025 - Reflects actual implementation*
 
 ## Overview
 
@@ -52,16 +53,15 @@ interface DragState {
 ```
 /src/app/map/
 ├── Canvas/
-│   ├── index.tsx                    # DynamicMapCanvas with drag state
-│   ├── hooks/
-│   │   └── useDragAndDrop.ts       # Core drag logic
-│   └── components/
-│       └── DragPreview.tsx         # Visual drag feedback
-└── Tiles/
+│   ├── index.tsx                          # DynamicMapCanvas with drag state
+│   └── hooks/
+│       ├── useDragAndDrop.ts             # Core drag logic
+│       └── useDragAndDropWithMutation.ts # Hook with tRPC mutation integration
+└── Tile/
     ├── Item/
-    │   └── DynamicItemTile.tsx     # Receives drag handlers
+    │   └── item.tsx                      # Receives drag handlers
     └── Empty/
-        └── DynamicEmptyTile.tsx    # Drop zone behavior
+        └── empty.tsx                     # Drop zone behavior
 ```
 
 ### 3. API Modifications
@@ -81,20 +81,26 @@ interface MoveMapItemResult {
 ```
 
 **Implementation locations:**
-- `/src/lib/domains/mapping/actions/MapItemActions.ts`
-- `/src/lib/domains/mapping/services/ItemQueryService.ts`
-- `/src/server/api/routers/map-items.ts`
+- `/src/lib/domains/mapping/actions/MapItemActions.ts` - moveMapItem action
+- `/src/lib/domains/mapping/services/ItemQueryService.ts` - Query service
+- `/src/server/api/routers/map-items.ts` - tRPC endpoint
+- `/src/app/map/Canvas/hooks/useDragAndDrop.ts` - Core drag logic
+- `/src/app/map/Canvas/hooks/useDragAndDropWithMutation.ts` - tRPC integration
 
 ### 4. The useDragAndDrop Hook
 
-Core drag logic centralized in one hook:
+Core drag logic is split into two hooks:
+
+1. **useDragAndDrop** - Pure drag state management
+2. **useDragAndDropWithMutation** - Integrates with tRPC mutation
 
 ```typescript
 // /src/app/map/Canvas/hooks/useDragAndDrop.ts
 export function useDragAndDrop({
-  mapCache,
+  cacheState,
   currentUserId,
-  moveMapItem // tRPC mutation
+  moveMapItemMutation,
+  updateCache
 }) {
   const [dragState, setDragState] = useState<DragState>(initialState);
   
@@ -211,10 +217,10 @@ The Canvas provides drag handlers through context:
 
 ```typescript
 // In DynamicMapCanvas
-const dragAndDrop = useDragAndDrop({
-  mapCache,
+const { dragAndDrop } = useDragAndDropWithMutation({
+  cacheState,
   currentUserId,
-  moveMapItem: api.mapItems.moveMapItem
+  updateCache,
 });
 
 const tileActions = {
@@ -263,23 +269,35 @@ return (
 
 ### 7. Visual Feedback
 
+**Native HTML5 Drag Preview**
+- Uses browser's native drag preview (semi-transparent copy)
+- No custom DragPreview component needed
+- Buttons are hidden during drag to clean up the preview
+
+**Visual Indicators**:
+1. **Dragged Tile**: 
+   - 50% opacity
+   - Buttons hidden
+   - Cursor shows "grabbing"
+
+2. **Draggable Tiles**:
+   - Cursor shows "grab" on hover
+
+3. **Drop Zones (Empty Tiles)**:
+   - Fill color changes from zinc-100 to zinc-300 when valid drop target
+   - No ring overlay - just subtle fill change
+
 ```typescript
-// DragPreview component
-function DragPreview({ dragState }: { dragState: DragState }) {
-  if (!dragState.isDragging) return null;
-  
-  return (
-    <div
-      className="fixed pointer-events-none z-50"
-      style={{
-        left: cursorPosition.x - dragState.dragOffset.x,
-        top: cursorPosition.y - dragState.dragOffset.y
-      }}
-    >
-      <TilePreview tile={dragState.draggedTileData} />
-    </div>
-  );
-}
+// In DynamicItemTile - hide buttons during drag
+{interactive && !isBeingDragged && (
+  <DynamicTileButtons ... />
+)}
+
+// Cursor feedback
+style={{
+  opacity: isBeingDragged ? 0.5 : 1,
+  cursor: isBeingDragged ? 'grabbing' : (isDraggable ? 'grab' : 'default'),
+}}
 ```
 
 ## Testing Strategy
@@ -291,8 +309,13 @@ describe('useDragAndDrop', () => {
   it('should prevent dragging userTiles');
   it('should identify valid empty sibling drop targets');
   it('should calculate new coordinates correctly');
+  it('should handle drag events correctly');
+  it('should validate drop targets during active drag');
+  it('should prevent dropping on occupied positions');
 });
 ```
+
+**Note**: There's a known jsdom environment conflict when running these tests with the full test suite. Tests pass when run in isolation with `pnpm test src/app/map/Canvas/hooks/__tests__/useDragAndDrop.test.ts`. See the test README for details.
 
 ### Integration Tests
 ```typescript
@@ -315,24 +338,30 @@ test('can drag tile to empty sibling position', async ({ page }) => {
 
 ## Implementation Order
 
-1. **Modify moveMapItem API** to return all modified items
-2. **Create useDragAndDrop hook** with basic drag state
-3. **Update DynamicMapCanvas** to use the hook
-4. **Add drag handlers to DynamicItemTile**
-5. **Implement drop zones in DynamicEmptyTile**
-6. **Add optimistic updates** with rollback
-7. **Create DragPreview component**
-8. **Write tests** (unit and integration)
+1. **Modify moveMapItem API** to return all modified items ✓
+2. **Create useDragAndDrop hook** with basic drag state ✓
+3. **Create useDragAndDropWithMutation** wrapper hook ✓
+4. **Update DynamicMapCanvas** to use the hook ✓
+5. **Add drag handlers to DynamicItemTile** ✓
+6. **Implement drop zones in DynamicEmptyTile** ✓
+7. **Add optimistic updates** with rollback ✓
+8. **Use native drag preview** (no custom component needed) ✓
+9. **Write tests** (unit tests completed) ✓
 
 ## Success Criteria
 
-- [ ] Tiles can be dragged to empty sibling positions
-- [ ] Visual feedback shows during drag operation
-- [ ] Optimistic updates provide instant feedback
-- [ ] Descendants move with their parent
-- [ ] Failed moves rollback gracefully
-- [ ] Only tile owners can drag their tiles
-- [ ] UserTiles (root) cannot be dragged
+- [x] Tiles can be dragged to empty sibling positions
+- [x] Visual feedback shows during drag operation
+  - Native HTML5 drag preview
+  - Grab/grabbing cursor feedback
+  - 50% opacity on dragged tile
+  - Zinc-300 fill on valid drop targets
+  - Buttons hidden during drag
+- [x] Optimistic updates provide instant feedback
+- [x] Descendants move with their parent
+- [x] Failed moves rollback gracefully
+- [x] Only tile owners can drag their tiles
+- [x] UserTiles (root) cannot be dragged
 
 ## Security Considerations
 

@@ -124,7 +124,7 @@ export const DynamicItemTile = ({
           tileId={`${item.metadata.coordinates.userId}-${item.metadata.coordinates.groupId}${pathPart}`}
         />
       </DynamicBaseTileLayout>
-      {interactive && (
+      {interactive && !isBeingDragged && (
         <DynamicTileButtons
           item={item}
           urlInfo={urlInfo}

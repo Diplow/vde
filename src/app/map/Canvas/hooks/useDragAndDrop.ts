@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import type { DragEvent } from "react";
 import type { TileData } from "~/app/map/types/tile-data";
+import { getColor } from "~/app/map/types/tile-data";
 import type { CacheState } from "~/app/map/Cache/State/types";
 import { 
   CoordSystem,
@@ -214,7 +215,7 @@ export function useDragAndDrop({
       // Remove the tile from its old location
       delete updatedItems[tile.metadata.coordId];
       
-      // Add the tile at its new location
+      // Add the tile at its new location with updated color
       updatedItems[newCoordsId] = {
         ...tile,
         metadata: {
@@ -227,6 +228,10 @@ export function useDragAndDrop({
                 path: newCoords.path.slice(0, -1)
               })
             : undefined,
+        },
+        data: {
+          ...tile.data,
+          color: getColor(newCoords), // Update color based on new coordinates
         },
       };
       
@@ -259,7 +264,7 @@ export function useDragAndDrop({
             // Remove from old location
             delete updatedItems[child.metadata.coordId];
             
-            // Add to new location
+            // Add to new location with updated color
             updatedItems[newChildCoordsId] = {
               ...child,
               metadata: {
@@ -267,6 +272,10 @@ export function useDragAndDrop({
                 coordId: newChildCoordsId,
                 coordinates: newChildCoords,
                 parentId: newCoordsId, // Update parent to the new parent coordId
+              },
+              data: {
+                ...child.data,
+                color: getColor(newChildCoords), // Update color based on new coordinates
               },
             };
           }
