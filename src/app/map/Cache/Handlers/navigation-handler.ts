@@ -34,7 +34,7 @@ export function createNavigationHandler(config: NavigationHandlerConfig) {
     itemCoordId: string,
     options: NavigationOptions = {},
   ): Promise<NavigationResult> => {
-    const { pushToHistory = true } = options; // Default to true for normal navigation
+    const { } = options; // Options reserved for future use
     try {
       // 1. Check if we already have the item
       const existingItem = getState().itemsById[itemCoordId];
@@ -51,9 +51,6 @@ export function createNavigationHandler(config: NavigationHandlerConfig) {
       } else {
       }
 
-      // 3. Get the item from state (it should have been loaded by loadRegion)
-      const item = getState().itemsById[itemCoordId];
-      
       let urlUpdated = false;
 
       // Skip URL updates for now - just update cache state

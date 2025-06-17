@@ -77,12 +77,19 @@ export class ItemQueryService {
   }: {
     oldCoords: Coord;
     newCoords: Coord;
-  }): Promise<MapItemContract> {
-    const movedItem = await this.actions.moveMapItem({
+  }) {
+    const result = await this.actions.moveMapItem({
       oldCoords,
       newCoords,
     });
-    const userId = movedItem.attrs.coords.userId;
-    return adapt.mapItem(movedItem, userId);
+    
+    return {
+      modifiedItems: result.modifiedItems.map(item => {
+        const userId = item.attrs.coords.userId;
+        return adapt.mapItem(item, userId);
+      }),
+      movedItemId: result.movedItemId,
+      affectedCount: result.affectedCount,
+    };
   }
 }

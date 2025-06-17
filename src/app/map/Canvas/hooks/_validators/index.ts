@@ -1,0 +1,1 @@
+export { canDragTile } from "./drag-permission";

@@ -68,6 +68,7 @@ export const ACTION_TYPES = {
   INVALIDATE_ALL: "INVALIDATE_ALL",
   UPDATE_CACHE_CONFIG: "UPDATE_CACHE_CONFIG",
   REMOVE_ITEM: "REMOVE_ITEM",
+  UPDATE_ITEMS: "UPDATE_ITEMS",
 } as const;
 
 // Action types using ACTION_TYPES constants for better type safety
@@ -91,4 +92,8 @@ export type CacheAction =
       type: typeof ACTION_TYPES.UPDATE_CACHE_CONFIG;
       payload: UpdateCacheConfigPayload;
     }
-  | { type: typeof ACTION_TYPES.REMOVE_ITEM; payload: string };
+  | { type: typeof ACTION_TYPES.REMOVE_ITEM; payload: string }
+  | { 
+      type: typeof ACTION_TYPES.UPDATE_ITEMS; 
+      payload: Record<string, TileData | undefined>;
+    };

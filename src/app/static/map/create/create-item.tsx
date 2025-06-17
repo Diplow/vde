@@ -38,7 +38,7 @@ export async function StaticCreateItemForm({
   const colorString = getColor(targetCoords);
   const [colorName, tint] = colorString.split("-") as [string, string];
   const tileColor = {
-    color: colorName as "zinc" | "amber" | "lime" | "fuchsia" | "rose" | "indigo" | "cyan",
+    color: colorName as "zinc" | "amber" | "green" | "fuchsia" | "rose" | "indigo" | "cyan",
     tint: tint as "50" | "100" | "200" | "300" | "400" | "500" | "600" | "700" | "800" | "900" | "950",
   };
 
