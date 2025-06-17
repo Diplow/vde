@@ -106,9 +106,9 @@ describe("MapItemActions - Transaction Support", () => {
     const txMapItemRepo = { ...mapItemRepo };
     const txBaseItemRepo = { ...baseItemRepo };
     
-    const withTransactionMock = vi.mocked(mapItemRepo.withTransaction!);
+    const withTransactionMock = vi.mocked(mapItemRepo.withTransaction);
     withTransactionMock.mockReturnValue(txMapItemRepo);
-    const baseWithTransactionMock = vi.mocked(baseItemRepo.withTransaction!);
+    const baseWithTransactionMock = vi.mocked(baseItemRepo.withTransaction);
     baseWithTransactionMock.mockReturnValue(txBaseItemRepo);
 
     // Call action with transaction
@@ -147,9 +147,9 @@ describe("MapItemActions - Transaction Support", () => {
       } as unknown as MapItemWithId;
     });
     
-    const withTransactionMock2 = vi.mocked(mapItemRepo.withTransaction!);
+    const withTransactionMock2 = vi.mocked(mapItemRepo.withTransaction);
     withTransactionMock2.mockReturnValue(mapItemRepo);
-    const baseWithTransactionMock2 = vi.mocked(baseItemRepo.withTransaction!);
+    const baseWithTransactionMock2 = vi.mocked(baseItemRepo.withTransaction);
     baseWithTransactionMock2.mockReturnValue(baseItemRepo);
 
     // Call service method
