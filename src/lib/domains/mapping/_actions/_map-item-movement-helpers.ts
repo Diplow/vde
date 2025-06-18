@@ -57,7 +57,6 @@ export class MapItemMovementHelpers {
         // Note: We don't automatically delete it as it might be legitimate data
         // Instead, we'll use a different temporary position
         const alternativeTempCoords = this._generateAlternativeTemporaryCoords(targetItem, targetParent);
-        console.log(`[MOVE CLEANUP] Using alternative temporary position ${CoordSystem.createId(alternativeTempCoords)}`);
         await move(targetItem, alternativeTempCoords, targetParent);
         return alternativeTempCoords;
       }

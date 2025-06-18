@@ -35,7 +35,7 @@ export function canSwapTiles(
   
   // Check if source and target have the same user/group
   if (sourceCoords.userId !== targetCoords.userId || sourceCoords.groupId !== targetCoords.groupId) {
-    return true; // Different spaces, no issue
+    return false; // Prevent swaps between different user spaces
   }
   
   // Check the specific problematic pattern in both directions
