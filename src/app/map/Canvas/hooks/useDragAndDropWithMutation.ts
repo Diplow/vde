@@ -34,6 +34,7 @@ export function useDragAndDropWithMutation(): Omit<UseDragAndDropReturn, 'dragSt
     isDropTarget,
     isValidDropTarget,
     isDragging,
+    getDropOperation,
   } = useDragAndDrop({
     cacheState,
     currentUserId: mappingUserId ?? null,
@@ -84,5 +85,6 @@ export function useDragAndDropWithMutation(): Omit<UseDragAndDropReturn, 'dragSt
     isDropTarget,
     isValidDropTarget,
     isDragging,
+    getDropOperation,
   };
 }

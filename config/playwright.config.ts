@@ -12,8 +12,8 @@ if (process.env.NODE_ENV === "test" && process.env.TEST_DATABASE_URL) {
 // NODE_ENV will be set in the environment
 
 // For offline UI tests, we use a static port for simplicity
-const port = 3000; // Use dev server port
-const baseURL = `http://localhost:${port}`;
+const port = process.env.NEXT_PUBLIC_URL ? new URL(process.env.NEXT_PUBLIC_URL).port : "3000";
+const baseURL = process.env.NEXT_PUBLIC_URL || `http://localhost:${port}`;
 
 export default defineConfig({
   testDir: "../tests/e2e",

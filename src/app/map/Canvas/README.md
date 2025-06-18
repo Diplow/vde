@@ -265,6 +265,117 @@ The drag and drop implementation follows Hexframe's Rule of 6 principle:
 
 Each module maintains a single level of abstraction and clear responsibility boundaries.
 
+## Domain Concepts
+
+### Optimistic UI Patterns
+
+#### OptimisticUpdateRollback
+A reusable pattern for handling optimistic UI updates with automatic rollback capability:
+- **Purpose**: Capture state before changes and provide rollback on failure
+- **Usage**: Wrap any async operation that needs optimistic updates
+- **Location**: `hooks/_orchestrators/optimistic-swap/rollback-handler.ts`
+- **Key Methods**:
+  - `captureState()`: Saves current state before changes
+  - `rollback(previousState)`: Restores state on error
+  - `withRollback()`: Higher-order function for automatic rollback
+  - `executeOptimisticUpdate()`: Complete optimistic update flow
+
+#### TileSwapOperation
+Encapsulates the logic of swapping two tiles' positions:
+- **Responsibilities**: Coordinate swapping, color updates, parent reassignment
+- **Location**: `hooks/_orchestrators/optimistic-swap/swap-operation.ts`
+- **Key Operations**:
+  - Swaps coordinates between tiles
+  - Updates colors based on new positions
+  - Maintains data consistency
+
+#### ChildrenRelocationStrategy
+Manages how child tiles follow their parent during swaps:
+- **Purpose**: Preserve hierarchical relationships during tile movements
+- **Location**: `hooks/_orchestrators/optimistic-swap/children-relocation.ts`
+- **Process**:
+  - Calculates relative paths from old parent
+  - Applies paths to new parent location
+  - Updates all child metadata and colors
+
+#### ServerSynchronizer
+Confirms optimistic updates with server responses:
+- **Purpose**: Ensure eventual consistency between optimistic and server state
+- **Location**: `hooks/_orchestrators/optimistic-swap/server-sync.ts`
+- **Features**:
+  - Maps server response to cache updates
+  - Handles partial update scenarios
+  - Only updates fields that changed on server
+
+### Move Operation Patterns
+
+#### MoveOperation
+Distinguishes between simple moves and swap operations:
+- **Purpose**: Determine appropriate update strategy based on target occupancy
+- **Location**: `hooks/_orchestrators/optimistic-move/move-detector.ts`
+- **Types**:
+  - `move`: Target position is empty
+  - `swap`: Target position is occupied
+
+#### ChildrenMigrationStrategy
+Manages child tile migration during parent moves:
+- **Purpose**: Preserve hierarchical relationships during any move operation
+- **Location**: `hooks/_orchestrators/optimistic-move/children-migration.ts`
+- **Features**:
+  - Calculates new positions for all children
+  - Preserves relative positions
+  - Updates colors based on new locations
+  - Shared utility for both moves and swaps
+
+#### SwapHandler
+Adapter for delegating swap operations:
+- **Purpose**: Reuse optimistic-swap logic within move operations
+- **Location**: `hooks/_orchestrators/optimistic-move/swap-handler.ts`
+- **Features**:
+  - Adapts move mutation interface to swap interface
+  - Delegates to performOptimisticSwap
+  - Ensures consistency between move and swap behaviors
+
+#### ServerSynchronizer (Move)
+Specialized server sync for move operations:
+- **Purpose**: Confirm move updates with server response
+- **Location**: `hooks/_orchestrators/optimistic-move/server-sync.ts`
+- **Features**:
+  - Handles both moved parent and children
+  - Parses flexible parentId formats
+  - Replaces optimistic state with server truth
+
+### Mapping Domain Action Patterns
+
+#### TransactionScope
+Manages repository instances for transactional operations:
+- **Purpose**: Ensures all operations within a transaction use the same scope
+- **Location**: `lib/domains/mapping/_actions/map-item-actions/move-orchestrator.ts`
+- **Usage**: Wraps repositories with transaction context when provided
+- **Benefits**: Atomic operations across multiple repository calls
+
+#### MoveValidation
+Centralizes all move operation validation rules:
+- **Purpose**: Enforce business rules for different item types and spaces
+- **Location**: `lib/domains/mapping/_actions/map-item-actions/validation-strategy.ts`
+- **Rules**:
+  - USER items cannot become children or change space
+  - Items cannot move across user/group boundaries
+  - Parent items must exist for non-root positions
+
+#### MoveOrchestrator
+High-level coordination of the 3-step move/swap sequence:
+- **Purpose**: Orchestrate complex move operations with temporary positions
+- **Location**: `lib/domains/mapping/_actions/map-item-actions/move-orchestrator.ts`
+- **Steps**:
+  1. Move target to temporary position (if occupied)
+  2. Move source to target position
+  3. Move displaced item from temp to source position
+- **Features**:
+  - Handles both simple moves and swaps
+  - Collects all modified items for response
+  - Maintains data consistency throughout
+
 ## Related Documentation
 
 - [Tiles Documentation](../Tile/README.md)

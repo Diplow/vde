@@ -1,0 +1,1 @@
+export { canEditTile } from "./edit-permission";

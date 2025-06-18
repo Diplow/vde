@@ -3,11 +3,14 @@ import type { TileData } from "~/app/map/types/tile-data";
 import type { CacheState } from "~/app/map/Cache/State/types";
 import type { Coord } from "~/lib/domains/mapping/utils/hex-coordinates";
 
+export type DropOperation = 'move' | 'swap';
+
 export interface DragState {
   isDragging: boolean;
   draggedTileId: string | null;
   draggedTileData: TileData | null;
   dropTargetId: string | null;
+  dropOperation: DropOperation | null;
   dragOffset: { x: number; y: number };
 }
 
@@ -57,4 +60,5 @@ export interface UseDragAndDropReturn {
   isDraggingTile: (id: string) => boolean;
   isDropTarget: (id: string) => boolean;
   isDragging: boolean;
+  getDropOperation: (id: string) => DropOperation | null;
 }

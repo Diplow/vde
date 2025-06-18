@@ -44,10 +44,10 @@ This creates consistent depth and breadth limits throughout the codebase, mirror
 - Avoid abbreviations and acronyms
 - Names should answer "what" and "why", not "how"
 
-### 2. Establish Ubiquitous Language
+### 2. Establish Domain Language
 - When complexity reveals important concepts, they need precise definitions
 - Complex naming decisions should be validated with the team/user
-- Document new terms in `UBIQUITOUS.md` to maintain shared vocabulary
+- Document new terms in the relevant domain or component README (e.g., `src/app/map/Canvas/README.md`)
 - Refactoring is the perfect time to identify missing domain concepts
 
 **Signs a concept needs definition:**
@@ -355,7 +355,8 @@ Each refactor session file (`prompts/refactors/YYYY-MM-DD-explicit-title.md`) sh
 - **Proposed Changes**: High-level plan for the refactoring
 
 ### User Validation
-- **Concepts Approved**: Which new concepts were validated for UBIQUITOUS.md
+- **Concepts Approved**: Which new concepts were validated for documentation
+- **Documentation Location**: Which README file(s) will contain the new concepts
 - **Naming Decisions**: Any specific naming choices made with user
 - **Scope Adjustments**: Any changes to the refactoring scope
 
@@ -374,7 +375,7 @@ Each refactor session file (`prompts/refactors/YYYY-MM-DD-explicit-title.md`) sh
 4. List potential domain concepts that need naming
 5. Present findings to user for validation
 6. Update the refactor session file with user feedback
-7. Get approval on which concepts should enter UBIQUITOUS.md
+7. Get approval on which concepts should be documented in the relevant README
 
 ### Step 2: Execute Refactoring
 1. Apply all validated concepts consistently
@@ -461,9 +462,9 @@ Ask yourself:
 
 ### Documentation Updates
 ```bash
-# Update UBIQUITOUS.md with new concepts
-git add UBIQUITOUS.md
-git commit -m "docs: add TileDataTransformer to ubiquitous language"
+# Update relevant README with new concepts
+git add src/app/map/Canvas/README.md
+git commit -m "docs: add optimistic update concepts to Canvas documentation"
 
 # Update domain READMEs
 git add src/lib/domains/mapping/README.md

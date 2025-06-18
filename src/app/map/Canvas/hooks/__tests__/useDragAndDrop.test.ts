@@ -126,7 +126,7 @@ describe("useDragAndDrop", () => {
     expect(result.current.canDragTile("0,0")).toBe(false);
   });
 
-  it("should identify valid empty sibling drop targets", () => {
+  it("should identify valid drop targets in user space", () => {
     const cacheWithEmptySlots: CacheState = {
       ...mockCacheState,
       itemsById: {
@@ -164,8 +164,8 @@ describe("useDragAndDrop", () => {
       result.current.dragHandlers.onDragStart("0,0:1", mockDragEvent);
     });
     
-    // Now test that empty sibling positions are valid drop targets
-    // When dragging tile at 0:0:1, valid targets should be 0:0:2 through 0:0:6
+    // Now test that all positions in user space (userId=0) are valid drop targets
+    // Empty sibling positions
     expect(result.current.isValidDropTarget("0,0:2")).toBe(true);
     expect(result.current.isValidDropTarget("0,0:3")).toBe(true);
     expect(result.current.isValidDropTarget("0,0:4")).toBe(true);
@@ -175,9 +175,16 @@ describe("useDragAndDrop", () => {
     // Occupied position (self) should not be valid
     expect(result.current.isValidDropTarget("0,0:1")).toBe(false);
     
-    // Non-sibling positions should not be valid
-    expect(result.current.isValidDropTarget("0,0:1,1")).toBe(false); // Child position
-    expect(result.current.isValidDropTarget("0,1:1")).toBe(false); // Different parent
+    // Non-sibling positions in same user space ARE NOW VALID
+    expect(result.current.isValidDropTarget("0,0:1,1")).toBe(true); // Child position
+    expect(result.current.isValidDropTarget("0,0:2,3")).toBe(true); // Different parent, same user
+    
+    // With the new approach, even positions in different user space are valid
+    // The actual permission check happens during the operation
+    expect(result.current.isValidDropTarget("1,0:1")).toBe(true); // Different user space is now allowed
+    
+    // Root tile should not be valid drop target
+    expect(result.current.isValidDropTarget("0,0")).toBe(false)
   });
 
   it("should calculate new coordinates correctly", async () => {
@@ -286,7 +293,7 @@ describe("useDragAndDrop", () => {
     expect(result.current.dragState.draggedTileId).toBe("0,0:1");
     // Verify setData was called correctly
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    expect(mockDragEvent.dataTransfer?.setData).toHaveBeenCalledWith("tileId", "0,0:1");
+    expect(mockDragEvent.dataTransfer?.setData).toHaveBeenCalledWith("text/plain", "0,0:1");
 
     // Test drag over - dragHandlers won't work without a valid drop target
     // We need to find a sibling position that's empty
@@ -352,9 +359,9 @@ describe("useDragAndDrop", () => {
     // Now empty sibling should be valid drop target
     expect(result.current.isValidDropTarget("0,0:2")).toBe(true);
     
-    // Non-sibling positions should not be valid
-    expect(result.current.isValidDropTarget("0,0:1,1")).toBe(false);
-    expect(result.current.isValidDropTarget("0,1:1")).toBe(false);
+    // Non-sibling positions ARE NOW VALID with the new approach
+    expect(result.current.isValidDropTarget("0,0:1,1")).toBe(true);
+    expect(result.current.isValidDropTarget("0,1:1")).toBe(true);
   });
 
   it("should prevent dropping on occupied positions", () => {
@@ -393,7 +400,7 @@ describe("useDragAndDrop", () => {
       result.current.dragHandlers.onDragStart("0,0:1", mockDragEvent);
     });
 
-    // Occupied position should not be valid drop target
-    expect(result.current.isValidDropTarget("0,0:2")).toBe(false);
+    // Occupied position IS NOW VALID drop target (for swapping)
+    expect(result.current.isValidDropTarget("0,0:2")).toBe(true);
   });
 });
