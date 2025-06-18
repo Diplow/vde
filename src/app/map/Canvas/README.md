@@ -345,6 +345,37 @@ Specialized server sync for move operations:
   - Parses flexible parentId formats
   - Replaces optimistic state with server truth
 
+### Mapping Domain Action Patterns
+
+#### TransactionScope
+Manages repository instances for transactional operations:
+- **Purpose**: Ensures all operations within a transaction use the same scope
+- **Location**: `lib/domains/mapping/_actions/map-item-actions/move-orchestrator.ts`
+- **Usage**: Wraps repositories with transaction context when provided
+- **Benefits**: Atomic operations across multiple repository calls
+
+#### MoveValidation
+Centralizes all move operation validation rules:
+- **Purpose**: Enforce business rules for different item types and spaces
+- **Location**: `lib/domains/mapping/_actions/map-item-actions/validation-strategy.ts`
+- **Rules**:
+  - USER items cannot become children or change space
+  - Items cannot move across user/group boundaries
+  - Parent items must exist for non-root positions
+
+#### MoveOrchestrator
+High-level coordination of the 3-step move/swap sequence:
+- **Purpose**: Orchestrate complex move operations with temporary positions
+- **Location**: `lib/domains/mapping/_actions/map-item-actions/move-orchestrator.ts`
+- **Steps**:
+  1. Move target to temporary position (if occupied)
+  2. Move source to target position
+  3. Move displaced item from temp to source position
+- **Features**:
+  - Handles both simple moves and swaps
+  - Collects all modified items for response
+  - Maintains data consistency throughout
+
 ## Related Documentation
 
 - [Tiles Documentation](../Tile/README.md)

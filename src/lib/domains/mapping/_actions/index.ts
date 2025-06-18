@@ -1,1 +1,1 @@
-export { MapItemActions } from "./map-item.actions";
+export { MapItemActions } from "./map-item-actions";
