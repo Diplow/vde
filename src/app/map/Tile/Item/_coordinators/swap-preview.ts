@@ -23,14 +23,40 @@ export function getSwapPreviewColor(
     return getColorFromItem(item);
   }
 
-  // For swap operations, show preview of the color it would have after swap
-  // The dragged tile would take this position's coordinates
-  const targetCoords = CoordSystem.parseId(item.metadata.coordId);
-  const previewColorString = calculateColor(targetCoords);
-  const [colorName, tint] = previewColorString.split("-");
-  
-  return {
-    color: colorName as TileColor["color"],
-    tint: tint as TileColor["tint"]
-  };
+  try {
+    // For swap operations, show preview of the color it would have after swap
+    // The dragged tile would take this position's coordinates
+    const targetCoords = CoordSystem.parseId(item.metadata.coordId);
+    const previewColorString = calculateColor(targetCoords);
+    
+    // Validate color string format
+    if (!previewColorString || typeof previewColorString !== 'string') {
+      console.warn(`Invalid preview color: expected string, got ${typeof previewColorString}`);
+      return getColorFromItem(item); // Fallback to current color
+    }
+    
+    const parts = previewColorString.split("-");
+    
+    // Check if color string has correct format (colorName-tint)
+    if (parts.length !== 2) {
+      console.warn(`Invalid preview color format: "${previewColorString}". Expected "color-tint" format.`);
+      return getColorFromItem(item); // Fallback to current color
+    }
+    
+    const [colorName, tint] = parts;
+    
+    // Validate parts exist
+    if (!colorName || !tint) {
+      console.warn(`Invalid preview color parts: colorName="${colorName}", tint="${tint}"`);
+      return getColorFromItem(item); // Fallback to current color
+    }
+    
+    return {
+      color: colorName as TileColor["color"],
+      tint: tint as TileColor["tint"]
+    };
+  } catch (error) {
+    console.error(`Error calculating swap preview color:`, error);
+    return getColorFromItem(item); // Fallback to current color on any error
+  }
 }

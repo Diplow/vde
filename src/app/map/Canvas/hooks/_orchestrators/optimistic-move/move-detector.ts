@@ -11,12 +11,18 @@ export function detectMoveOperation(
   newCoordsId: string,
   selectors: CacheSelectors
 ): MoveOperation {
-  const sourceCoords = CoordSystem.parseId(tile.metadata.coordId);
-  const targetCoords = CoordSystem.parseId(newCoordsId);
+  let sourceCoords, targetCoords;
   
-  // Check if target position is occupied
+  try {
+    sourceCoords = CoordSystem.parseId(tile.metadata.coordId);
+    targetCoords = CoordSystem.parseId(newCoordsId);
+  } catch (error) {
+    throw new Error(`Failed to parse coordinates: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+  
+  // Check if target position is occupied (simplified truthy check)
   const targetTile = selectors.getItem(newCoordsId);
-  const isSwap = targetTile !== null && targetTile !== undefined;
+  const isSwap = !!targetTile;
   
   return {
     type: isSwap ? 'swap' : 'move',
@@ -39,9 +45,15 @@ export function validateMoveCoordinates(
   }
   
   // Check if trying to move to the same position
-  if (CoordSystem.createId(operation.sourceCoords) === 
-      CoordSystem.createId(operation.targetCoords)) {
-    return "Cannot move to the same position";
+  try {
+    const sourceId = CoordSystem.createId(operation.sourceCoords);
+    const targetId = CoordSystem.createId(operation.targetCoords);
+    
+    if (sourceId === targetId) {
+      return "Cannot move to the same position";
+    }
+  } catch (error) {
+    return `Invalid coordinate format: ${error instanceof Error ? error.message : 'Unknown error'}`;
   }
   
   return undefined;
