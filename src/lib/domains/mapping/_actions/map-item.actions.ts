@@ -8,11 +8,12 @@ import {
   type MapItemWithId,
   MapItemType,
 } from "~/lib/domains/mapping/_objects";
-import { type Coord } from "~/lib/domains/mapping/utils/hex-coordinates";
+import type { Coord } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { MapItemIdr } from "../_repositories/map-item";
 import { MapItemCreationHelpers } from "./_map-item-creation-helpers";
 import { MapItemQueryHelpers } from "./_map-item-query-helpers";
 import { MapItemMovementHelpers } from "./_map-item-movement-helpers";
+import type { DatabaseTransaction } from "../types/transaction";
 
 export class MapItemActions {
   public readonly mapItems: MapItemRepository;
@@ -86,38 +87,115 @@ export class MapItemActions {
   public async moveMapItem({
     oldCoords,
     newCoords,
+    tx,
   }: {
     oldCoords: Coord;
     newCoords: Coord;
+    tx?: DatabaseTransaction;
   }) {
-    const sourceItem = await this.getMapItem({ coords: oldCoords });
+    // Get appropriate repositories (transaction-scoped if tx provided)
+    const mapItems = tx && 'withTransaction' in this.mapItems 
+      ? (this.mapItems as MapItemRepository & { withTransaction: (tx: DatabaseTransaction) => MapItemRepository }).withTransaction(tx)
+      : this.mapItems;
+    const baseItems = tx && 'withTransaction' in this.baseItems
+      ? (this.baseItems as BaseItemRepository & { withTransaction: (tx: DatabaseTransaction) => BaseItemRepository }).withTransaction(tx)
+      : this.baseItems;
+      
+    // Create helpers with appropriate repositories
+    const queryHelpers = new MapItemQueryHelpers(mapItems, baseItems);
+    const movementHelpers = new MapItemMovementHelpers(mapItems, baseItems);
+    
+    const sourceItem = await queryHelpers.getMapItem({ coords: oldCoords });
     this._validateUserItemMove(sourceItem, newCoords);
     this._validateUserSpaceMove(sourceItem, newCoords);
 
     const { sourceParent, targetParent } =
-      await this.movementHelpers.validateCoordsForMove(
+      await movementHelpers.validateCoordsForMove(
         oldCoords,
         newCoords,
-        (coords) => this.getMapItem({ coords }),
-        (coords) => this.queryHelpers.getParent(coords),
+        (coords) => queryHelpers.getMapItem({ coords }),
+        (coords) => queryHelpers.getParent(coords),
       );
 
-    const targetItem = await this._getTargetItem(newCoords);
+    const targetItem = await mapItems
+      .getOneByIdr({ idr: { attrs: { coords: newCoords } } })
+      .catch(() => null);
+      
+      
     const tempCoordsHoldingTarget = await this._handleTargetItemDisplacement(
       targetItem,
       sourceParent,
       oldCoords,
+      movementHelpers,
+      queryHelpers,
     );
 
-    await this._moveSourceItem(sourceItem, newCoords, targetParent);
-    await this._restoreDisplacedItem(
-      targetItem,
-      tempCoordsHoldingTarget,
-      oldCoords,
-      sourceParent,
-    );
+    // Collect all items that will be modified
+    const modifiedItems: MapItemWithId[] = [];
+    
+    // Step 2: Move source item to target position
+    try {
+      await movementHelpers.move(
+        sourceItem,
+        newCoords,
+        targetParent,
+        (parentId) => queryHelpers.getDescendants(parentId),
+      );
+    } catch (error) {
+      console.error(`[MOVE STEP 2] Failed to move source item ${sourceItem.id}:`, error);
+      throw error;
+    }
+    
+    if (targetItem && tempCoordsHoldingTarget) {
+      // Step 3: Move target item from temp to source's original position
+      
+      // Refetch the target item with its temporary coordinates
+      const targetItemAtTemp = await mapItems.getOne(targetItem.id);
+      if (!targetItemAtTemp) {
+        console.error(`[MOVE STEP 3] Failed to retrieve target item ${targetItem.id} after moving to temporary position`);
+        throw new Error("Failed to retrieve target item after moving to temporary position");
+      }
+      
+      try {
+        await movementHelpers.move(
+          targetItemAtTemp,
+          oldCoords,
+          sourceParent,
+          (parentId) => queryHelpers.getDescendants(parentId),
+        );
+      } catch (error) {
+        console.error(`[MOVE STEP 3] Failed to move target item ${targetItem.id} from temp to source position:`, error);
+        throw error;
+      }
+    }
 
-    return this.mapItems.getOne(sourceItem.id);
+    // Get the moved item with new coordinates
+    const movedItem = await mapItems.getOne(sourceItem.id);
+    if (!movedItem) {
+      throw new Error("Failed to retrieve moved item");
+    }
+    modifiedItems.push(movedItem);
+    
+    // Get all descendants with their new coordinates
+    const updatedDescendants = await queryHelpers.getDescendants(sourceItem.id);
+    modifiedItems.push(...updatedDescendants);
+    
+    // If we swapped, also include the target item and its descendants
+    if (targetItem && tempCoordsHoldingTarget) {
+      const swappedTargetItem = await mapItems.getOne(targetItem.id);
+      if (swappedTargetItem) {
+        modifiedItems.push(swappedTargetItem);
+        const targetDescendants = await queryHelpers.getDescendants(targetItem.id);
+        modifiedItems.push(...targetDescendants);
+      }
+    }
+    
+    
+    return {
+      modifiedItems,
+      movedItemId: sourceItem.id,
+      affectedCount: modifiedItems.length,
+    };
   }
 
   public async getDescendants(parentId: number): Promise<MapItemWithId[]> {
@@ -182,16 +260,13 @@ export class MapItemActions {
     }
   }
 
-  private async _getTargetItem(newCoords: Coord) {
-    return await this.mapItems
-      .getOneByIdr({ idr: { attrs: { coords: newCoords } } })
-      .catch(() => null);
-  }
 
   private async _handleTargetItemDisplacement(
     targetItem: MapItemWithId | null,
     sourceParent: MapItemWithId | null,
     oldCoords: Coord,
+    movementHelpers: MapItemMovementHelpers,
+    queryHelpers: MapItemQueryHelpers,
   ) {
     if (!targetItem) return null;
 
@@ -202,42 +277,22 @@ export class MapItemActions {
       throw new Error("Cannot displace a USER (root) item with a child item.");
     }
 
-    return await this.movementHelpers.moveItemToTemporaryLocation(
-      targetItem,
-      sourceParent,
-      (item, coords, parent) =>
-        this.movementHelpers.move(item, coords, parent, (parentId) =>
-          this.getDescendants(parentId),
-        ),
-    );
-  }
-
-  private async _moveSourceItem(
-    sourceItem: MapItemWithId,
-    newCoords: Coord,
-    targetParent: MapItemWithId | null,
-  ) {
-    await this.movementHelpers.move(
-      sourceItem,
-      newCoords,
-      targetParent,
-      (parentId) => this.getDescendants(parentId),
-    );
-  }
-
-  private async _restoreDisplacedItem(
-    targetItem: MapItemWithId | null,
-    tempCoordsHoldingTarget: Coord | null,
-    oldCoords: Coord,
-    sourceParent: MapItemWithId | null,
-  ) {
-    if (targetItem && tempCoordsHoldingTarget) {
-      await this.movementHelpers.move(
+    // Step 1: Move target item to temporary position
+    try {
+      const tempCoords = await movementHelpers.moveItemToTemporaryLocation(
         targetItem,
-        oldCoords,
         sourceParent,
-        (parentId) => this.getDescendants(parentId),
+        (item, coords, parent) =>
+          movementHelpers.move(item, coords, parent, (parentId) =>
+            queryHelpers.getDescendants(parentId),
+          ),
       );
+      return tempCoords;
+    } catch (error) {
+      console.error(`[MOVE STEP 1] Failed to move target item ${targetItem.id} to temporary position:`, error);
+      throw error;
     }
   }
+
+
 }

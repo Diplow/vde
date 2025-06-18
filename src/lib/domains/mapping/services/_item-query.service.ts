@@ -77,12 +77,27 @@ export class ItemQueryService {
   }: {
     oldCoords: Coord;
     newCoords: Coord;
-  }): Promise<MapItemContract> {
-    const movedItem = await this.actions.moveMapItem({
-      oldCoords,
-      newCoords,
+  }) {
+    // Import TransactionManager at the top of the file
+    const { TransactionManager } = await import("../infrastructure/transaction-manager");
+    
+    // Wrap the move operation in a transaction to ensure atomicity
+    // This is critical for swap operations which involve multiple database updates
+    const result = await TransactionManager.runInTransaction(async (tx) => {
+      return await this.actions.moveMapItem({
+        oldCoords,
+        newCoords,
+        tx, // Pass the transaction to the actions layer
+      });
     });
-    const userId = movedItem.attrs.coords.userId;
-    return adapt.mapItem(movedItem, userId);
+    
+    return {
+      modifiedItems: result.modifiedItems.map(item => {
+        const userId = item.attrs.coords.userId;
+        return adapt.mapItem(item, userId);
+      }),
+      movedItemId: result.movedItemId,
+      affectedCount: result.affectedCount,
+    };
   }
 }

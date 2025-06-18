@@ -37,6 +37,13 @@ export class DbBaseItemRepository implements BaseItemRepository {
     this.db = db;
   }
 
+  /**
+   * Create a new repository instance that uses the given transaction
+   */
+  withTransaction(tx: PostgresJsDatabase<typeof schemaImport>): DbBaseItemRepository {
+    return new DbBaseItemRepository(tx);
+  }
+
   public handleCascading(): boolean {
     return true;
   }

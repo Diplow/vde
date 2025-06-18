@@ -193,11 +193,17 @@ export const mapItemsRouter = createTRPCRouter({
         }
       }
       
-      const item = await ctx.mappingService.items.query.moveMapItem({
+      const result = await ctx.mappingService.items.query.moveMapItem({
         oldCoords: oldCoords,
         newCoords: newCoords,
       });
-      return contractToApiAdapters.mapItem(item);
+      
+      // Convert domain objects to API contracts
+      return {
+        modifiedItems: result.modifiedItems.map(contractToApiAdapters.mapItem),
+        movedItemId: String(result.movedItemId),
+        affectedCount: result.affectedCount,
+      };
     }),
 
   // Get descendants

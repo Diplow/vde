@@ -123,3 +123,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Drag and drop styles */
+.dragging {
+  opacity: 0.5 !important;
+}
+
+/* Ensure the drag image (ghost) also has reduced opacity */
+.dragging * {
+  opacity: inherit !important;
+}

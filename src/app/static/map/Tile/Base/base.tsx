@@ -17,7 +17,7 @@ export type TileStroke = {
 export type TileScale = -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 export type TileColor = {
-  color: "zinc" | "amber" | "lime" | "fuchsia" | "rose" | "indigo" | "cyan";
+  color: "zinc" | "amber" | "green" | "fuchsia" | "rose" | "indigo" | "cyan";
   tint:
     | "50"
     | "100"

@@ -26,12 +26,21 @@ export class DbMapItemRepository implements MapItemRepository {
   private writeQueries: WriteQueries;
   private specializedQueries: SpecializedQueries;
   private relationQueries: RelationQueries;
+  private db: PostgresJsDatabase<typeof schemaImport>;
 
   constructor(db: PostgresJsDatabase<typeof schemaImport>) {
+    this.db = db;
     this.readQueries = new ReadQueries(db);
     this.writeQueries = new WriteQueries(db);
     this.specializedQueries = new SpecializedQueries(db);
     this.relationQueries = new RelationQueries();
+  }
+
+  /**
+   * Create a new repository instance that uses the given transaction
+   */
+  withTransaction(tx: PostgresJsDatabase<typeof schemaImport>): DbMapItemRepository {
+    return new DbMapItemRepository(tx);
   }
 
   public handleCascading(): boolean {

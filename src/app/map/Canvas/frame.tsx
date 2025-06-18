@@ -1,4 +1,4 @@
-import { getColorFromItem, DynamicItemTile } from "../Tile/Item/item";
+import { DynamicItemTile, getColorFromItem } from "../Tile/Item";
 import {
   StaticBaseTileLayout,
   type TileScale,
