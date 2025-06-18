@@ -103,7 +103,7 @@ describe("Rollback Handler", () => {
         serverOperation,
         onSuccess,
         onError
-      });
+      }) as string;
 
       expect(optimisticUpdate).toHaveBeenCalled();
       expect(serverOperation).toHaveBeenCalled();
