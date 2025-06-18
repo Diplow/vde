@@ -27,10 +27,10 @@ function _mapServerItemToTileUpdate(
   const updates: Partial<TileData> = {};
   
   // Update coordinates if changed
-  if (serverItem.coords !== existingTile.metadata.coordId) {
+  if (serverItem.coordinates !== existingTile.metadata.coordId) {
     updates.metadata = {
       ...existingTile.metadata,
-      coordId: serverItem.coords
+      coordId: serverItem.coordinates
     };
   }
   

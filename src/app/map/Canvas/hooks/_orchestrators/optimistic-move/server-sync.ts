@@ -43,12 +43,12 @@ function _parseParentId(parentId: string | null): string | undefined {
  * Maps server fields to client tile format.
  */
 function _serverItemToTileData(item: ServerModifiedItem): TileData {
-  const coords = CoordSystem.parseId(item.coords);
+  const coords = CoordSystem.parseId(item.coordinates);
   
   return {
     metadata: {
       dbId: item.id,
-      coordId: item.coords,
+      coordId: item.coordinates,
       coordinates: coords,
       parentId: _parseParentId(item.parentId),
       depth: item.depth,
@@ -94,7 +94,7 @@ export function confirmServerMoveUpdate(
     
     // Add all modified items at their confirmed positions
     modifiedItems.forEach(item => {
-      updatedItems[item.coords] = _serverItemToTileData(item);
+      updatedItems[item.coordinates] = _serverItemToTileData(item);
     });
     
     return {

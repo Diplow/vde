@@ -12,7 +12,7 @@ export interface SwapMapItemMutation {
   }) => Promise<{
     swappedItems: Array<{
       id: string;
-      coords: string;
+      coordinates: string;
       depth: number;
       name: string;
       descr: string;
@@ -41,6 +41,6 @@ export interface SwapResult {
 
 export interface ServerSwapItem {
   id: string;
-  coords: string;
+  coordinates: string;
   parentId: string | null;
 }

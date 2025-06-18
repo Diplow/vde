@@ -17,7 +17,7 @@ export interface MoveMapItemMutation {
 
 export interface ServerModifiedItem {
   id: string;
-  coords: string;
+  coordinates: string;
   depth: number;
   name: string;
   descr: string;
