@@ -1,1 +1,1 @@
-export { canDragTile } from "./drag-permission";
+export { canDragTile, canSwapTiles } from "./drag-permission";

@@ -78,9 +78,17 @@ export class ItemQueryService {
     oldCoords: Coord;
     newCoords: Coord;
   }) {
-    const result = await this.actions.moveMapItem({
-      oldCoords,
-      newCoords,
+    // Import TransactionManager at the top of the file
+    const { TransactionManager } = await import("../infrastructure/transaction-manager");
+    
+    // Wrap the move operation in a transaction to ensure atomicity
+    // This is critical for swap operations which involve multiple database updates
+    const result = await TransactionManager.runInTransaction(async (tx) => {
+      return await this.actions.moveMapItem({
+        oldCoords,
+        newCoords,
+        tx, // Pass the transaction to the actions layer
+      });
     });
     
     return {

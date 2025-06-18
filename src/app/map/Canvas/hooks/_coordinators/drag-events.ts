@@ -6,8 +6,12 @@ export function setupDragStart(
   event: DragEvent<HTMLDivElement>,
   coordId: string
 ): void {
+  // Set the drag effect
   event.dataTransfer.effectAllowed = "move";
-  event.dataTransfer.setData("tileId", coordId);
+  event.dataTransfer.setData("text/plain", coordId);
+  
+  // The browser should automatically create a semi-transparent drag image
+  // We don't set a custom drag image to preserve the default behavior
 }
 
 export function setupDragOver(
@@ -36,6 +40,7 @@ export function createDragState(
     draggedTileId: coordId,
     draggedTileData: tile,
     dropTargetId: null,
+    dropOperation: null,
     dragOffset: { 
       x: event.nativeEvent.offsetX, 
       y: event.nativeEvent.offsetY 

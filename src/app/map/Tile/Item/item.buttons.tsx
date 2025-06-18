@@ -109,10 +109,6 @@ export const DynamicTileButtons = ({
     try {
       // Use dynamic navigation method for instant feedback
       // Navigation should push to history (user wants to go back)
-      console.log(
-        "[DEBUG] About to call navigateToItem with:",
-        item.metadata.coordId,
-      );
       await navigateToItem(item.metadata.coordId, { pushToHistory: true });
       testLogger.info(`Navigation successful to ${item.metadata.coordId}`);
     } catch (error) {

@@ -1,1 +1,1 @@
-export { getValidDropTargets, isValidDropTarget } from "./drop-targets";
+export { getValidDropTargets, isValidDropTarget, getDropOperationType } from "./drop-targets";
