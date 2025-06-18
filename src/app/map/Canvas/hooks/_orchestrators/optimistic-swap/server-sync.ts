@@ -39,7 +39,7 @@ function _mapServerItemToTileUpdate(
     updates.metadata = {
       ...existingTile.metadata,
       ...updates.metadata,
-      parentId: serverItem.parentId || undefined
+      parentId: serverItem.parentId ?? undefined
     };
   }
   

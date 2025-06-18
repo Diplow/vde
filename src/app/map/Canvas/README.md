@@ -307,6 +307,44 @@ Confirms optimistic updates with server responses:
   - Handles partial update scenarios
   - Only updates fields that changed on server
 
+### Move Operation Patterns
+
+#### MoveOperation
+Distinguishes between simple moves and swap operations:
+- **Purpose**: Determine appropriate update strategy based on target occupancy
+- **Location**: `hooks/_orchestrators/optimistic-move/move-detector.ts`
+- **Types**:
+  - `move`: Target position is empty
+  - `swap`: Target position is occupied
+
+#### ChildrenMigrationStrategy
+Manages child tile migration during parent moves:
+- **Purpose**: Preserve hierarchical relationships during any move operation
+- **Location**: `hooks/_orchestrators/optimistic-move/children-migration.ts`
+- **Features**:
+  - Calculates new positions for all children
+  - Preserves relative positions
+  - Updates colors based on new locations
+  - Shared utility for both moves and swaps
+
+#### SwapHandler
+Adapter for delegating swap operations:
+- **Purpose**: Reuse optimistic-swap logic within move operations
+- **Location**: `hooks/_orchestrators/optimistic-move/swap-handler.ts`
+- **Features**:
+  - Adapts move mutation interface to swap interface
+  - Delegates to performOptimisticSwap
+  - Ensures consistency between move and swap behaviors
+
+#### ServerSynchronizer (Move)
+Specialized server sync for move operations:
+- **Purpose**: Confirm move updates with server response
+- **Location**: `hooks/_orchestrators/optimistic-move/server-sync.ts`
+- **Features**:
+  - Handles both moved parent and children
+  - Parses flexible parentId formats
+  - Replaces optimistic state with server truth
+
 ## Related Documentation
 
 - [Tiles Documentation](../Tile/README.md)

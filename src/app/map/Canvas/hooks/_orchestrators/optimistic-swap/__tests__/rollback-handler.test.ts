@@ -6,23 +6,29 @@ import {
   type OptimisticUpdateRollback
 } from "../rollback-handler";
 import type { CacheState } from "~/app/map/Cache/State/types";
+import type { TileData } from "~/app/map/types/tile-data";
 
 describe("Rollback Handler", () => {
   const mockCacheState: CacheState = {
-    itemsById: { "1,1:1": { metadata: { coordId: "1,1:1" } } as any },
+    itemsById: { "1,1:1": { metadata: { coordId: "1,1:1" } } as TileData },
     regionMetadata: {},
     currentCenter: null,
     expandedItemIds: [],
     isLoading: false,
     error: null,
     lastUpdated: Date.now(),
-    cacheConfig: { maxAge: 300000, maxDepth: 3 }
+    cacheConfig: { 
+      maxAge: 300000, 
+      maxDepth: 3,
+      backgroundRefreshInterval: 60000,
+      enableOptimisticUpdates: true
+    }
   };
 
   describe("createCacheRollbackHandler", () => {
     it("should capture and rollback state", () => {
       let currentState = { ...mockCacheState };
-      const updateCache = vi.fn((updater) => {
+      const updateCache = vi.fn((updater: (state: CacheState) => CacheState) => {
         currentState = updater(currentState);
       });
 
@@ -43,8 +49,8 @@ describe("Rollback Handler", () => {
       expect(updateCache).toHaveBeenCalledWith(expect.any(Function));
       
       // Verify the updater function returns the captured state
-      const updaterFn = updateCache.mock.calls[0][0];
-      expect(updaterFn(currentState)).toEqual(capturedState);
+      const updaterFn = updateCache.mock.calls[0]?.[0];
+      expect(updaterFn?.(currentState)).toEqual(capturedState);
     });
   });
 
