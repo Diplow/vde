@@ -240,18 +240,41 @@ export function cacheReducer(
     case ACTION_TYPES.UPDATE_ITEMS: {
       const updates = action.payload;
       const newItemsById = { ...state.itemsById };
+      const deletedCoordIds: string[] = [];
       
       Object.entries(updates).forEach(([coordId, item]) => {
         if (item === undefined) {
           delete newItemsById[coordId];
+          deletedCoordIds.push(coordId);
         } else {
           newItemsById[coordId] = item;
         }
       });
       
+      // Update region metadata to remove deleted items
+      let newRegionMetadata = state.regionMetadata;
+      if (deletedCoordIds.length > 0) {
+        newRegionMetadata = { ...state.regionMetadata };
+        Object.keys(newRegionMetadata).forEach(regionKey => {
+          const region = newRegionMetadata[regionKey];
+          if (region) {
+            const filteredCoordIds = region.itemCoordIds.filter(
+              id => !deletedCoordIds.includes(id)
+            );
+            if (filteredCoordIds.length !== region.itemCoordIds.length) {
+              newRegionMetadata[regionKey] = {
+                ...region,
+                itemCoordIds: filteredCoordIds,
+              };
+            }
+          }
+        });
+      }
+      
       return {
         ...state,
         itemsById: newItemsById,
+        regionMetadata: newRegionMetadata,
         lastUpdated: Date.now(),
       };
     }
