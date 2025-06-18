@@ -265,6 +265,48 @@ The drag and drop implementation follows Hexframe's Rule of 6 principle:
 
 Each module maintains a single level of abstraction and clear responsibility boundaries.
 
+## Domain Concepts
+
+### Optimistic UI Patterns
+
+#### OptimisticUpdateRollback
+A reusable pattern for handling optimistic UI updates with automatic rollback capability:
+- **Purpose**: Capture state before changes and provide rollback on failure
+- **Usage**: Wrap any async operation that needs optimistic updates
+- **Location**: `hooks/_orchestrators/optimistic-swap/rollback-handler.ts`
+- **Key Methods**:
+  - `captureState()`: Saves current state before changes
+  - `rollback(previousState)`: Restores state on error
+  - `withRollback()`: Higher-order function for automatic rollback
+  - `executeOptimisticUpdate()`: Complete optimistic update flow
+
+#### TileSwapOperation
+Encapsulates the logic of swapping two tiles' positions:
+- **Responsibilities**: Coordinate swapping, color updates, parent reassignment
+- **Location**: `hooks/_orchestrators/optimistic-swap/swap-operation.ts`
+- **Key Operations**:
+  - Swaps coordinates between tiles
+  - Updates colors based on new positions
+  - Maintains data consistency
+
+#### ChildrenRelocationStrategy
+Manages how child tiles follow their parent during swaps:
+- **Purpose**: Preserve hierarchical relationships during tile movements
+- **Location**: `hooks/_orchestrators/optimistic-swap/children-relocation.ts`
+- **Process**:
+  - Calculates relative paths from old parent
+  - Applies paths to new parent location
+  - Updates all child metadata and colors
+
+#### ServerSynchronizer
+Confirms optimistic updates with server responses:
+- **Purpose**: Ensure eventual consistency between optimistic and server state
+- **Location**: `hooks/_orchestrators/optimistic-swap/server-sync.ts`
+- **Features**:
+  - Maps server response to cache updates
+  - Handles partial update scenarios
+  - Only updates fields that changed on server
+
 ## Related Documentation
 
 - [Tiles Documentation](../Tile/README.md)
