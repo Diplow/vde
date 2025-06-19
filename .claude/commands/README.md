@@ -45,13 +45,27 @@ Creates an issue documenting WHAT is wrong from a user/product perspective.
 ```
 
 #### 2. /context
-Adds technical and product context to the issue document.
+Gathers and documents relevant codebase context without proposing solutions.
+- Analyzes architecture and current implementation
+- Maps dependencies and affected areas
 - Appends "## Context" section to the document
-- Posts the context section as a GitHub comment
+- Posts the context analysis as a GitHub comment
+
+**What it does:**
+- Reads relevant README and architecture files
+- Investigates current code patterns and terminology
+- Identifies all affected components
+- Documents technical constraints and risks
+- Notes outdated or missing documentation
 
 **Usage:**
 ```
 /context #<issue-number>
+```
+
+**Example:**
+```
+/context #49
 ```
 
 #### 3. /solution
