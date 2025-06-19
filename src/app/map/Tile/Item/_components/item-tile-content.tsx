@@ -59,7 +59,6 @@ export function ItemTileContent({
           color={tileColor}
           baseHexSize={baseHexSize}
           isFocusable={false}
-          isExpanded={allExpandedItemIds.includes(item.metadata.dbId)}
         >
           <DynamicTileContent
             data={{

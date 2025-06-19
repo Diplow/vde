@@ -18,7 +18,6 @@ export interface DynamicBaseTileLayoutProps {
   isFocusable?: boolean;
   baseHexSize?: number;
   _shallow?: boolean;
-  isExpanded?: boolean;
 }
 
 export const DynamicBaseTileLayout = ({
@@ -31,18 +30,15 @@ export const DynamicBaseTileLayout = ({
   isFocusable = false,
   baseHexSize = 50,
   _shallow = false,
-  isExpanded = false,
 }: DynamicBaseTileLayoutProps) => {
-  // Calculate default stroke based on scale and expansion
-  const defaultStroke = isExpanded 
-    ? { color: "transparent" as const, width: 0 }
-    : scale === 3 
-      ? { color: "zinc-950" as const, width: 0.75 } 
-      : scale === 2 
-        ? { color: "zinc-900" as const, width: 0.5 } 
-        : scale === 1 
-          ? { color: "zinc-900" as const, width: 0.25 } 
-          : { color: "transparent" as const, width: 0 };
+  // Calculate default stroke based on scale only (not expansion state)
+  const defaultStroke = scale === 3 
+    ? { color: "zinc-950" as const, width: 0.75 } 
+    : scale === 2 
+      ? { color: "zinc-900" as const, width: 0.5 } 
+      : scale === 1 
+        ? { color: "zinc-900" as const, width: 0.25 } 
+        : { color: "transparent" as const, width: 0 };
   
   const finalStroke = stroke ?? defaultStroke;
   // Calculate dimensions based on scale
