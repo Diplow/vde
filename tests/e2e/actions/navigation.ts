@@ -69,4 +69,9 @@ export class NavigationActions {
     // TODO: Convert IDs back to paths based on actual implementation
     return [];
   }
+
+  async goToLoginPage() {
+    await this.page.goto('http://localhost:3000/auth/login');
+    await this.page.waitForLoadState("domcontentloaded");
+  }
 }

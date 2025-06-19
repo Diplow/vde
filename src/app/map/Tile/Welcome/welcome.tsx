@@ -5,9 +5,7 @@ import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { DynamicBaseTileLayout } from "~/app/map/Tile/Base";
 
-export interface WelcomeTileProps {
-  // No props needed for now
-}
+export type WelcomeTileProps = Record<string, never>;
 
 export default function WelcomeTile() {
   return (

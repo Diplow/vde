@@ -26,14 +26,14 @@ export const DynamicTileContent = ({ data, scale, tileId }: DynamicTileContentPr
   // For scale 2 and 3, combine title and description
   if (scale >= 2 && (data.title || data.description)) {
     const combinedContent = data.title 
-      ? `# ${data.title}\n${data.description || ''}`
-      : data.description || '';
+      ? `# ${data.title}\n${data.description ?? ''}`
+      : data.description ?? '';
     
     return (
       <div
         className={`${marginClass} ${horizontalPadding} flex h-full w-full flex-col items-center justify-center gap-2 overflow-hidden`}
       >
-        <DescriptionSection description={combinedContent} scale={scale} title={data.title} tileId={tileId} />
+        <DescriptionSection description={combinedContent} scale={scale} tileId={tileId} />
         {data.url && scale > 2 && <UrlSection url={data.url} scale={scale} />}
       </div>
     );
@@ -85,7 +85,7 @@ const TitleSection = ({ title, scale, tileId }: { title: string; scale: TileScal
   );
 };
 
-const DescriptionSection = ({ description, scale, title, tileId }: { description: string; scale: TileScale; title?: string; tileId?: string }) => {
+const DescriptionSection = ({ description, scale, tileId }: { description: string; scale: TileScale; tileId?: string }) => {
   if (scale < 2) return null;
   
   // For scale 2 and above, show full description with scrolling

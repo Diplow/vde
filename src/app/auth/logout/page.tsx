@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { api } from "~/commons/trpc/react";
 import { authClient } from "~/lib/auth/auth-client";
 
 export default function LogoutPage() {
-  const router = useRouter();
   const { mutate: logout } = api.auth.logout.useMutation({
     onSuccess: async () => {
       // Clear client-side auth state
@@ -29,8 +27,10 @@ export default function LogoutPage() {
       console.error("Logout error:", error);
       // Still try to clear client state even on error
       try {
-        authClient.signOut();
-      } catch {}
+        void authClient.signOut();
+      } catch {
+        // Ignore errors during cleanup
+      }
       
       if (typeof window !== "undefined") {
         window.localStorage.removeItem("offline_auth");

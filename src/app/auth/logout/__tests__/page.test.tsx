@@ -17,18 +17,13 @@ vi.mock("~/lib/auth/auth-client", () => ({
 }));
 
 // Mock tRPC
-let mockMutate: any;
+let mockMutate: ReturnType<typeof vi.fn>;
 vi.mock("~/commons/trpc/react", () => ({
   api: {
     auth: {
       logout: {
-        useMutation: (options: any) => {
-          mockMutate = vi.fn(() => {
-            // Store options to call them in tests
-            if (window.__testOptions) {
-              window.__testOptions = options;
-            }
-          });
+        useMutation: () => {
+          mockMutate = vi.fn();
           return { mutate: mockMutate };
         },
       },
@@ -36,22 +31,18 @@ vi.mock("~/commons/trpc/react", () => ({
   },
 }));
 
-// Add type for window
-declare global {
-  interface Window {
-    __testOptions?: any;
-  }
-}
-
 describe("LogoutPage", () => {
   const mockPush = vi.fn();
   
   beforeEach(() => {
     vi.clearAllMocks();
-    mockMutate = undefined;
-    window.__testOptions = undefined;
-    (useRouter as any).mockReturnValue({
+    vi.mocked(useRouter).mockReturnValue({
       push: mockPush,
+      back: vi.fn(),
+      forward: vi.fn(),
+      refresh: vi.fn(),
+      replace: vi.fn(),
+      prefetch: vi.fn(),
     });
   });
 
