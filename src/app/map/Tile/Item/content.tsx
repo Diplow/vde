@@ -11,11 +11,12 @@ export interface DynamicTileContentProps {
   };
   scale: TileScale;
   tileId?: string;
+  isHovered?: boolean;
 }
 
 const TEXT_CLASSES = "break-words text-zinc-950";
 
-export const DynamicTileContent = ({ data, scale, tileId }: DynamicTileContentProps) => {
+export const DynamicTileContent = ({ data, scale, tileId, isHovered = false }: DynamicTileContentProps) => {
   if (!data) return null;
 
   const marginClass =
@@ -23,8 +24,46 @@ export const DynamicTileContent = ({ data, scale, tileId }: DynamicTileContentPr
   // Add horizontal padding that scales with tile size
   const horizontalPadding = scale === 1 ? "px-2" : scale === 2 ? "px-4" : scale === 3 ? "px-[10%]" : "px-[15%]";
   
-  // For scale 2 and 3, combine title and description
-  if (scale >= 2 && (data.title || data.description)) {
+  // For scale 2, show different content based on hover state
+  if (scale === 2 && (data.title || data.description)) {
+    // On hover, show unified markdown
+    if (isHovered) {
+      const combinedContent = data.title 
+        ? `# ${data.title}\n${data.description ?? ''}`
+        : data.description ?? '';
+      
+      return (
+        <div
+          className={`${marginClass} ${horizontalPadding} flex h-full w-full flex-col items-center justify-center gap-2 overflow-hidden`}
+        >
+          <DescriptionSection description={combinedContent} scale={scale} tileId={tileId} />
+        </div>
+      );
+    }
+    
+    // Default: show title + truncated description
+    const truncatedDescription = data.description 
+      ? data.description.length > 200 
+        ? `${data.description.substring(0, 200)}...` 
+        : data.description
+      : '';
+    
+    return (
+      <div
+        className={`${marginClass} ${horizontalPadding} flex h-full w-full flex-col items-center justify-center gap-2 overflow-hidden`}
+      >
+        {data.title && <TitleSection title={data.title} scale={scale} tileId={tileId} />}
+        {truncatedDescription && (
+          <div className="w-full text-xs text-zinc-950 text-center">
+            {truncatedDescription}
+          </div>
+        )}
+      </div>
+    );
+  }
+  
+  // For scale 3+, always show combined content
+  if (scale >= 3 && (data.title || data.description)) {
     const combinedContent = data.title 
       ? `# ${data.title}\n${data.description ?? ''}`
       : data.description ?? '';

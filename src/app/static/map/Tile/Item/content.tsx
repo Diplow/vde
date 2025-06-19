@@ -50,14 +50,19 @@ const TitleSection = (title: string, scale: TileScale, tileId?: string) => {
 };
 
 const DescriptionSection = (description: string, scale: TileScale) => {
-  if (scale < 3) return null;
+  if (scale < 2) return null;
+  
+  // Different truncation lengths for different scales
+  const maxLength = scale === 2 ? 200 : 1500;
   const truncatedDescription =
-    description.length > 1500
-      ? `${description.substring(0, 1500)}...`
+    description.length > maxLength
+      ? `${description.substring(0, maxLength)}...`
       : description;
+  
+  const textSize = scale === 2 ? "text-xs" : "text-sm";
 
   return (
-    <div className={`mt-1 text-sm ${TEXT_CLASSES}`}>{truncatedDescription}</div>
+    <div className={`mt-1 ${textSize} ${TEXT_CLASSES}`}>{truncatedDescription}</div>
   );
 };
 
