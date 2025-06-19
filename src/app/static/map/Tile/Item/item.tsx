@@ -41,6 +41,7 @@ export const StaticItemTile = ({
   // Generate test ID from coordinates
   const testId = `tile-${item.metadata.coordinates.userId}-${item.metadata.coordinates.groupId}-${item.metadata.coordinates.path.join("-")}`;
 
+  console.log({ scale, testId })
   // Log tile rendering for E2E tests
   testLogger.component("StaticItemTile", {
     testId,

@@ -97,9 +97,9 @@ export const DynamicBaseTileLayout = ({
             d={svgPath}
             className={`transition-all duration-300 ${fillClass}`}
             stroke={
-              finalStroke.color === "zinc-950" ? "#18181b" : 
-              finalStroke.color === "zinc-900" ? "#27272a" :
-              finalStroke.color === "zinc-800" ? "#3f3f46" :
+              finalStroke.color === "zinc-950" ? "rgba(24, 24, 27, 0.6)" : // 60% opacity 
+              finalStroke.color === "zinc-900" ? "rgba(39, 39, 42, 0.5)" : // 50% opacity
+              finalStroke.color === "zinc-800" ? "rgba(63, 63, 70, 0.4)" : // 40% opacity
               finalStroke.color === "zinc-50" ? "#fafafa" : 
               "transparent"
             }
