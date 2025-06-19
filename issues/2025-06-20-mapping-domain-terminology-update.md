@@ -7,12 +7,14 @@
 **Branch**: mapping-terminology-update
 
 ## Problem Statement
-The mapping domain uses outdated terminology that doesn't align with the current conceptual model of the application. This inconsistency makes the codebase harder to understand and maintain.
+The mapping domain uses outdated terminology that doesn't align with the current conceptual model of the application. This is not just a mismatch between front-end code and domain code, but rather a lack of clarity compared to what is conceptualized. Consistent language has proven track records of better results when it comes to both humans and AI.
 
 ## User Impact
 - Developers are confused by mismatched terminology between UI and domain code
 - New contributors need extra time to understand the mapping between old and new terms
 - Code maintainability is reduced due to conceptual misalignment
+- AI assistants have difficulty understanding and working with inconsistent terminology
+- Domain-driven design principles are violated by unclear language
 
 ## Steps to Reproduce
 1. Navigate to `/src/lib/domains/mapping/`
