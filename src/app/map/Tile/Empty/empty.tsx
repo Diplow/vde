@@ -44,6 +44,15 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
   const [showModal, setShowModal] = useState(false);
   const [useDynamicDialog] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
+  
+  // Calculate default stroke for this scale
+  const defaultStroke = props.scale === 3 
+    ? { color: "zinc-950" as const, width: 0.75 } 
+    : props.scale === 2 
+      ? { color: "zinc-900" as const, width: 0.5 } 
+      : props.scale === 1 
+        ? { color: "zinc-900" as const, width: 0.25 } 
+        : { color: "transparent" as const, width: 0 };
 
   // Safely check if we're within a DynamicMapCanvas context
   const tileActions = useContext(TileActionsContext);
@@ -113,7 +122,7 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
             }
             return undefined; // No fill color for transparent tiles
           })()}
-          stroke={{ color: "transparent", width: 0 }}
+          stroke={isHovered ? defaultStroke : { color: "transparent", width: 0 }}
           cursor="cursor-pointer"
           baseHexSize={props.baseHexSize}
           isFocusable={true}
