@@ -3,7 +3,7 @@
 **Date**: 2025-06-20
 **Status**: Open
 **Tags**: #refactor #architecture #tech #mapping #medium
-**GitHub Issue**: #TBD
+**GitHub Issue**: #49
 **Branch**: mapping-terminology-update
 
 ## Problem Statement

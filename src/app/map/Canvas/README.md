@@ -381,4 +381,4 @@ High-level coordination of the 3-step move/swap sequence:
 - [Tiles Documentation](../Tile/README.md)
 - [Cache Documentation](../Cache/README.md)
 - [Mapping Domain](../../../lib/domains/mapping/README.md)
-- [Refactoring Session](../../../../prompts/refactors/2025-01-17-drag-drop-hook-clarity.md)
+- [Refactoring Session](../../../../issues/archive/refactors/2025-01-17-drag-drop-hook-clarity.md)
