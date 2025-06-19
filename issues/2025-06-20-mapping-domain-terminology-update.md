@@ -125,3 +125,21 @@ Key architectural decisions:
 - `/src/lib/domains/mapping/types/contracts.ts` - API contract definitions
 - `/src/server/db/schema/map.ts` - Database schema definitions
 - `/src/app/map/Tile/` - UI components using "tile" terminology
+
+### Scope Restrictions (Updated)
+
+**Initial refactoring will focus on:**
+- Domain objects in `_objects/`
+- Repositories in `_repositories/`
+- Actions in `_actions/`
+
+**Will NOT change (in this phase):**
+- Domain services
+- Database tables and schema
+- API endpoints
+
+**Approach:**
+During solution planning, we should:
+- List all current objects, actions, repositories, and service methods
+- Discuss which terms to update, keep, or remove
+- Focus on aligning the domain language first before propagating changes outward
