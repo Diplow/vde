@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { TileData } from "~/app/map/types/tile-data";
 import { DynamicBaseTileLayout } from "~/app/map/Tile/Base";
-import type { TileScale, TileColor } from "~/app/static/map/Tile/Base/base";
+import type { TileScale, TileColor, TileStroke } from "~/app/static/map/Tile/Base/base";
 import { DynamicTileContent } from "../content";
 import { DynamicTileButtons } from "../item.buttons";
 import type { URLInfo } from "~/app/map/types/url-info";
@@ -23,6 +23,7 @@ interface ItemTileContentProps {
   canEdit: boolean;
   onEditClick: () => void;
   onDeleteClick: () => void;
+  stroke?: TileStroke;
 }
 
 /**
@@ -44,6 +45,7 @@ export function ItemTileContent({
   canEdit,
   onEditClick,
   onDeleteClick,
+  stroke,
 }: ItemTileContentProps) {
   const [isHovered, setIsHovered] = useState(false);
   
@@ -59,6 +61,7 @@ export function ItemTileContent({
           color={tileColor}
           baseHexSize={baseHexSize}
           isFocusable={false}
+          stroke={stroke}
         >
           <DynamicTileContent
             data={{

@@ -129,6 +129,7 @@ export const DynamicFrame = ({
             urlInfo={urlInfo}
             interactive={interactive}
             currentUserId={currentUserId}
+            stroke={{ color: "transparent" as const, width: 0 }}
           />
         </div>
         <RenderChild

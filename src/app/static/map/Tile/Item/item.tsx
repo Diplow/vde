@@ -3,6 +3,7 @@ import {
   StaticBaseTileLayout,
   type TileColor,
   type TileScale,
+  type TileStroke,
 } from "~/app/static/map/Tile/Base/base";
 import { StaticTileContent } from "~/app/static/map/Tile/Item/content";
 import { TileButtons } from "./item.buttons";
@@ -18,6 +19,7 @@ export interface StaticItemTileProps {
   isCenter?: boolean;
   urlInfo: URLInfo;
   interactive?: boolean;
+  stroke?: TileStroke;
 }
 
 export const getColorFromItem = (item: TileData): TileColor => {
@@ -37,6 +39,7 @@ export const StaticItemTile = ({
   isCenter = false,
   urlInfo,
   interactive = true,
+  stroke,
 }: StaticItemTileProps) => {
   // Generate test ID from coordinates
   const testId = `tile-${item.metadata.coordinates.userId}-${item.metadata.coordinates.groupId}-${item.metadata.coordinates.path.join("-")}`;
@@ -65,6 +68,7 @@ export const StaticItemTile = ({
         color={getColorFromItem(item)}
         baseHexSize={baseHexSize}
         isFocusable={false}
+        stroke={stroke}
       >
         <StaticTileContent
           data={{

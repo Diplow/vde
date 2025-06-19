@@ -137,6 +137,7 @@ export const StaticFrame = ({
             isCenter={centerItem.metadata.dbId === urlInfo.rootItemId}
             urlInfo={urlInfo}
             interactive={interactive}
+            stroke={{ color: "transparent" as const, width: 0 }}
           />
         </div>
         <RenderChild

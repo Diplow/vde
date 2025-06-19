@@ -7,6 +7,8 @@ import { useItemState } from "./_hooks";
 import { ItemDialogs } from "./_components/item-dialogs";
 import { ItemTileContent } from "./_components/item-tile-content";
 
+import type { TileStroke } from "~/app/static/map/Tile/Base/base";
+
 export interface DynamicItemTileProps {
   item: TileData;
   scale?: TileScale;
@@ -17,6 +19,7 @@ export interface DynamicItemTileProps {
   urlInfo: URLInfo;
   interactive?: boolean;
   currentUserId?: number;
+  stroke?: TileStroke;
 }
 
 export const DynamicItemTile = (props: DynamicItemTileProps) => {
@@ -29,6 +32,7 @@ export const DynamicItemTile = (props: DynamicItemTileProps) => {
     isCenter = false,
     interactive = true,
     currentUserId,
+    stroke,
   } = props;
 
   const state = useItemState({ 
@@ -60,6 +64,7 @@ export const DynamicItemTile = (props: DynamicItemTileProps) => {
           canEdit={state.canEdit}
           onEditClick={state.dialogs.openUpdateDialog}
           onDeleteClick={state.dialogs.openDeleteDialog}
+          stroke={stroke}
         />
       </div>
       <ItemDialogs item={item} dialogState={state.dialogs} />
