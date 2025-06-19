@@ -69,11 +69,22 @@ export function RegisterForm() {
             setIsLoading(false);
           }
         },
-        onError: (ctx) => {
-          console.error("Sign up error:", ctx.error);
-          setError(
-            ctx.error.message || "Failed to register. Please try again.",
-          );
+        onError: (ctx: unknown) => {
+          console.error("Sign up error:", ctx);
+          // Check different possible error structures
+          let errorMessage = "Failed to register. Please try again.";
+          
+          if (ctx && typeof ctx === 'object') {
+            if ('error' in ctx && ctx.error && typeof ctx.error === 'object' && 'message' in ctx.error) {
+              errorMessage = String(ctx.error.message);
+            } else if ('message' in ctx) {
+              errorMessage = String(ctx.message);
+            }
+          } else if (typeof ctx === 'string') {
+            errorMessage = ctx;
+          }
+          
+          setError(errorMessage);
           setIsLoading(false);
         },
       });

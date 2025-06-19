@@ -25,7 +25,7 @@
     "typecheck": "tsc --noEmit",
     "test": "./scripts/run-tests.sh",
     "test:run": "vitest run",
-    "test:all": "./scripts/run-all-tests.sh",
+    "test:all": "./scripts/run-tests-isolated.sh",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest watch",

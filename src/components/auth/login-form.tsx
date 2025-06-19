@@ -28,12 +28,22 @@ export function LoginForm() {
             // LoginPage will handle fetching map and redirection
             void trpcUtils.auth.getSession.invalidate();
           },
-          onError: (ctx) => {
-            console.error("Sign in error callback:", ctx.error);
-            setError(
-              ctx.error.message ||
-                "Failed to login. Please check your credentials.",
-            );
+          onError: (ctx: unknown) => {
+            console.error("Sign in error callback:", ctx);
+            // Check different possible error structures
+            let errorMessage = "Failed to login. Please check your credentials.";
+            
+            if (ctx && typeof ctx === 'object') {
+              if ('error' in ctx && ctx.error && typeof ctx.error === 'object' && 'message' in ctx.error) {
+                errorMessage = String(ctx.error.message);
+              } else if ('message' in ctx) {
+                errorMessage = String(ctx.message);
+              }
+            } else if (typeof ctx === 'string') {
+              errorMessage = ctx;
+            }
+            
+            setError(errorMessage);
           },
         },
       );
