@@ -48,7 +48,10 @@ Gather and document relevant codebase context for an issue without proposing sol
 
 ### 5. Document Findings
 
-Appends to the issue file:
+Updates both files:
+
+#### Issue File Update
+Replaces or adds the Context section with synthetic findings:
 
 ```markdown
 ## Context
@@ -81,6 +84,36 @@ Appends to the issue file:
 ### Related Code References
 - `path/to/file.ts:123` - [Brief description]
 - `path/to/another.ts:45` - [Brief description]
+```
+
+#### Log File Update
+Appends detailed investigation to the log file:
+
+```markdown
+## YYYY-MM-DD HH:MM - Context Analysis
+
+*Added by @<username> via /context command*
+
+### Investigation Process
+- [List of files examined]
+- [Documentation reviewed]
+- [Patterns discovered]
+
+### Detailed Findings
+[Complete analysis with all details]
+
+### Architecture Deep Dive
+[Extensive architecture notes]
+
+### Terminology Analysis
+[Detailed counts and occurrences]
+
+### Changes Made to Issue File
+- Updated Context section
+- Added scope restrictions
+- Identified X affected areas
+
+---
 ```
 
 ## Best Practices
