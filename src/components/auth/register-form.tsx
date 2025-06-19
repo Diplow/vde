@@ -70,10 +70,13 @@ export function RegisterForm() {
           }
         },
         onError: (ctx) => {
-          console.error("Sign up error:", ctx.error);
-          setError(
-            ctx.error.message || "Failed to register. Please try again.",
-          );
+          console.error("Sign up error:", ctx);
+          // Check different possible error structures
+          const errorMessage = ctx?.error?.message || 
+                             ctx?.message || 
+                             (typeof ctx === 'string' ? ctx : null) ||
+                             "Failed to register. Please try again.";
+          setError(errorMessage);
           setIsLoading(false);
         },
       });

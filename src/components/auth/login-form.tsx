@@ -29,11 +29,13 @@ export function LoginForm() {
             void trpcUtils.auth.getSession.invalidate();
           },
           onError: (ctx) => {
-            console.error("Sign in error callback:", ctx.error);
-            setError(
-              ctx.error.message ||
-                "Failed to login. Please check your credentials.",
-            );
+            console.error("Sign in error callback:", ctx);
+            // Check different possible error structures
+            const errorMessage = ctx?.error?.message || 
+                               ctx?.message || 
+                               (typeof ctx === 'string' ? ctx : null) ||
+                               "Failed to login. Please check your credentials.";
+            setError(errorMessage);
           },
         },
       );

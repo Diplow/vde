@@ -70,14 +70,20 @@ export const authRouter = createTRPCRouter({
     .mutation(async ({ ctx }) => {
       try {
         const fetchHeaders = convertToHeaders(ctx.req.headers);
-        const response = await auth.api.signOut({ headers: fetchHeaders });
+        const response = await auth.api.signOut({ 
+          headers: fetchHeaders,
+          asResponse: true // Get the full response to handle cookies
+        });
 
-        if (!response.success) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Logout failed.",
-          });
+        // Forward the Set-Cookie headers from better-auth to clear session cookies
+        if (response && 'headers' in response) {
+          const setCookieHeaders = response.headers.getSetCookie();
+          if (setCookieHeaders && setCookieHeaders.length > 0 && ctx.res) {
+            // Set the cookies in the response to clear them
+            ctx.res.setHeader('Set-Cookie', setCookieHeaders);
+          }
         }
+
         return { success: true };
       } catch (error) {
         throw new TRPCError({

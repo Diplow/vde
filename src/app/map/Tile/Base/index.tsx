@@ -18,19 +18,33 @@ export interface DynamicBaseTileLayoutProps {
   isFocusable?: boolean;
   baseHexSize?: number;
   _shallow?: boolean;
+  isExpanded?: boolean;
 }
 
 export const DynamicBaseTileLayout = ({
   coordId = "0,0",
   scale = 1,
   color,
-  stroke = { color: "transparent", width: 0 },
+  stroke = undefined,
   children,
   cursor = "cursor-pointer",
   isFocusable = false,
   baseHexSize = 50,
   _shallow = false,
+  isExpanded = false,
 }: DynamicBaseTileLayoutProps) => {
+  // Calculate default stroke based on scale and expansion
+  const defaultStroke = isExpanded 
+    ? { color: "transparent" as const, width: 0 }
+    : scale === 3 
+      ? { color: "zinc-950" as const, width: 0.75 } 
+      : scale === 2 
+        ? { color: "zinc-900" as const, width: 0.5 } 
+        : scale === 1 
+          ? { color: "zinc-900" as const, width: 0.25 } 
+          : { color: "transparent" as const, width: 0 };
+  
+  const finalStroke = stroke ?? defaultStroke;
   // Calculate dimensions based on scale
   const width =
     scale === 1
@@ -40,9 +54,12 @@ export const DynamicBaseTileLayout = ({
   const height =
     scale === 1 ? baseHexSize * 2 : baseHexSize * 2 * Math.pow(3, scale - 1);
 
-  // SVG constants
+  // SVG constants with padding for stroke
+  const strokePadding = scale === 3 ? 2 : 0; // Add padding for scale 3 tiles
   const svgPath = "M50 0 L100 28.87 L100 86.6 L50 115.47 L0 86.6 L0 28.87Z";
-  const svgViewBox = "0 0 100 115.47";
+  const svgViewBox = strokePadding > 0 
+    ? `-${strokePadding} -${strokePadding} ${100 + strokePadding * 2} ${115.47 + strokePadding * 2}`
+    : "0 0 100 115.47";
   const fillClass = color
     ? `fill-${color.color}-${color.tint}`
     : "fill-transparent";
@@ -78,9 +95,17 @@ export const DynamicBaseTileLayout = ({
         >
           <path
             d={svgPath}
-            className={`stroke-${stroke.color} transition-all duration-300 ${fillClass}`}
-            strokeWidth={stroke.width}
+            className={`transition-all duration-300 ${fillClass}`}
+            stroke={
+              finalStroke.color === "zinc-950" ? "#18181b" : 
+              finalStroke.color === "zinc-900" ? "#27272a" :
+              finalStroke.color === "zinc-800" ? "#3f3f46" :
+              finalStroke.color === "zinc-50" ? "#fafafa" : 
+              "transparent"
+            }
+            strokeWidth={finalStroke.width}
             strokeLinejoin="round"
+            fill={color ? undefined : "none"}
           />
         </svg>
 
