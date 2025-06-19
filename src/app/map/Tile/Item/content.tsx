@@ -54,8 +54,27 @@ export const DynamicTileContent = ({ data, scale, tileId, isHovered = false }: D
       >
         {data.title && <TitleSection title={data.title} scale={scale} tileId={tileId} />}
         {truncatedDescription && (
-          <div className="w-full text-xs text-zinc-950 text-center">
-            {truncatedDescription}
+          <div className="w-full text-xs text-zinc-950 prose prose-xs prose-zinc max-w-full text-center">
+            <ReactMarkdown
+              components={{
+                // Simplified components for truncated view
+                p: ({ children }) => <p className="mb-0.5 text-center">{children}</p>,
+                h1: ({ children }) => <span className="font-bold">{children}</span>,
+                h2: ({ children }) => <span className="font-bold">{children}</span>,
+                h3: ({ children }) => <span className="font-semibold">{children}</span>,
+                ul: ({ children }) => <span>{children}</span>,
+                ol: ({ children }) => <span>{children}</span>,
+                li: ({ children }) => <span>• {children} </span>,
+                code: ({ children }) => <code className="bg-gray-100 px-0.5 rounded text-xs">{children}</code>,
+                a: ({ href, children }) => (
+                  <a href={href} target="_blank" rel="noopener noreferrer" className="text-cyan-800 hover:text-cyan-950 underline">
+                    {children}
+                  </a>
+                ),
+              }}
+            >
+              {truncatedDescription}
+            </ReactMarkdown>
           </div>
         )}
       </div>
