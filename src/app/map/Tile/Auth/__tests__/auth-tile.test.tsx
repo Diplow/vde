@@ -1,3 +1,4 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import AuthTile from '../auth';
@@ -54,7 +55,7 @@ describe('AuthTile', () => {
     expect(svg).toBeTruthy();
     
     // Check SVG has correct viewBox
-    expect(svg?.getAttribute('viewBox')).toBe('0 0 100 115.47');
+    expect(svg?.getAttribute('viewBox')).toBe('-2 -2 104 119.47'); // Padded for scale 3
     
     // Check path exists with correct d attribute
     const path = svg?.querySelector('path');

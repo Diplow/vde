@@ -1,3 +1,4 @@
+import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import AuthTile from "../auth";
@@ -33,7 +34,7 @@ describe("AuthTile", () => {
     // Check SVG structure
     const svg = container.querySelector("svg");
     expect(svg).toBeTruthy();
-    expect(svg?.getAttribute("viewBox")).toBe("0 0 100 115.47");
+    expect(svg?.getAttribute("viewBox")).toBe("-2 -2 104 119.47"); // Padded for scale 3
     
     // Check hexagon path
     const path = svg?.querySelector("path");

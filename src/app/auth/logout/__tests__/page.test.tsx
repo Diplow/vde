@@ -1,3 +1,4 @@
+import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { useRouter } from "next/navigation";
@@ -6,6 +7,13 @@ import LogoutPage from "../page";
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: vi.fn(),
+}));
+
+// Mock authClient
+vi.mock("~/lib/auth/auth-client", () => ({
+  authClient: {
+    signOut: vi.fn().mockResolvedValue(undefined),
+  },
 }));
 
 // Mock tRPC
