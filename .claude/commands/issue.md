@@ -122,6 +122,12 @@ Uses the GitHub MCP (`mcp__github__create_issue`) to:
 - Get the repository owner/name from: `git remote -v`
 - Update the local file with the GitHub issue number
 
+**Important**: When posting comments to GitHub issues, always start with:
+```
+*I am an AI assistant acting on behalf of @<username>*
+```
+This ensures transparency about AI-generated content.
+
 ## Tag Auto-Suggestion
 
 ### Keywords → Tags Mapping
