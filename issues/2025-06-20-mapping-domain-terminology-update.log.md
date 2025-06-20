@@ -95,3 +95,61 @@ During solution planning, should:
 - Noted phased approach to refactoring
 
 ---
+
+## 2025-06-20 - Context Analysis Update
+
+*Added by @Diplow via /context command*
+
+### Investigation Process
+- Read all README files in mapping domain and parent directories
+- Verified documentation against actual code implementation
+- Analyzed file structure in _objects/, _repositories/, _actions/, and services/
+- Counted terminology occurrences with ripgrep
+- Examined database schema definitions
+- Compared backend vs frontend terminology usage
+
+### Detailed Findings
+
+#### Documentation Discrepancies
+Found significant gaps between documentation and reality:
+- Main README references non-existent HexMap aggregate and hex-map.ts files
+- Documentation doesn't reflect the elimination of separate Map entities
+- Actions layer has been completely restructured with helper classes
+- Services layer split into multiple specialized services
+
+#### Terminology Analysis (Updated Counts)
+More precise counts within mapping domain only:
+- "item": 1,938 occurrences (dominant backend term)
+- "tile": 0 occurrences in backend
+- "descendants": 106 occurrences (preferred over "children": 15)
+- "move": 308 occurrences (no "relocate" found)
+- "swap": 85 occurrences (no "reorder" found)
+
+#### Architecture Deep Dive
+Current implementation shows sophisticated DDD structure:
+- Domain objects: MapItem and BaseItem only (no HexMap)
+- Repository pattern with abstract interfaces
+- Actions layer with specialized helpers for creation, movement, queries
+- Services layer with 5 specialized services coordinated by MappingService
+- Infrastructure layer provides concrete repository implementations
+
+#### Database Schema Analysis
+Tables use "item" terminology throughout:
+- `vde_map_items`: Main table with hierarchical coordinates
+- `vde_base_items`: Content storage
+- `vde_user_mapping`: Bridge between auth and mapping users
+- Constraints enforce USER items as roots, BASE items must have parents
+
+### Synthesis
+The context reveals a mature DDD implementation with clear separation of concerns, but terminology is inconsistent between backend ("item") and frontend ("tile"). The documentation is outdated in places but the code structure is clean and well-organized. The refactoring scope is well-defined to avoid breaking changes while aligning the domain language.
+
+### Changes Made to Issue File
+- Replaced previous Context section with comprehensive analysis
+- Added Existing Documentation subsection with verification results
+- Provided Domain Overview with architecture and evolution
+- Listed Key Components with detailed descriptions
+- Added Implementation Details with file organization and patterns
+- Included Code Examples showing current terminology
+- Documented Dependencies and Integration points
+
+---
