@@ -17,15 +17,14 @@ vi.mock("~/lib/auth/auth-client", () => ({
 }));
 
 // Mock tRPC
-let mockMutate: ReturnType<typeof vi.fn>;
+const mockMutate = vi.fn();
 vi.mock("~/commons/trpc/react", () => ({
   api: {
     auth: {
       logout: {
-        useMutation: () => {
-          mockMutate = vi.fn();
-          return { mutate: mockMutate };
-        },
+        useMutation: () => ({
+          mutate: mockMutate,
+        }),
       },
     },
   },

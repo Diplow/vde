@@ -23,7 +23,7 @@ export default function WelcomeTile() {
             Join our community for deliberate people. Create and explore maps.
           </p>
           <div className="flex items-center justify-center space-x-4">
-            <Link href="/auth/login" passHref legacyBehavior>
+            <Link href="/auth/login">
               <Button 
                 size="lg" 
                 className="bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500"
@@ -31,7 +31,7 @@ export default function WelcomeTile() {
                 Login
               </Button>
             </Link>
-            <Link href="/auth/signup" passHref legacyBehavior>
+            <Link href="/auth/signup">
               <Button 
                 size="lg" 
                 className="bg-indigo-500 text-white hover:bg-indigo-600 focus:ring-indigo-400"

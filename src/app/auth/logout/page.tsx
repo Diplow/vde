@@ -44,7 +44,7 @@ export default function LogoutPage() {
   useEffect(() => {
     // Trigger logout immediately when page loads
     logout();
-  }, [logout]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50">

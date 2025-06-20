@@ -9,6 +9,7 @@ import { TileActionsContext } from "../../Canvas";
 import type { URLInfo } from "../../types/url-info";
 import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 import { getColor } from "../../types/tile-data";
+import { getDefaultStroke } from "../utils/stroke";
 
 interface DynamicEmptyTileProps {
   coordId: string;
@@ -46,13 +47,7 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
   const [isHovered, setIsHovered] = useState(false);
   
   // Calculate default stroke for this scale
-  const defaultStroke = props.scale === 3 
-    ? { color: "zinc-950" as const, width: 0.75 } 
-    : props.scale === 2 
-      ? { color: "zinc-900" as const, width: 0.5 } 
-      : props.scale === 1 
-        ? { color: "zinc-900" as const, width: 0.25 } 
-        : { color: "transparent" as const, width: 0 };
+  const defaultStroke = getDefaultStroke(props.scale ?? 1, false);
 
   // Safely check if we're within a DynamicMapCanvas context
   const tileActions = useContext(TileActionsContext);

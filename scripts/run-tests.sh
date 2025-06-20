@@ -88,24 +88,25 @@ if [ -n "$TEST_PATH" ]; then
 fi
 
 # Build the test command based on integration flag and test path
+# Use the main config directly to avoid workspace conflicts with Storybook tests
 TEST_COMMAND=""
 if [ -n "$TEST_PATH" ]; then
   # If a specific test path is provided, use that
-  TEST_COMMAND="NODE_ENV=test VITEST=true SKIP_ENV_VALIDATION=true TEST_DATABASE_URL=\"$TEST_DATABASE_URL\" pnpm test:$MODE \"$TEST_PATH\""
+  TEST_COMMAND="NODE_ENV=test VITEST=true SKIP_ENV_VALIDATION=true TEST_DATABASE_URL=\"$TEST_DATABASE_URL\" pnpm vitest $MODE --config vitest.config.ts \"$TEST_PATH\""
 else
   # Otherwise, use the integration flag
   case $INTEGRATION in
     "only")
       echo -e "${CYAN}Running only integration tests...${NC}"
-      TEST_COMMAND="NODE_ENV=test VITEST=true SKIP_ENV_VALIDATION=true TEST_DATABASE_URL=\"$TEST_DATABASE_URL\" pnpm test:$MODE -- -t 'integration'"
+      TEST_COMMAND="NODE_ENV=test VITEST=true SKIP_ENV_VALIDATION=true TEST_DATABASE_URL=\"$TEST_DATABASE_URL\" pnpm vitest $MODE --config vitest.config.ts -- -t 'integration'"
       ;;
     "skip")
       echo -e "${YELLOW}Skipping integration tests...${NC}"
-      TEST_COMMAND="pnpm test:$MODE -- --testPathIgnorePatterns '.*\.integration\.test\..*'"
+      TEST_COMMAND="pnpm vitest $MODE --config vitest.config.ts -- --testPathIgnorePatterns '.*\.integration\.test\..*'"
       ;;
     "all")
       echo -e "${GREEN}Running all tests...${NC}"
-      TEST_COMMAND="NODE_ENV=test VITEST=true SKIP_ENV_VALIDATION=true TEST_DATABASE_URL=\"$TEST_DATABASE_URL\" pnpm test:$MODE"
+      TEST_COMMAND="NODE_ENV=test VITEST=true SKIP_ENV_VALIDATION=true TEST_DATABASE_URL=\"$TEST_DATABASE_URL\" pnpm vitest $MODE --config vitest.config.ts"
       ;;
   esac
 fi

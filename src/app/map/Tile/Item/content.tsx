@@ -158,7 +158,7 @@ const DescriptionSection = ({ description, scale, tileId }: { description: strin
           components={{
             // Override default styles to fit within tile - scale-aware sizing
             p: ({ children }) => <p className={`${scale === 2 ? 'mb-1' : 'mb-2'} text-center`}>{children}</p>,
-            h1: ({ children }) => <h1 className={`${scale === 2 ? 'text-sm' : 'text-lg'} font-bold ${scale === 2 ? 'mb-1' : 'mb-2'} text-center`} data-testid={tileId ? `tile-title-${tileId}` : "tile-title"}>{children}</h1>,
+            h1: ({ children }) => <h1 className={`${scale === 2 ? 'text-sm' : 'text-lg'} font-bold ${scale === 2 ? 'mb-1' : 'mb-2'} text-center`} data-testid={tileId ? `tile-markdown-h1-${tileId}` : "tile-markdown-h1"}>{children}</h1>,
             h2: ({ children }) => <h2 className={`${scale === 2 ? 'text-xs' : 'text-sm'} font-bold ${scale === 2 ? 'mb-1' : 'mb-2'} text-center`}>{children}</h2>,
             h3: ({ children }) => <h3 className={`${scale === 2 ? 'text-xs' : 'text-sm'} font-semibold mb-1 text-center`}>{children}</h3>,
             ul: ({ children }) => <ul className={`list-disc list-inside ${scale === 2 ? 'mb-1' : 'mb-2'} text-center`}>{children}</ul>,

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { getDefaultStroke, getStrokeHexColor } from "~/app/map/Tile/utils/stroke";
 
 export type TileCursor =
   | "cursor-pointer"
@@ -58,15 +59,7 @@ export const StaticBaseTileLayout = ({
   isExpanded = false,
 }: StaticBaseTileLayoutProps) => {
   // Calculate default stroke based on scale and expansion
-  const defaultStroke = isExpanded 
-    ? { color: "transparent" as const, width: 0 }
-    : scale === 3 
-      ? { color: "zinc-950" as const, width: 0.75 } 
-      : scale === 2 
-        ? { color: "zinc-900" as const, width: 0.5 } 
-        : scale === 1 
-          ? { color: "zinc-900" as const, width: 0.25 } 
-          : { color: "transparent" as const, width: 0 };
+  const defaultStroke = getDefaultStroke(scale, isExpanded);
   
   const finalStroke = stroke ?? defaultStroke;
   // Calculate dimensions based on scale
@@ -121,13 +114,7 @@ export const StaticBaseTileLayout = ({
           <path
             d={svgPath}
             className={`transition-all duration-300 ${fillClass}`}
-            stroke={
-              finalStroke.color === "zinc-950" ? "#18181b" : 
-              finalStroke.color === "zinc-900" ? "#27272a" :
-              finalStroke.color === "zinc-800" ? "#3f3f46" :
-              finalStroke.color === "zinc-50" ? "#fafafa" : 
-              "transparent"
-            }
+            stroke={getStrokeHexColor(finalStroke.color)}
             strokeWidth={finalStroke.width}
             strokeLinejoin="round"
             fill={color ? undefined : "none"}

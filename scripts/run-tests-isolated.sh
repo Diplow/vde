@@ -7,7 +7,7 @@ echo "🧪 Running tests with React component isolation..."
 
 # First, run all tests except the problematic ones
 echo "📦 Running main test suite (excluding React component and drag-and-drop tests)..."
-pnpm vitest run \
+pnpm vitest run --config vitest.config.ts \
   --exclude "**/base.test.tsx" \
   --exclude "**/auth-tile.test.tsx" \
   --exclude "**/auth.test.tsx" \
@@ -19,7 +19,7 @@ MAIN_EXIT_CODE=$?
 
 # Then run the React component tests in isolation with single thread
 echo "⚛️ Running React component tests in isolation (single thread)..."
-pnpm vitest run --pool=forks --poolOptions.forks.singleThread \
+pnpm vitest run --config vitest.config.ts --pool=forks --poolOptions.forks.singleThread \
   src/app/static/map/Tile/Base/base.test.tsx \
   src/app/map/Tile/Auth/__tests__/auth-tile.test.tsx \
   src/app/map/Tile/Auth/__tests__/auth.test.tsx \
@@ -29,7 +29,7 @@ REACT_EXIT_CODE=$?
 
 # Then run the drag-and-drop tests in isolation
 echo "🎯 Running drag-and-drop tests in isolation..."
-pnpm vitest run \
+pnpm vitest run --config vitest.config.ts \
   src/app/map/Canvas/hooks/__tests__/useDragAndDrop.test.ts \
   src/app/map/Canvas/hooks/__tests__/enhanced-drag-drop.test.ts
 

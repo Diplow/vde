@@ -7,6 +7,7 @@ import type {
   TileStroke, 
   TileCursor 
 } from "~/app/static/map/Tile/Base/base";
+import { getDefaultStroke } from "../utils/stroke";
 
 export interface DynamicBaseTileLayoutProps {
   coordId: string;
@@ -34,15 +35,7 @@ export const DynamicBaseTileLayout = ({
   isExpanded = false,
 }: DynamicBaseTileLayoutProps) => {
   // Calculate default stroke based on scale and expansion
-  const defaultStroke = isExpanded 
-    ? { color: "transparent" as const, width: 0 }
-    : scale === 3 
-      ? { color: "zinc-950" as const, width: 0.75 } 
-      : scale === 2 
-        ? { color: "zinc-900" as const, width: 0.5 } 
-        : scale === 1 
-          ? { color: "zinc-900" as const, width: 0.25 } 
-          : { color: "transparent" as const, width: 0 };
+  const defaultStroke = getDefaultStroke(scale, isExpanded);
   
   const finalStroke = stroke ?? defaultStroke;
   // Calculate dimensions based on scale
