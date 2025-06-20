@@ -1,7 +1,9 @@
 # /context Command
 
 ## Purpose
-Gather and document relevant codebase context for an issue without proposing solutions. Focus on understanding the current state, architecture, and implications.
+Gather and document relevant codebase context for an issue without proposing solutions. The goal is to build a clear mental model of the current implementation, specifically focused on the areas and concerns raised by the issue. This targeted understanding ensures we fully comprehend what exists before considering changes.
+
+This context will be handed over to future steps in the workflow (solution design, architecture decisions, implementation), providing them with a solid foundation of understanding.
 
 ## Command Syntax
 ```
@@ -22,7 +24,19 @@ Gather and document relevant codebase context for an issue without proposing sol
   - Identify which layers and components are involved
   - Map the conceptual model to the implementation
 
-### 3. Current State Analysis
+### 3. Documentation Review
+- **Find Relevant Documentation**:
+  - Check for README files in affected directories
+  - Look for architecture documentation
+  - Review any existing API documentation
+  - Find inline documentation and comments
+
+- **Verify Documentation Accuracy**:
+  - Compare documentation claims with actual implementation
+  - Note any discrepancies or outdated information
+  - Identify undocumented areas that need explanation
+
+### 4. Current State Analysis
 - **Code Investigation**:
   - Examine current implementations in affected areas
   - Identify existing patterns and conventions
@@ -34,61 +48,56 @@ Gather and document relevant codebase context for an issue without proposing sol
   - What does the affected code depend on?
   - Cross-domain interactions
 
-### 4. Impact Assessment
-- **Technical Impact**:
-  - Which files/components will need changes
-  - Potential breaking changes
-  - Performance implications
-  - Testing requirements
+## Documentation
 
-- **Product Impact**:
-  - User-facing changes
-  - Workflow modifications
-  - Documentation needs
-
-### 5. Document Findings
-
-Updates both files:
-
-#### Issue File Update
-Replaces or adds the Context section with synthetic findings:
+### Issue Abstract
+The issue file (`/issues/YYYY-MM-DD-<slug>-<issue-number>.md`) should already exist from the `/issue` command. This step will add or update the `## Context` section with the following structure:
 
 ```markdown
 ## Context
 
 *I am an AI assistant acting on behalf of @<username>*
 
-### Architecture Overview
-[Brief explanation of the relevant architecture]
+### Existing Documentation
+Lists all relevant documentation found and verifies accuracy:
+- **README Files**: Location and summary of each README
+- **Architecture Docs**: Relevant architectural documentation
+- **Documentation vs Reality**: What matches (✅), what's outdated (❌), what's missing (📝)
 
-### Current Implementation
-- **Key Components**: [List of main components involved]
-- **Current Patterns**: [Existing patterns and conventions]
-- **Dependencies**: [Key dependencies and interactions]
+### Domain Overview
+High-level understanding of the domain/area affected by the issue:
+- Architecture and design patterns
+- Core concepts and principles
+- How this area fits into the larger system
 
-### Affected Areas
-- **Primary Changes**: [Core files/components that need modification]
-- **Secondary Impact**: [Files that depend on primary changes]
-- **Cross-Domain Effects**: [Impact on other domains]
+### Key Components
+The main building blocks relevant to the issue:
+- Component names and their responsibilities
+- How they interact with each other
+- Which components are most affected
 
-### Technical Considerations
-- **Constraints**: [Technical limitations or requirements]
-- **Risks**: [Potential issues or breaking changes]
-- **Performance**: [Performance implications if any]
-
-### Documentation Status
-- **Outdated Docs**: [Any incorrect documentation found]
-- **Missing Docs**: [Areas lacking documentation]
-- **Updates Needed**: [Documentation that will need updates]
-
-### Related Code References
-- `path/to/file.ts:123` - [Brief description]
-- `path/to/another.ts:45` - [Brief description]
+### Implementation Details
+Current code structure and patterns:
+- **File Organization**: How code is structured in directories
+- **Naming Conventions**: Current terminology and patterns
+- **Design Patterns**: Repository, Service, Factory, etc.
+- **Data Flow**: How data moves through the system
 ```
 
-#### Log File Update
-Appends detailed investigation to the log file:
+### Dependencies and Integration
+- **Internal Dependencies**: What this code depends on
+- **External Consumers**: What depends on this code
+- **API Contracts**: How this is exposed to other parts
+- **Database Schema**: Relevant tables and relationships
 
+### Issue Log
+The log file (`/issues/YYYY-MM-DD-<slug>-<issue-number>.log.md`) should also already exist. This step will append a new timestamped entry documenting:
+- The investigation process followed
+- All findings discovered during context gathering
+- The synthesis of discussions that led to the final context section
+- What was added or updated in the issue abstract
+
+Example log entry:
 ```markdown
 ## YYYY-MM-DD HH:MM - Context Analysis
 
@@ -97,21 +106,18 @@ Appends detailed investigation to the log file:
 ### Investigation Process
 - [List of files examined]
 - [Documentation reviewed]
+- [Search queries performed]
 - [Patterns discovered]
 
 ### Detailed Findings
-[Complete analysis with all details]
+[Complete analysis with all details, including things that didn't make it to the abstract]
 
-### Architecture Deep Dive
-[Extensive architecture notes]
-
-### Terminology Analysis
-[Detailed counts and occurrences]
+### Synthesis
+[How the findings were distilled into the Context section]
 
 ### Changes Made to Issue File
-- Updated Context section
-- Added scope restrictions
-- Identified X affected areas
+- Added/Updated Context section with X subsections
+- Key insights: [brief summary]
 
 ---
 ```
@@ -123,52 +129,32 @@ Appends detailed investigation to the log file:
 3. **Verify Claims**: Don't trust docs blindly - check actual code
 4. **Use References**: Include file paths and line numbers
 5. **Stay Objective**: Document what IS, not what SHOULD BE
+6. **Create Missing Docs**: If documentation doesn't exist for involved parts, create it in the context
+7. **Build Mental Model**: Goal is to provide complete understanding of the code involved
+8. **Use Correct Language**: Pay meticulous attention to using the right terminology as defined in relevant README files - this ensures consistency and clarity
 
-## Example Output
+## GitHub Synchronization
 
-For issue #49 (terminology update):
+After completing the context analysis:
 
-```markdown
-## Context
+1. **Post to GitHub Issue**: Copy the entire `## Context` section from the issue abstract and post it as a comment on the GitHub issue. Start the comment with:
+   ```
+   *I am an AI assistant acting on behalf of @<username>*
+   
+   ## Context Analysis Complete
+   
+   [Paste the Context section here]
+   ```
 
-*I am an AI assistant acting on behalf of @Diplow*
+2. **Commit and Push**: Commit both the issue abstract and log files with a descriptive message:
+   ```bash
+   git add issues/YYYY-MM-DD-*.md issues/YYYY-MM-DD-*.log.md
+   git commit -m "feat: add context analysis for issue #<number>"
+   git push
+   ```
 
-### Architecture Overview
-The mapping domain (`/src/lib/domains/mapping/`) implements the core logic for tile management and hierarchical structures. It's separate from the UI layer (`/src/app/map/`) following domain-driven design principles.
-
-### Current Implementation
-- **Key Components**: 
-  - `MapItemRepository` - handles data persistence using "item" terminology
-  - `MapItemService` - business logic using "mapItem" throughout
-  - UI components in `/src/app/map/Tile/` - use "tile" terminology
-
-- **Current Patterns**: Repository pattern with service layer
-- **Dependencies**: Used by tRPC routers, consumed by React components
-
-### Affected Areas
-- **Primary Changes**: 
-  - `/src/lib/domains/mapping/map-item.repository.ts` - 15 occurrences of "item"
-  - `/src/lib/domains/mapping/map-item.service.ts` - 23 occurrences of "mapItem"
-  - `/src/server/routers/map.ts` - API endpoints using old terminology
-
-- **Secondary Impact**: 
-  - All tRPC hooks in `/src/app/_hooks/`
-  - Cache keys in `/src/app/map/Cache/`
-
-### Technical Considerations
-- **Constraints**: Database column names may need migration
-- **Risks**: Breaking API changes for any external consumers
-- **Performance**: Renaming should have no performance impact
-
-### Documentation Status
-- **Outdated Docs**: `/src/lib/domains/README.md` uses old terminology
-- **Missing Docs**: No terminology glossary exists
-- **Updates Needed**: All domain READMEs after refactoring
-```
+This ensures the GitHub issue discussion stays synchronized with the local documentation.
 
 ## Integration with Workflow
 
-After `/context`, the workflow continues with:
-- `/solution #<issue>` - Propose solutions based on context
-- `/archi #<issue>` - Document architecture decisions
 - See `.claude/commands/README.md` for complete workflow
