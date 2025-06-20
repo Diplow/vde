@@ -153,3 +153,32 @@ The context reveals a mature DDD implementation with clear separation of concern
 - Documented Dependencies and Integration points
 
 ---
+
+## 2025-06-20 - Context Update: GenericAggregate Pattern
+
+*Added by @Diplow via user request*
+
+### Additional Context Added
+User requested information about GenericAggregate pattern used in the domain objects.
+
+### GenericAggregate Analysis
+- Found in `/src/lib/domains/utils/generic-objects.ts`
+- Base class for all domain aggregates providing standardized structure
+- Properties: `id`, `history` (createdAt/updatedAt), `attrs`, `relatedItems`, `relatedLists`
+- Both MapItem and BaseItem extend GenericAggregate:
+  - MapItem uses all features: attrs, relatedItems (ref, parent, origin), relatedLists (neighbors)
+  - BaseItem uses only attrs (title, descr, link) as a simple value object
+
+### Benefits of GenericAggregate Pattern
+1. Consistent structure across all domain objects
+2. Type-safe generic parameters for attributes and relationships
+3. Automatic history tracking (createdAt/updatedAt)
+4. Clear separation of concerns between attributes and relationships
+5. Enables generic repository implementations
+
+### Changes to Issue File
+- Updated Domain Overview with GenericAggregate pattern explanation
+- Enhanced Key Components to show how MapItem and BaseItem extend GenericAggregate
+- Added details about attrs, relatedItems, and relatedLists for each domain object
+
+---

@@ -119,14 +119,25 @@ The mapping domain (`/src/lib/domains/mapping/`) implements a hierarchical hexag
 - **Coordinate System**: Hierarchical positioning using `coord_user_id`, `coord_group_id`, and `path` (array of directions)
 - **Item Types**: Two distinct types - USER (root maps) and BASE (child tiles with parents)
 - **Recent Evolution**: Simplified from separate Map/MapItem entities to unified MapItem approach
+- **GenericAggregate Pattern**: All domain objects extend GenericAggregate, providing:
+  - Standardized structure with `id`, `history` (createdAt/updatedAt), `attrs`, `relatedItems`, and `relatedLists`
+  - Type-safe foundation for domain entities with consistent patterns
+  - Clear separation between core attributes, related entities, and related collections
+  - Enables generic repository operations and consistent data handling across domains
 
 ### Key Components
 - **MapItem**: Core domain object (1,938 occurrences of "item") representing tiles in hierarchy
-  - Properties: id, coordinates, itemType, parentId, refItemId
+  - Extends GenericAggregate with:
+    - `attrs`: coordinates, itemType, parentId, refItemId, originId
+    - `relatedItems`: ref (BaseItem), parent (MapItem), origin (MapItem)
+    - `relatedLists`: neighbors (MapItem[])
   - Methods: validation, coordinate management, parent-child relationships
+  - Enforces business rules: USER items cannot have parents, BASE items must have parents
   
 - **BaseItem**: Reference content for map items
-  - Properties: id, title, descr, link
+  - Extends GenericAggregate with:
+    - `attrs`: title, descr, link
+    - No related items or lists (simple value object)
   - Provides the actual data displayed in tiles
   
 - **MapItemActions**: Business logic orchestration with specialized helpers
