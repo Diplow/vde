@@ -220,3 +220,88 @@ The Context-based approach (Solution 1) was chosen because:
 - Provided clear recommendation with rationale
 
 ---
+## 2025-06-20 22:13 - Test Planning
+
+*Added by @ulysse via /tests command*
+
+### Test Planning Process
+- Analyzed chosen solution (Context-Based Tool System) for testable behaviors
+- Identified 14 unit tests, 4 integration tests, 4 E2E tests
+- Considered accessibility and performance aspects
+- Reviewed existing test patterns in the codebase
+
+### Detailed Test Specifications
+
+#### Unit Test Details
+**Toolbox Component Tests**:
+- Display mode transitions using finite state machine pattern
+- Tool selection with mocked context providers
+- Visual feedback verification using data attributes
+- Keyboard shortcut display logic based on mode
+
+**Context Extension Tests**:
+- Provider/consumer pattern verification
+- State propagation using React Testing Library
+- Re-render optimization checks with React DevTools Profiler
+
+**Keyboard Hook Tests**:
+- Event listener lifecycle management
+- Key combination handling with modifier key checks
+- Input field conflict prevention using event.target checks
+
+#### Integration Test Details
+**Tool System Integration**:
+- Full component tree rendering with providers
+- Cross-component communication verification
+- Tool-specific behavior dispatch testing
+- Visual feedback coordination across components
+
+Test setup will use a custom renderWithProviders utility:
+```typescript
+const renderWithProviders = (ui: ReactElement) => {
+  return render(
+    <TileActionsProvider>
+      {ui}
+    </TileActionsProvider>
+  );
+};
+```
+
+#### E2E Test Details
+**User Workflows**:
+- Display mode transitions with visual regression checks
+- Tool selection affecting tile behavior
+- Global keyboard shortcut functionality
+- State persistence using localStorage
+
+E2E tests will use Playwright's offline mode with data-testid selectors for reliability.
+
+### Test Infrastructure Notes
+- **New Test Utilities**:
+  - renderWithProviders helper for integration tests
+  - mockTileActionsContext for isolated unit tests
+  - Custom keyboard event simulator
+  
+- **Mocking Requirements**:
+  - TileActionsContext for component tests
+  - Router.push for navigation tests
+  - localStorage for persistence tests
+
+- **Test Data**:
+  - Sample tile configurations
+  - Tool state fixtures
+  - Keyboard event sequences
+
+- **CI/CD Considerations**:
+  - E2E tests require dev server running
+  - Visual regression tests need baseline images
+  - Accessibility tests use axe-core
+
+### Changes Made to Issue File
+- Added comprehensive Tests section
+- Documented 22 test cases across 3 categories
+- Included TypeScript code examples for E2E tests
+- Added accessibility and performance test considerations
+
+---
+EOF < /dev/null

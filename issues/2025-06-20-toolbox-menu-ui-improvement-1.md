@@ -191,3 +191,223 @@ Key advantages:
 - Supports all requested features (keyboard shortcuts, display modes)
 - Performant with minimal re-renders
 - Easy to extend with new tools in the future
+
+## Tests
+
+*I am an AI assistant acting on behalf of @ulysse*
+
+### Test Strategy
+Comprehensive testing of the Context-Based Tool System, covering the Toolbox component, TileActionsContext extensions, keyboard shortcuts, and user workflows. Tests will use Vitest for unit/integration and Playwright for E2E.
+
+### Unit Tests
+
+#### Component: Toolbox
+**File**: `src/app/map/Toolbox/Toolbox.test.tsx`
+
+- **Test**: Renders with default closed state
+  - Verify component mounts without errors
+  - Check no tools visible when closed
+  - Verify toggle button is accessible
+
+- **Test**: Transitions between display modes
+  - Simulate click on toggle button
+  - Verify transitions: closed → icons → full → closed
+  - Check CSS classes update correctly
+  - Verify ARIA states update
+
+- **Test**: Tool selection updates active state
+  - Mock setActiveTool from context
+  - Click each tool button
+  - Verify active tool visually highlighted
+  - Verify setActiveTool called with correct tool
+
+- **Test**: Keyboard shortcuts displayed correctly
+  - In icons mode: shortcuts visible on hover
+  - In full mode: shortcuts always visible
+  - Verify correct shortcuts for each tool
+
+#### Component: TileActionsContext Extensions
+**File**: `src/app/map/Canvas/TileActionsContext.test.tsx`
+
+- **Test**: Context provides tool state
+  - Render provider with test children
+  - Verify activeTool accessible
+  - Verify setActiveTool function available
+  - Check default tool is 'select'
+
+- **Test**: Tool state updates propagate to consumers
+  - Multiple components consuming context
+  - Update tool in one component
+  - Verify all components receive update
+  - Check no unnecessary re-renders
+
+#### Hook: useKeyboardShortcuts
+**File**: `src/app/map/hooks/useKeyboardShortcuts.test.tsx`
+
+- **Test**: Registers keyboard event listeners
+  - Render hook in test component
+  - Verify addEventListener called on mount
+  - Verify removeEventListener on unmount
+  - Check prevents memory leaks
+
+- **Test**: Keyboard shortcuts trigger tool changes
+  - Simulate keyboard events (N, C, E, D, Escape)
+  - Verify correct tool activated
+  - Check modifier keys don't interfere
+  - Verify shortcuts work globally
+
+- **Test**: Prevents conflicts with input fields
+  - Focus on input/textarea
+  - Press tool shortcuts
+  - Verify tools don't change
+  - Check normal typing works
+
+### Integration Tests
+
+#### Test Suite: Tool System Integration
+**File**: `src/app/map/__tests__/tool-integration.test.tsx`
+
+- **Test**: Toolbox integrates with TileActionsContext
+  - Render Canvas with Toolbox and tiles
+  - Select tool in Toolbox
+  - Verify context updates
+  - Check tile click behavior changes
+
+- **Test**: Tool-specific tile interactions
+  - Set navigate tool → click tile → verify navigation
+  - Set create tool → click empty → verify create modal
+  - Set edit tool → click item → verify edit mode
+  - Set delete tool → click item → verify delete confirmation
+
+- **Test**: Visual feedback coordination
+  - Select different tools
+  - Verify cursor changes
+  - Check tile hover states update
+  - Verify button visibility adjusts
+
+- **Test**: Keyboard shortcuts work with toolbox
+  - Press keyboard shortcut
+  - Verify toolbox UI updates
+  - Check context state synced
+  - Verify tile behavior updated
+
+### E2E Tests
+
+#### Test Suite: Toolbox User Workflows
+**File**: `e2e/toolbox-workflows.spec.ts`
+
+- **Test**: Toggle toolbox display modes
+  ```typescript
+  test('toolbox display mode transitions', async ({ page }) => {
+    await page.goto('/map');
+    
+    // Initially closed
+    await expect(page.locator('[data-testid="toolbox"]')).toHaveAttribute('data-display', 'closed');
+    
+    // Click toggle → icons mode
+    await page.click('[data-testid="toolbox-toggle"]');
+    await expect(page.locator('[data-testid="toolbox"]')).toHaveAttribute('data-display', 'icons');
+    await expect(page.locator('[data-testid="tool-navigate"]')).toBeVisible();
+    await expect(page.locator('[data-testid="tool-label-navigate"]')).not.toBeVisible();
+    
+    // Click toggle → full mode
+    await page.click('[data-testid="toolbox-toggle"]');
+    await expect(page.locator('[data-testid="toolbox"]')).toHaveAttribute('data-display', 'full');
+    await expect(page.locator('[data-testid="tool-label-navigate"]')).toBeVisible();
+    
+    // Click toggle → closed
+    await page.click('[data-testid="toolbox-toggle"]');
+    await expect(page.locator('[data-testid="toolbox"]')).toHaveAttribute('data-display', 'closed');
+  });
+  ```
+
+- **Test**: Tool selection changes tile behavior
+  ```typescript
+  test('tool selection affects tile clicks', async ({ page }) => {
+    await page.goto('/map');
+    await page.click('[data-testid="toolbox-toggle"]'); // Open toolbox
+    
+    // Select navigate tool
+    await page.click('[data-testid="tool-navigate"]');
+    await page.click('[data-testid="tile-1-2-3"]');
+    await expect(page).toHaveURL(/center=1-2-3/);
+    
+    // Select create tool
+    await page.click('[data-testid="tool-create"]');
+    await page.click('[data-testid="empty-tile-1-2-4"]');
+    await expect(page.locator('[data-testid="create-modal"]')).toBeVisible();
+  });
+  ```
+
+- **Test**: Keyboard shortcuts work globally
+  ```typescript
+  test('keyboard shortcuts activate tools', async ({ page }) => {
+    await page.goto('/map');
+    
+    // Press N for navigate
+    await page.keyboard.press('n');
+    await expect(page.locator('[data-testid="toolbox"]')).toHaveAttribute('data-active-tool', 'navigate');
+    
+    // Press C for create
+    await page.keyboard.press('c');
+    await expect(page.locator('[data-testid="toolbox"]')).toHaveAttribute('data-active-tool', 'create');
+    
+    // Press Escape for select
+    await page.keyboard.press('Escape');
+    await expect(page.locator('[data-testid="toolbox"]')).toHaveAttribute('data-active-tool', 'select');
+  });
+  ```
+
+- **Test**: Toolbox state persists across navigation
+  ```typescript
+  test('toolbox remembers display state', async ({ page }) => {
+    await page.goto('/map');
+    
+    // Open to full mode
+    await page.click('[data-testid="toolbox-toggle"]'); // icons
+    await page.click('[data-testid="toolbox-toggle"]'); // full
+    
+    // Navigate to different tile
+    await page.click('[data-testid="tile-navigate"]');
+    
+    // Verify toolbox still in full mode
+    await expect(page.locator('[data-testid="toolbox"]')).toHaveAttribute('data-display', 'full');
+  });
+  ```
+
+### Accessibility Tests
+
+- **Keyboard Navigation**: 
+  - Tab through all toolbox controls
+  - Enter/Space activate buttons
+  - Escape closes expanded states
+  - Focus trap when modal tools active
+
+- **Screen Reader Support**:
+  - Tool names announced on focus
+  - Active tool state announced
+  - Display mode changes announced
+  - Keyboard shortcuts read correctly
+
+- **ARIA Attributes**:
+  - role="toolbar" on container
+  - aria-label for all buttons
+  - aria-pressed for active tool
+  - aria-expanded for display toggle
+
+### Performance Considerations
+
+- **Re-render Optimization**:
+  - Tool changes don't re-render entire map
+  - Use React.memo for tile components
+  - Context split to minimize consumers
+
+- **Event Handler Efficiency**:
+  - Keyboard listeners use debouncing
+  - Single global listener vs per-component
+  - Cleanup on unmount prevents leaks
+
+- **CSS Transitions**:
+  - Use transform/opacity for GPU acceleration
+  - Avoid layout-triggering properties
+  - Test smooth 60fps transitions
