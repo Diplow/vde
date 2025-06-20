@@ -14,6 +14,81 @@ Tile buttons appearing on hover makes the general UI feels clunky. We should set
 
 ---
 
+## 2025-06-20 22:00 - Solution Design
+
+*Added by @ulysse via /solution command*
+
+### Design Process
+- Reviewed context from previous analysis
+- Considered 3 different architectural approaches
+- Evaluated against project patterns and user requirements
+
+### Detailed Solution Analysis
+
+#### Solution 1 Deep Dive: Context-Based Tool System
+This solution extends the existing TileActionsContext to manage tool state. The context would gain:
+```typescript
+interface ToolState {
+  activeTool: 'select' | 'navigate' | 'create' | 'edit' | 'delete';
+  toolboxDisplay: 'closed' | 'icons' | 'full';
+  setActiveTool: (tool: Tool) => void;
+  setToolboxDisplay: (display: ToolboxDisplay) => void;
+}
+```
+
+The Toolbox component would be positioned fixed on the left side, with CSS transitions between display states. Keyboard shortcuts would be handled by a global hook that listens for key combinations and updates the context.
+
+Implementation would modify the empty handleTileClick method to dispatch based on activeTool:
+```typescript
+const handleTileClick = (coordId: string) => {
+  switch(activeTool) {
+    case 'navigate': navigateToItem(coordId); break;
+    case 'create': onCreateTileRequested(coordId); break;
+    // etc.
+  }
+};
+```
+
+#### Solution 2 Deep Dive: Event Bus System
+This approach creates a standalone ToolManager service:
+```typescript
+class ToolManager extends EventEmitter {
+  private activeTool: Tool;
+  
+  setTool(tool: Tool) {
+    this.activeTool = tool;
+    this.emit('toolChanged', tool);
+  }
+}
+```
+
+Components would subscribe to tool changes and update their behavior accordingly. This decouples tool management from the React component tree but introduces a new pattern.
+
+#### Solution 3 Deep Dive: URL-State Integration
+This leverages the existing URL-first architecture by adding `?tool=navigate` to URLs. The page component would parse this and pass it down through props. Tool changes would use router.push with shallow routing to avoid full page refreshes.
+
+### Decision Factors
+- **Consistency**: Solution 1 aligns with existing TileActionsContext pattern
+- **Performance**: Solutions 1 and 2 avoid URL updates on every tool change
+- **User Experience**: All solutions support the three display modes
+- **Implementation Effort**: Solution 1 requires least new infrastructure
+- **Future Extensibility**: Solutions 1 and 2 make adding new tools easier
+
+The Context-based approach (Solution 1) was chosen because:
+1. It builds on existing patterns developers already understand
+2. It centralizes tool state management in a React-friendly way
+3. It avoids introducing new architectural patterns
+4. It provides good performance characteristics
+5. It's easier to test and debug within React DevTools
+
+### Changes Made to Issue File
+- Added Solution section with 3 detailed solutions
+- Marked Solution 1 (Context-Based Tool System) as preferred
+- Documented implementation paths and tradeoffs for each
+- Provided clear recommendation with rationale
+
+---
+
 ## 2025-06-20 19:52 - Context Analysis
 
 *Added by @ulysse via /context command*
@@ -68,5 +143,80 @@ The investigation revealed that the current hover-based interaction system is im
   - TileActionsContext exists with empty handlers ready for toolbox integration
   - No existing toolbar/keyboard shortcut patterns in codebase
   - Architecture supports adding toolbox as new UI layer
+
+---
+
+## 2025-06-20 22:00 - Solution Design
+
+*Added by @ulysse via /solution command*
+
+### Design Process
+- Reviewed context from previous analysis
+- Considered 3 different architectural approaches
+- Evaluated against project patterns and user requirements
+
+### Detailed Solution Analysis
+
+#### Solution 1 Deep Dive: Context-Based Tool System
+This solution extends the existing TileActionsContext to manage tool state. The context would gain:
+```typescript
+interface ToolState {
+  activeTool: 'select' | 'navigate' | 'create' | 'edit' | 'delete';
+  toolboxDisplay: 'closed' | 'icons' | 'full';
+  setActiveTool: (tool: Tool) => void;
+  setToolboxDisplay: (display: ToolboxDisplay) => void;
+}
+```
+
+The Toolbox component would be positioned fixed on the left side, with CSS transitions between display states. Keyboard shortcuts would be handled by a global hook that listens for key combinations and updates the context.
+
+Implementation would modify the empty handleTileClick method to dispatch based on activeTool:
+```typescript
+const handleTileClick = (coordId: string) => {
+  switch(activeTool) {
+    case 'navigate': navigateToItem(coordId); break;
+    case 'create': onCreateTileRequested(coordId); break;
+    // etc.
+  }
+};
+```
+
+#### Solution 2 Deep Dive: Event Bus System
+This approach creates a standalone ToolManager service:
+```typescript
+class ToolManager extends EventEmitter {
+  private activeTool: Tool;
+  
+  setTool(tool: Tool) {
+    this.activeTool = tool;
+    this.emit('toolChanged', tool);
+  }
+}
+```
+
+Components would subscribe to tool changes and update their behavior accordingly. This decouples tool management from the React component tree but introduces a new pattern.
+
+#### Solution 3 Deep Dive: URL-State Integration
+This leverages the existing URL-first architecture by adding `?tool=navigate` to URLs. The page component would parse this and pass it down through props. Tool changes would use router.push with shallow routing to avoid full page refreshes.
+
+### Decision Factors
+- **Consistency**: Solution 1 aligns with existing TileActionsContext pattern
+- **Performance**: Solutions 1 and 2 avoid URL updates on every tool change
+- **User Experience**: All solutions support the three display modes
+- **Implementation Effort**: Solution 1 requires least new infrastructure
+- **Future Extensibility**: Solutions 1 and 2 make adding new tools easier
+
+The Context-based approach (Solution 1) was chosen because:
+1. It builds on existing patterns developers already understand
+2. It centralizes tool state management in a React-friendly way
+3. It avoids introducing new architectural patterns
+4. It provides good performance characteristics
+5. It's easier to test and debug within React DevTools
+
+### Changes Made to Issue File
+- Added Solution section with 3 detailed solutions
+- Marked Solution 1 (Context-Based Tool System) as preferred
+- Documented implementation paths and tradeoffs for each
+- Provided clear recommendation with rationale
 
 ---
