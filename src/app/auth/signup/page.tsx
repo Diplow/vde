@@ -20,15 +20,15 @@ export default function SignupPage() {
   // Show loading while checking auth
   if (isLoading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
-        <div className="text-xl font-semibold text-foreground">Loading...</div>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-600 p-4">
+        <div className="text-xl font-semibold text-white">Loading...</div>
       </div>
     );
   }
 
   // Show signup form if not authenticated
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-600 p-4">
       <AuthTile initialView="register" />
     </div>
   );

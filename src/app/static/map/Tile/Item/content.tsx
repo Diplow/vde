@@ -1,4 +1,5 @@
 import type { TileScale } from "~/app/static/map/Tile/Base/base";
+import ReactMarkdown from "react-markdown";
 
 export interface StaticTileContentProps {
   data: {
@@ -50,14 +51,41 @@ const TitleSection = (title: string, scale: TileScale, tileId?: string) => {
 };
 
 const DescriptionSection = (description: string, scale: TileScale) => {
-  if (scale < 3) return null;
+  if (scale < 2) return null;
+  
+  // Different truncation lengths for different scales
+  const maxLength = scale === 2 ? 200 : 1500;
   const truncatedDescription =
-    description.length > 1500
-      ? `${description.substring(0, 1500)}...`
+    description.length > maxLength
+      ? `${description.substring(0, maxLength)}...`
       : description;
+  
+  const textSize = scale === 2 ? "text-xs" : "text-sm";
+  const proseSize = scale === 2 ? "prose-xs" : "prose-sm";
 
   return (
-    <div className={`mt-1 text-sm ${TEXT_CLASSES}`}>{truncatedDescription}</div>
+    <div className={`mt-1 ${textSize} ${TEXT_CLASSES} prose ${proseSize} prose-zinc max-w-full`}>
+      <ReactMarkdown
+        components={{
+          // Simplified components for better rendering in tiles
+          p: ({ children }) => <p className="mb-1 text-center">{children}</p>,
+          h1: ({ children }) => <h1 className="text-sm font-bold mb-1 text-center">{children}</h1>,
+          h2: ({ children }) => <h2 className="text-xs font-bold mb-1 text-center">{children}</h2>,
+          h3: ({ children }) => <h3 className="text-xs font-semibold mb-0.5 text-center">{children}</h3>,
+          ul: ({ children }) => <ul className="list-disc list-inside mb-1 text-center">{children}</ul>,
+          ol: ({ children }) => <ol className="list-decimal list-inside mb-1 text-center">{children}</ol>,
+          li: ({ children }) => <li className="mb-0.5">{children}</li>,
+          code: ({ children }) => <code className="bg-gray-100 px-0.5 rounded text-xs">{children}</code>,
+          a: ({ href, children }) => (
+            <a href={href} target="_blank" rel="noopener noreferrer" className="text-cyan-800 hover:text-cyan-950 underline">
+              {children}
+            </a>
+          ),
+        }}
+      >
+        {truncatedDescription}
+      </ReactMarkdown>
+    </div>
   );
 };
 

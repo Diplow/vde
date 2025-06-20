@@ -9,6 +9,7 @@ import { TileActionsContext } from "../../Canvas";
 import type { URLInfo } from "../../types/url-info";
 import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 import { getColor } from "../../types/tile-data";
+import { getDefaultStroke } from "../utils/stroke";
 
 interface DynamicEmptyTileProps {
   coordId: string;
@@ -43,6 +44,10 @@ function getDropHandlers(
 export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
   const [showModal, setShowModal] = useState(false);
   const [useDynamicDialog] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
+  
+  // Calculate default stroke for this scale
+  const defaultStroke = getDefaultStroke(props.scale ?? 1, false);
 
   // Safely check if we're within a DynamicMapCanvas context
   const tileActions = useContext(TileActionsContext);
@@ -92,6 +97,8 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
       <div 
         className={`group relative hover:z-10`} 
         data-testid={`empty-tile-${props.coordId}`}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         {...dropProps}>
         {/* Invisible hover area overlay to ensure full tile responds to hover */}
         <div className="pointer-events-auto absolute inset-0 z-10" />
@@ -108,28 +115,41 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
                 tint: tint as TileColor["tint"]
               };
             }
-            return { color: "zinc", tint: "100" };
+            return undefined; // No fill color for transparent tiles
           })()}
-          stroke={{ color: "zinc-950", width: 1 }}
+          stroke={isHovered ? defaultStroke : { color: "transparent", width: 0 }}
           cursor="cursor-pointer"
           baseHexSize={props.baseHexSize}
           isFocusable={true}
         >
-          <div className="flex h-full w-full items-center justify-center">
-            {props.interactive && userOwnsThisSpace ? (
-              <button
-                onClick={handleCreateClick}
-                className="create-button pointer-events-auto relative z-20 flex h-8 w-8 items-center justify-center rounded-full bg-green-500 text-white opacity-0 shadow-lg transition-opacity duration-200 hover:bg-green-600 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-green-400 group-hover:opacity-100"
-                aria-label={`Create new item${props.parentItem ? ` under ${props.parentItem.name}` : ""}`}
-                title={`Create new item${props.parentItem ? ` under ${props.parentItem.name}` : ""}`}
-              >
-                <Plus size={16} />
-              </button>
-            ) : (
-              <div className="text-center text-xs text-zinc-400">
-                {props.interactive ? "You don't own this space" : "Empty"}
-              </div>
-            )}
+          <div className="absolute inset-0">
+            {/* Semi-transparent black overlay clipped to hexagon shape */}
+            <div 
+              className={`absolute inset-0 transition-colors duration-200 ${
+                isHovered ? 'bg-black/10' : ''
+              }`}
+              style={{
+                clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)"
+              }}
+            />
+            
+            {/* Content on top of the overlay */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              {props.interactive && userOwnsThisSpace ? (
+                <button
+                  onClick={handleCreateClick}
+                  className="create-button pointer-events-auto relative z-20 flex h-8 w-8 items-center justify-center rounded-full bg-green-500 text-white opacity-0 shadow-lg transition-opacity duration-200 hover:bg-green-600 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-green-400 group-hover:opacity-100"
+                  aria-label={`Create new item${props.parentItem ? ` under ${props.parentItem.name}` : ""}`}
+                  title={`Create new item${props.parentItem ? ` under ${props.parentItem.name}` : ""}`}
+                >
+                  <Plus size={16} />
+                </button>
+              ) : (
+                <div className="text-center text-xs text-zinc-300">
+                  {props.interactive ? "You don't own this space" : "Empty"}
+                </div>
+              )}
+            </div>
           </div>
         </StaticBaseTileLayout>
       </div>

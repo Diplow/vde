@@ -60,6 +60,7 @@ scripts/*-production.sh
 # idea files
 .idea
 .cursor/mcp.json
+.claude/mcp/
 drizzle/meta/*
 .cursorignore
 .env.test

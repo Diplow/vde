@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { TileData } from "~/app/map/types/tile-data";
 import { DynamicBaseTileLayout } from "~/app/map/Tile/Base";
 import type { TileScale, TileColor } from "~/app/static/map/Tile/Base/base";
@@ -44,25 +45,34 @@ export function ItemTileContent({
   onEditClick,
   onDeleteClick,
 }: ItemTileContentProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  
   return (
     <>
-      <DynamicBaseTileLayout
-        coordId={item.metadata.coordId}
-        scale={scale}
-        color={tileColor}
-        baseHexSize={baseHexSize}
-        isFocusable={false}
+      <div
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        <DynamicTileContent
-          data={{
-            title: item.data.name,
-            description: item.data.description,
-            url: item.data.url,
-          }}
+        <DynamicBaseTileLayout
+          coordId={item.metadata.coordId}
           scale={scale}
-          tileId={testId.replace("tile-", "")}
-        />
-      </DynamicBaseTileLayout>
+          color={tileColor}
+          baseHexSize={baseHexSize}
+          isFocusable={false}
+          isExpanded={allExpandedItemIds.includes(item.metadata.dbId)}
+        >
+          <DynamicTileContent
+            data={{
+              title: item.data.name,
+              description: item.data.description,
+              url: item.data.url,
+            }}
+            scale={scale}
+            tileId={testId.replace("tile-", "")}
+            isHovered={isHovered}
+          />
+        </DynamicBaseTileLayout>
+      </div>
       {interactive && !isBeingDragged && (
         <DynamicTileButtons
           item={item}

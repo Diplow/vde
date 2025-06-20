@@ -167,10 +167,10 @@ pnpm dev                     # Start development server
 
 ### Running Tests
 ```bash
-pnpm test                    # Run all tests
-pnpm test:unit              # Unit tests only
-pnpm test:integration       # Integration tests only
-pnpm test:e2e               # E2E tests (requires dev server)
+pnpm test:all                # Always run pnpm test:all instead of pnpm test
+pnpm test:unit               # Unit tests only
+pnpm test:integration        # Integration tests only
+pnpm test:e2e                # E2E tests (requires dev server)
 ```
 
 ### Code Quality Checks

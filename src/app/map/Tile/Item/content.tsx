@@ -11,17 +11,93 @@ export interface DynamicTileContentProps {
   };
   scale: TileScale;
   tileId?: string;
+  isHovered?: boolean;
 }
 
 const TEXT_CLASSES = "break-words text-zinc-950";
 
-export const DynamicTileContent = ({ data, scale, tileId }: DynamicTileContentProps) => {
+export const DynamicTileContent = ({ data, scale, tileId, isHovered = false }: DynamicTileContentProps) => {
   if (!data) return null;
 
   const marginClass =
     scale === 1 ? "my-[6px]" : scale === 2 ? "my-[18px]" : "my-[54px]";
   // Add horizontal padding that scales with tile size
   const horizontalPadding = scale === 1 ? "px-2" : scale === 2 ? "px-4" : scale === 3 ? "px-[10%]" : "px-[15%]";
+  
+  // For scale 2, show different content based on hover state
+  if (scale === 2 && (data.title || data.description)) {
+    // On hover, show unified markdown
+    if (isHovered) {
+      const combinedContent = data.title 
+        ? `# ${data.title}\n${data.description ?? ''}`
+        : data.description ?? '';
+      
+      return (
+        <div
+          className={`${marginClass} ${horizontalPadding} flex h-full w-full flex-col items-center justify-center gap-2 overflow-hidden`}
+        >
+          <DescriptionSection description={combinedContent} scale={scale} tileId={tileId} />
+        </div>
+      );
+    }
+    
+    // Default: show title + truncated description
+    const truncatedDescription = data.description 
+      ? data.description.length > 200 
+        ? `${data.description.substring(0, 200)}...` 
+        : data.description
+      : '';
+    
+    return (
+      <div
+        className={`${marginClass} ${horizontalPadding} flex h-full w-full flex-col items-center justify-center gap-2 overflow-hidden`}
+      >
+        {data.title && <TitleSection title={data.title} scale={scale} tileId={tileId} />}
+        {truncatedDescription && (
+          <div className="w-full text-xs text-zinc-950 prose prose-xs prose-zinc max-w-full text-center">
+            <ReactMarkdown
+              components={{
+                // Simplified components for truncated view
+                p: ({ children }) => <p className="mb-0.5 text-center">{children}</p>,
+                h1: ({ children }) => <span className="font-bold">{children}</span>,
+                h2: ({ children }) => <span className="font-bold">{children}</span>,
+                h3: ({ children }) => <span className="font-semibold">{children}</span>,
+                ul: ({ children }) => <span>{children}</span>,
+                ol: ({ children }) => <span>{children}</span>,
+                li: ({ children }) => <span>• {children} </span>,
+                code: ({ children }) => <code className="bg-gray-100 px-0.5 rounded text-xs">{children}</code>,
+                a: ({ href, children }) => (
+                  <a href={href} target="_blank" rel="noopener noreferrer" className="text-cyan-800 hover:text-cyan-950 underline">
+                    {children}
+                  </a>
+                ),
+              }}
+            >
+              {truncatedDescription}
+            </ReactMarkdown>
+          </div>
+        )}
+      </div>
+    );
+  }
+  
+  // For scale 3+, always show combined content
+  if (scale >= 3 && (data.title || data.description)) {
+    const combinedContent = data.title 
+      ? `# ${data.title}\n${data.description ?? ''}`
+      : data.description ?? '';
+    
+    return (
+      <div
+        className={`${marginClass} ${horizontalPadding} flex h-full w-full flex-col items-center justify-center gap-2 overflow-hidden`}
+      >
+        <DescriptionSection description={combinedContent} scale={scale} tileId={tileId} />
+        {data.url && scale > 2 && <UrlSection url={data.url} scale={scale} />}
+      </div>
+    );
+  }
+  
+  // For scale 1, keep the original layout
   return (
     <div
       className={`${marginClass} ${horizontalPadding} flex h-full w-full flex-col items-center justify-center gap-2 overflow-hidden`}
@@ -67,28 +143,30 @@ const TitleSection = ({ title, scale, tileId }: { title: string; scale: TileScal
   );
 };
 
-const DescriptionSection = ({ description, scale }: { description: string; scale: TileScale }) => {
-  if (scale < 3) return null;
+const DescriptionSection = ({ description, scale, tileId }: { description: string; scale: TileScale; tileId?: string }) => {
+  if (scale < 2) return null;
   
-  // Fixed max height for all scales as requested
-  const maxHeight = "max-h-[476px]";
+  // For scale 2 and above, show full description with scrolling
+  const maxHeight = scale === 2 ? "max-h-[200px]" : "max-h-[476px]";
+  const textSize = scale === 2 ? "text-xs" : "text-sm";
+  const proseSize = scale === 2 ? "prose-xs" : "prose-sm";
   
     return (
       <div className={`w-full flex items-center`}>
-        <div className={`w-full text-sm ${TEXT_CLASSES} ${maxHeight} overflow-y-auto prose prose-sm prose-zinc max-w-full scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent relative z-30 text-center`}>
+        <div className={`w-full ${textSize} ${TEXT_CLASSES} ${maxHeight} overflow-y-auto prose ${proseSize} prose-zinc max-w-full scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent relative z-30 text-center`}>
         <ReactMarkdown
           components={{
-            // Override default styles to fit within tile - ensure text is center-aligned
-            p: ({ children }) => <p className="mb-2 text-center">{children}</p>,
-            h1: ({ children }) => <h1 className="text-base font-bold mb-2 text-justify">{children}</h1>,
-            h2: ({ children }) => <h2 className="text-sm font-bold mb-2 text-center">{children}</h2>,
-            h3: ({ children }) => <h3 className="text-sm font-semibold mb-1 text-center">{children}</h3>,
-            ul: ({ children }) => <ul className="list-disc list-inside mb-2 text-center">{children}</ul>,
-            ol: ({ children }) => <ol className="list-decimal list-inside mb-2 text-center">{children}</ol>,
-            li: ({ children }) => <li className="mb-1 text-left">{children}</li>,
+            // Override default styles to fit within tile - scale-aware sizing
+            p: ({ children }) => <p className={`${scale === 2 ? 'mb-1' : 'mb-2'} text-center`}>{children}</p>,
+            h1: ({ children }) => <h1 className={`${scale === 2 ? 'text-sm' : 'text-lg'} font-bold ${scale === 2 ? 'mb-1' : 'mb-2'} text-center`} data-testid={tileId ? `tile-markdown-h1-${tileId}` : "tile-markdown-h1"}>{children}</h1>,
+            h2: ({ children }) => <h2 className={`${scale === 2 ? 'text-xs' : 'text-sm'} font-bold ${scale === 2 ? 'mb-1' : 'mb-2'} text-center`}>{children}</h2>,
+            h3: ({ children }) => <h3 className={`${scale === 2 ? 'text-xs' : 'text-sm'} font-semibold mb-1 text-center`}>{children}</h3>,
+            ul: ({ children }) => <ul className={`list-disc list-inside ${scale === 2 ? 'mb-1' : 'mb-2'} text-center`}>{children}</ul>,
+            ol: ({ children }) => <ol className={`list-decimal list-inside ${scale === 2 ? 'mb-1' : 'mb-2'} text-center`}>{children}</ol>,
+            li: ({ children }) => <li className={`${scale === 2 ? 'mb-0.5' : 'mb-1'} text-left`}>{children}</li>,
             code: ({ children }) => <code className="bg-gray-100 px-1 rounded text-xs">{children}</code>,
-            pre: ({ children }) => <pre className="bg-gray-100 p-2 rounded text-xs overflow-auto mb-2">{children}</pre>,
-            blockquote: ({ children }) => <blockquote className="border-l-2 border-gray-300 pl-2 italic">{children}</blockquote>,
+            pre: ({ children }) => <pre className={`bg-gray-100 ${scale === 2 ? 'p-1' : 'p-2'} rounded text-xs overflow-auto ${scale === 2 ? 'mb-1' : 'mb-2'}`}>{children}</pre>,
+            blockquote: ({ children }) => <blockquote className={`border-l-2 border-gray-300 ${scale === 2 ? 'pl-1' : 'pl-2'} italic`}>{children}</blockquote>,
             a: ({ href, children }) => (
               <a href={href} target="_blank" rel="noopener noreferrer" className="text-cyan-800 hover:text-cyan-950 underline">
                 {children}
