@@ -34,6 +34,59 @@ The Canvas component serves as the main container for the hexagonal map visualiz
 - Optimizes rendering for visible tiles only
 - Handles responsive layout adjustments
 
+### 6. **Tile Scale Management**
+The canvas implements a sophisticated scaling system with "shell" mechanics for expanded tiles:
+
+#### Scale Hierarchy
+- **Center tile**: 
+  - Unexpanded: Scale 3 (full size)
+  - Expanded: Scale 3 shell with scale 2 center content
+- **Children (1st generation)**: 
+  - Only visible when center is expanded
+  - Unexpanded: Scale 2
+  - Expanded: Scale 2 shell with scale 1 center content
+- **Grandchildren (2nd generation)**: 
+  - Only visible when parent is expanded
+  - Always scale 1 (cannot have shells)
+
+#### Shallow Tile System
+When a tile is expanded, it transforms into a "shallow tile" structure (implemented in `frame.tsx` lines 170-186):
+
+```tsx
+<StaticBaseTileLayout
+  baseHexSize={baseHexSize}
+  scale={scale}
+  color={getColorFromItem(centerItem)}
+  coordId={center}
+  _shallow={true}  // Currently unused, but indicates intent
+>
+  <div className="scale-90 transform" style={{ position: "relative", zIndex: 5 }}>
+    {frame}
+  </div>
+</StaticBaseTileLayout>
+```
+
+The visual hierarchy is achieved through:
+- **Outer hexagon**: Maintains the parent's original scale (3 for center, 2 for children)
+- **Inner content**: Scaled down to 90% using `scale-90` transform
+- **Visual depth**: The 90% scaling creates a visual indication that children are "inside" their parent
+- **Frame content**: Contains the center tile and its children at one scale level down
+
+This creates a fractal-like visualization where each expanded tile becomes a mini-map containing its children.
+
+#### Expansion Constraints
+- **Scale 1 tiles cannot be expanded** - Would require scale 0 children (not supported)
+- **Scale 1 tiles CAN be collapsed** - If already expanded (e.g., center of an expanded scale 2 tile)
+- **Navigation automatically collapses tiles beyond 1 generation** - Prevents scale 0 rendering attempts
+
+#### Tool Cursors
+The expand tool shows appropriate cursors based on state:
+- `cursor-zoom-in`: Can expand (scale 2+ tiles with children or edit permission)
+- `cursor-zoom-out`: Can collapse (any expanded tile, including scale 1)
+- `cursor-not-allowed`: Cannot expand (scale 1 tiles that aren't already expanded)
+
+These mechanics ensure visual consistency while preventing invalid states in the tile hierarchy.
+
 ## Architecture
 
 ### Component Structure

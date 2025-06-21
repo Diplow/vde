@@ -61,7 +61,9 @@ export function ItemTileContent({
     state: {
       ...item.state,
       isExpanded,
-      canExpand: canEdit || hasChildren,  // Can expand if user owns tile OR tile has children
+      // Can expand if: scale > 1 AND (owns tile OR has children)
+      // Can collapse if: already expanded (regardless of scale)
+      canExpand: isExpanded || (scale > 1 && (canEdit || hasChildren)),
       canEdit  // Add canEdit state for drag/edit/delete operations
     }
   };
