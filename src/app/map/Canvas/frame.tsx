@@ -1,18 +1,3 @@
-/**
- * Frame Component - Renders tiles that can expand to show their children.
- * 
- * Scale System:
- * - Center tile: scale 3
- *   └─ When expanded: scale 3 shallow tile containing:
- *       ├─ Center content: scale 2
- *       └─ Children: scale 2
- *           └─ When expanded: scale 2 shallow tile containing:
- *               ├─ Center content: scale 1
- *               └─ Children: scale 1 (cannot expand further)
- * 
- * The 90% scaling (scale-90) creates visual depth showing children are "inside" their parent.
- */
-
 import { DynamicItemTile, getColorFromItem } from "../Tile/Item";
 import {
   StaticBaseTileLayout,
@@ -22,8 +7,6 @@ import { DynamicEmptyTile } from "../Tile/Empty/empty";
 import type { TileData } from "../types/tile-data";
 import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 import type { URLInfo } from "../types/url-info";
-
-const CHILD_INDICES = [1, 2, 3, 4, 5, 6] as const;
 
 export interface DynamicFrameProps {
   center: string;
@@ -36,197 +19,263 @@ export interface DynamicFrameProps {
   currentUserId?: number;
 }
 
-/**
- * A Frame is an expanded tile that shows its children in a hexagonal arrangement.
- * - If the tile is not expanded, it renders as a regular ItemTile
- * - If the tile is expanded, it becomes a Frame (shallow tile containing its children)
- * - Children can themselves be Frames if they are also expanded (recursive structure)
- */
-export const DynamicFrame = (props: DynamicFrameProps) => {
-  const { center, mapItems, scale = 3 } = props;
+export const DynamicFrame = ({
+  center,
+  mapItems,
+  baseHexSize = 50,
+  expandedItemIds = [],
+  scale = 3,
+  urlInfo,
+  interactive = true,
+  currentUserId,
+}: DynamicFrameProps) => {
   const centerItem = mapItems[center];
 
-  if (!centerItem) return null;
+  if (!centerItem) {
+    return null;
+  }
 
-  const isExpanded = props.expandedItemIds?.includes(centerItem.metadata.dbId) ?? false;
-  
-  // Not expanded = regular tile
+  const isExpanded = expandedItemIds.includes(centerItem.metadata.dbId);
+
+  // Calculate child coordinates to check if item has children
+  const centerCoord = centerItem.metadata.coordinates;
+  const childCoordIds = [
+    CoordSystem.createId({ ...centerCoord, path: [...centerCoord.path, 1] }),
+    CoordSystem.createId({ ...centerCoord, path: [...centerCoord.path, 2] }),
+    CoordSystem.createId({ ...centerCoord, path: [...centerCoord.path, 3] }),
+    CoordSystem.createId({ ...centerCoord, path: [...centerCoord.path, 4] }),
+    CoordSystem.createId({ ...centerCoord, path: [...centerCoord.path, 5] }),
+    CoordSystem.createId({ ...centerCoord, path: [...centerCoord.path, 6] }),
+  ];
+  const centerItemHasChildren = childCoordIds.some(
+    (childId) => mapItems[childId],
+  );
+
   if (!isExpanded) {
     return (
       <DynamicItemTile
         item={centerItem}
         scale={scale}
-        allExpandedItemIds={props.expandedItemIds || []}
-        hasChildren={hasChildren(centerItem, mapItems)}
-        isCenter={centerItem.metadata.dbId === props.urlInfo.rootItemId}
-        urlInfo={props.urlInfo}
-        interactive={props.interactive}
-        currentUserId={props.currentUserId}
+        allExpandedItemIds={expandedItemIds}
+        hasChildren={centerItemHasChildren}
+        isCenter={centerItem.metadata.dbId === urlInfo.rootItemId}
+        urlInfo={urlInfo}
+        interactive={interactive}
+        currentUserId={currentUserId}
       />
     );
   }
 
-  // Expanded = Frame (shallow tile with children inside)
-  // Scale progression: 3 (center) → 2 (children) → 1 (grandchildren) → 1 (cannot go lower)
+  // Re-use the already calculated values
+  const [NW, NE, E, SE, SW, W] = childCoordIds as [
+    string,
+    string,
+    string,
+    string,
+    string,
+    string,
+  ];
+
   const nextScale: TileScale = scale > 1 ? ((scale - 1) as TileScale) : 1;
+
+  const marginTopValue =
+    scale === 2 ? baseHexSize / 2 : (baseHexSize / 2) * Math.pow(3, scale - 2);
+  const marginTop = {
+    marginTop: `-${marginTopValue}px`,
+  };
+
+  const frame = (
+    <>
+      <div className="flex justify-center">
+        <RenderChild
+          coords={NW}
+          baseHexSize={baseHexSize}
+          mapItems={mapItems}
+          expandedItemIds={expandedItemIds}
+          scale={nextScale}
+          urlInfo={urlInfo}
+          interactive={interactive}
+          currentUserId={currentUserId}
+        />
+        <RenderChild
+          coords={NE}
+          mapItems={mapItems}
+          baseHexSize={baseHexSize}
+          expandedItemIds={expandedItemIds}
+          scale={nextScale}
+          urlInfo={urlInfo}
+          interactive={interactive}
+          currentUserId={currentUserId}
+        />
+      </div>
+      <div className="flex justify-center" style={marginTop}>
+        <RenderChild
+          coords={W}
+          baseHexSize={baseHexSize}
+          mapItems={mapItems}
+          expandedItemIds={expandedItemIds}
+          scale={nextScale}
+          urlInfo={urlInfo}
+          interactive={interactive}
+          currentUserId={currentUserId}
+        />
+        <div className="flex flex-col">
+          <DynamicItemTile
+            item={centerItem}
+            scale={nextScale}
+            allExpandedItemIds={expandedItemIds}
+            hasChildren={centerItemHasChildren}
+            isCenter={centerItem.metadata.dbId === urlInfo.rootItemId}
+            urlInfo={urlInfo}
+            interactive={interactive}
+            currentUserId={currentUserId}
+          />
+        </div>
+        <RenderChild
+          coords={E}
+          baseHexSize={baseHexSize}
+          mapItems={mapItems}
+          expandedItemIds={expandedItemIds}
+          scale={nextScale}
+          urlInfo={urlInfo}
+          interactive={interactive}
+          currentUserId={currentUserId}
+        />
+      </div>
+      <div className="flex justify-center" style={marginTop}>
+        <RenderChild
+          coords={SW}
+          baseHexSize={baseHexSize}
+          mapItems={mapItems}
+          expandedItemIds={expandedItemIds}
+          scale={nextScale}
+          urlInfo={urlInfo}
+          interactive={interactive}
+          currentUserId={currentUserId}
+        />
+        <RenderChild
+          coords={SE}
+          baseHexSize={baseHexSize}
+          mapItems={mapItems}
+          expandedItemIds={expandedItemIds}
+          scale={nextScale}
+          urlInfo={urlInfo}
+          interactive={interactive}
+          currentUserId={currentUserId}
+        />
+      </div>
+    </>
+  );
 
   return (
     <StaticBaseTileLayout
-      baseHexSize={props.baseHexSize || 50}
+      baseHexSize={baseHexSize}
       scale={scale}
       color={getColorFromItem(centerItem)}
-      coordId={centerItem.metadata.coordId}
+      coordId={center}
       _shallow={true}
     >
-      <div className="scale-90 transform" style={{ position: "relative", zIndex: 5 }}>
-        <FrameInterior
-          {...props}
-          centerItem={centerItem}
-          scale={nextScale}
-        />
+      <div
+        className="scale-90 transform"
+        style={{ position: "relative", zIndex: 5 }}
+      >
+        {frame}
       </div>
     </StaticBaseTileLayout>
   );
 };
 
-/**
- * Renders the interior content of a frame - the 7-tile hexagonal arrangement.
- * The scale passed here is already reduced by 1 from the parent frame's scale.
- * Example: If parent frame is scale 3, this interior renders at scale 2.
- */
-const FrameInterior = (props: DynamicFrameProps & { 
-  centerItem: TileData;
+interface RenderChildProps {
+  coords: string;
+  mapItems: Record<string, TileData>;
+  baseHexSize?: number;
+  expandedItemIds?: string[];
   scale: TileScale;
-}) => {
-  const { centerItem, baseHexSize = 50, scale } = props;
-  
-  // Calculate margin for hexagon rows
-  const marginTop = scale === 2 
-    ? baseHexSize / 2 
-    : (baseHexSize / 2) * Math.pow(3, scale - 2);
+  urlInfo: URLInfo;
+  interactive?: boolean;
+  currentUserId?: number;
+}
 
-  // Get child coordinates
-  const childCoordIds = getChildCoordIds(centerItem);
-  
-  // Create position map
-  const positionMap: Record<string, string | undefined> = {
-    C: centerItem.metadata.coordId,
-    NW: childCoordIds[0],
-    NE: childCoordIds[1],
-    E: childCoordIds[2],
-    SE: childCoordIds[3],
-    SW: childCoordIds[4],
-    W: childCoordIds[5],
-  };
+const RenderChild = ({
+  coords,
+  mapItems,
+  baseHexSize = 50,
+  expandedItemIds = [],
+  scale,
+  urlInfo,
+  interactive = true,
+  currentUserId,
+}: RenderChildProps) => {
+  const item = mapItems[coords];
+  const isExpanded = item
+    ? expandedItemIds.includes(item.metadata.dbId)
+    : false;
 
-  // Group tiles by row for rendering
-  const rows = [
-    ['NW', 'NE'],
-    ['W', 'C', 'E'],
-    ['SW', 'SE']
-  ];
-
-  return (
-    <>
-      {rows.map((row, rowIndex) => (
-        <div 
-          key={rowIndex}
-          className="flex justify-center" 
-          style={rowIndex > 0 ? { marginTop: `-${marginTop}px` } : undefined}
-        >
-          {row.map(position => {
-            const coordId = positionMap[position];
-            if (!coordId) return null;
-            
-            return (
-              <FrameSlot
-                key={position}
-                {...props}
-                coordId={coordId}
-                isCenter={position === 'C'}
-              />
-            );
-          })}
-        </div>
-      ))}
-    </>
-  );
-};
-
-/**
- * Renders a single position within a frame.
- * Each slot can contain:
- * - An ItemTile (if not expanded)
- * - A Frame (if expanded - recursive!)
- * - An EmptyTile (if no item exists at this position)
- */
-const FrameSlot = (props: DynamicFrameProps & {
-  coordId: string;
-  isCenter: boolean;
-  scale: TileScale;
-}) => {
-  const { coordId, mapItems, isCenter } = props;
-  const item = mapItems[coordId];
-
-  // Empty slot
-  if (!item && !isCenter) {
-    const parentCoords = CoordSystem.getParentCoord(CoordSystem.parseId(coordId));
+  if (!item) {
+    // Find parent item for context
+    const parentCoords = CoordSystem.getParentCoord(
+      CoordSystem.parseId(coords),
+    );
     if (!parentCoords) {
       throw new Error("Failed to get parent coordinates");
     }
-    
     const parentCoordsId = CoordSystem.createId(parentCoords);
-    const parentItem = mapItems[parentCoordsId];
+    const parentItem = parentCoordsId ? mapItems[parentCoordsId] : undefined;
 
     return (
       <DynamicEmptyTile
-        coordId={coordId}
-        scale={props.scale}
-        baseHexSize={props.baseHexSize}
-        urlInfo={props.urlInfo}
-        parentItem={parentItem ? {
-          id: parentItem.metadata.dbId,
-          name: parentItem.data.name,
-        } : undefined}
-        interactive={props.interactive}
-        currentUserId={props.currentUserId}
+        coordId={coords}
+        scale={scale}
+        baseHexSize={baseHexSize}
+        urlInfo={urlInfo}
+        parentItem={
+          parentItem
+            ? {
+                id: parentItem.metadata.dbId,
+                name: parentItem.data.name,
+              }
+            : undefined
+        }
+        interactive={interactive}
+        currentUserId={currentUserId}
       />
     );
   }
 
-  if (!item) return null;
+  // Calculate if the current child item has children
+  const childItemChildCoordIds = CoordSystem.getChildCoordsFromId(
+    item.metadata.coordId,
+  );
+  const itemHasChildren = childItemChildCoordIds.some(
+    (childId) => mapItems[childId],
+  );
 
-  const isExpanded = props.expandedItemIds?.includes(item.metadata.dbId) ?? false;
-  
-  // Expanded child = render as Frame (recursive!)
+  // If expanded (regardless of whether it has children), show the frame
   if (isExpanded) {
-    return <DynamicFrame {...props} center={coordId} />;
+    return (
+      <DynamicFrame
+        center={coords}
+        mapItems={mapItems}
+        baseHexSize={baseHexSize}
+        expandedItemIds={expandedItemIds}
+        scale={scale}
+        urlInfo={urlInfo}
+        interactive={interactive}
+        currentUserId={currentUserId}
+      />
+    );
   }
 
-  // Not expanded = regular ItemTile
   return (
     <DynamicItemTile
       item={item}
-      scale={props.scale}
-      allExpandedItemIds={props.expandedItemIds || []}
-      hasChildren={hasChildren(item, mapItems)}
-      isCenter={item.metadata.dbId === props.urlInfo.rootItemId}
-      urlInfo={props.urlInfo}
-      interactive={props.interactive}
-      currentUserId={props.currentUserId}
+      scale={scale}
+      allExpandedItemIds={expandedItemIds}
+      hasChildren={itemHasChildren}
+      isCenter={item.metadata.dbId === urlInfo.rootItemId}
+      urlInfo={urlInfo}
+      interactive={interactive}
+      currentUserId={currentUserId}
     />
   );
-};
-
-// Helper functions
-const getChildCoordIds = (item: TileData): string[] => {
-  const coord = item.metadata.coordinates;
-  return CHILD_INDICES.map(idx => 
-    CoordSystem.createId({ ...coord, path: [...coord.path, idx] })
-  );
-};
-
-const hasChildren = (item: TileData, mapItems: Record<string, TileData>): boolean => {
-  const childCoordIds = getChildCoordIds(item);
-  return childCoordIds.some(childId => mapItems[childId]);
 };
