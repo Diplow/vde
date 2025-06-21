@@ -5,11 +5,12 @@ import { Plus } from "lucide-react";
 import { StaticBaseTileLayout, type TileScale, type TileColor } from "~/app/static/map/Tile/Base/base";
 import { CreateItemModal } from "../../Dialogs/create-item.modal";
 import { DynamicCreateItemDialog } from "../../Dialogs/create-item";
-import { TileActionsContext } from "../../Canvas";
+import { LegacyTileActionsContext } from "../../Canvas";
 import type { URLInfo } from "../../types/url-info";
 import { CoordSystem } from "~/lib/domains/mapping/utils/hex-coordinates";
 import { getColor } from "../../types/tile-data";
 import { getDefaultStroke } from "../utils/stroke";
+import { useTileInteraction } from "../../hooks/useTileInteraction";
 
 interface DynamicEmptyTileProps {
   coordId: string;
@@ -24,7 +25,7 @@ interface DynamicEmptyTileProps {
 function getDropHandlers(
   coordId: string,
   isValidDropTarget: boolean,
-  tileActions: React.ContextType<typeof TileActionsContext>
+  tileActions: React.ContextType<typeof LegacyTileActionsContext>
 ) {
   if (!isValidDropTarget || !tileActions) {
     return {};
@@ -48,9 +49,18 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
   
   // Calculate default stroke for this scale
   const defaultStroke = getDefaultStroke(props.scale ?? 1, false);
+  
+  // Use tile interaction hook for tool-based behavior
+  const { handleClick, cursor, shouldShowHoverEffects, activeTool } = useTileInteraction({
+    coordId: props.coordId,
+    type: 'empty',
+    onCreate: () => {
+      setShowModal(true);
+    },
+  });
 
   // Safely check if we're within a DynamicMapCanvas context
-  const tileActions = useContext(TileActionsContext);
+  const tileActions = useContext(LegacyTileActionsContext);
 
 
   // If context is not available, we'll still render but without the context actions
@@ -103,10 +113,12 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
         {/* Invisible hover area overlay to ensure full tile responds to hover */}
         <div className="pointer-events-auto absolute inset-0 z-10" />
 
-        <StaticBaseTileLayout
-          coordId={props.coordId}
-          scale={props.scale ?? 1}
-          color={(() => {
+        <div onClick={handleClick}>
+          <StaticBaseTileLayout
+            coordId={props.coordId}
+            scale={props.scale ?? 1}
+            cursor={cursor}
+            color={(() => {
             if (isDropTargetActive && dropOperation === 'move') {
               // Show the color the tile would have after the move
               const [colorName, tint] = previewColor.split("-");
@@ -117,8 +129,7 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
             }
             return undefined; // No fill color for transparent tiles
           })()}
-          stroke={isHovered ? defaultStroke : { color: "transparent", width: 0 }}
-          cursor="cursor-pointer"
+          stroke={isHovered && shouldShowHoverEffects ? defaultStroke : { color: "transparent", width: 0 }}
           baseHexSize={props.baseHexSize}
           isFocusable={true}
         >
@@ -126,7 +137,7 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
             {/* Semi-transparent black overlay clipped to hexagon shape */}
             <div 
               className={`absolute inset-0 transition-colors duration-200 ${
-                isHovered ? 'bg-black/10' : ''
+                isHovered && shouldShowHoverEffects ? 'bg-black/10' : ''
               }`}
               style={{
                 clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)"
@@ -135,7 +146,7 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
             
             {/* Content on top of the overlay */}
             <div className="absolute inset-0 flex items-center justify-center">
-              {props.interactive && userOwnsThisSpace ? (
+              {props.interactive && userOwnsThisSpace && activeTool !== 'create' ? (
                 <button
                   onClick={handleCreateClick}
                   className="create-button pointer-events-auto relative z-20 flex h-8 w-8 items-center justify-center rounded-full bg-green-500 text-white opacity-0 shadow-lg transition-opacity duration-200 hover:bg-green-600 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-green-400 group-hover:opacity-100"
@@ -144,14 +155,11 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
                 >
                   <Plus size={16} />
                 </button>
-              ) : (
-                <div className="text-center text-xs text-zinc-300">
-                  {props.interactive ? "You don't own this space" : "Empty"}
-                </div>
-              )}
+              ) : null}
             </div>
           </div>
-        </StaticBaseTileLayout>
+          </StaticBaseTileLayout>
+        </div>
       </div>
 
       {/* Dynamic dialog with optimistic updates */}

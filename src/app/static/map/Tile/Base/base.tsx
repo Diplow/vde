@@ -5,6 +5,7 @@ export type TileCursor =
   | "cursor-pointer"
   | "cursor-grab" // for draggable tiles
   | "cursor-grabbing" // for dragging tiles
+  | "cursor-move" // for drag tool
   | "cursor-crosshair" // for selecting tiles
   | "cursor-not-allowed" // for locked tiles
   | "cursor-zoom-in" // for expandable tiles

@@ -280,6 +280,29 @@ A reusable pattern for handling optimistic UI updates with automatic rollback ca
   - `withRollback()`: Higher-order function for automatic rollback
   - `executeOptimisticUpdate()`: Complete optimistic update flow
 
+##### State Restoration Mechanism
+The rollback mechanism uses a clever approach that avoids the need for a dangerous `SET_STATE` action:
+
+1. **State Capture**: Before any changes, the current cache state is captured
+2. **Rollback Function**: When rollback is triggered, it calls `updateCache(() => previousState)`
+3. **UPDATE_ITEMS Adapter**: The `updateCache` function (in `useDragAndDropWithMutation.ts`):
+   - Calculates the diff between current state and previous state
+   - Dispatches `UPDATE_ITEMS` action with all changes needed to restore state
+   - Items to delete are marked as `undefined` in the payload
+   - Items to add/update are included with their previous values
+
+This approach maintains Redux best practices while achieving full state restoration:
+```typescript
+// Instead of dangerous: dispatch({ type: 'SET_STATE', payload: previousState })
+// We do: dispatch({ type: 'UPDATE_ITEMS', payload: diffedChanges })
+```
+
+Benefits:
+- Maintains action auditability (each change is explicit)
+- Avoids race conditions that could occur with full state replacement
+- Leverages existing reducer logic without special cases
+- Provides granular control over what gets restored
+
 #### TileSwapOperation
 Encapsulates the logic of swapping two tiles' positions:
 - **Responsibilities**: Coordinate swapping, color updates, parent reassignment
