@@ -5,7 +5,7 @@ test.describe('Toolbox - Disabled Tools', () => {
     // Setup for each test
   });
 
-  test('disables create, edit, and delete tools when navigating to non-owned space', async () => {
+  test('disables create, edit, and delete tools when navigating to non-owned space', async ({ page }) => {
     // Start at user 1's root space
     await page.goto('/map?center=1');
     await page.waitForLoadState('networkidle');
@@ -53,7 +53,7 @@ test.describe('Toolbox - Disabled Tools', () => {
     await expect(navigateTool).toHaveAttribute('aria-pressed', 'true');
   });
 
-  test('enables all tools when returning to owned space', async () => {
+  test('enables all tools when returning to owned space', async ({ page }) => {
     // Start at user 2's space (not owned by user 1)
     await page.goto('/map?center=2');
     await page.waitForLoadState('networkidle');
@@ -89,7 +89,7 @@ test.describe('Toolbox - Disabled Tools', () => {
     await expect(editToolEnabled).toHaveAttribute('aria-pressed', 'true');
   });
 
-  test('tools remain disabled while navigating within non-owned space', async () => {
+  test('tools remain disabled while navigating within non-owned space', async ({ page }) => {
     // Start at user 2's space (not owned by user 1)
     await page.goto('/map?center=2');
     await page.waitForLoadState('networkidle');
@@ -121,7 +121,7 @@ test.describe('Toolbox - Disabled Tools', () => {
     }
   });
 
-  test('visual styling of disabled tools', async () => {
+  test('visual styling of disabled tools', async ({ page }) => {
     // Navigate to non-owned space
     await page.goto('/map?center=2');
     await page.waitForLoadState('networkidle');

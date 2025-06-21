@@ -62,7 +62,7 @@ if (typeof window !== "undefined") {
 
       return {
         getItem(key: string) {
-          return store[key] || null;
+          return store[key] ?? null;
         },
         setItem(key: string, value: string) {
           store[key] = value.toString();
@@ -78,7 +78,7 @@ if (typeof window !== "undefined") {
         },
         key(index: number) {
           const keys = Object.keys(store);
-          return keys[index] || null;
+          return keys[index] ?? null;
         },
       };
     })();
