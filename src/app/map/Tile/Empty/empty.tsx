@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useContext } from "react";
-import { Plus } from "lucide-react";
 import { StaticBaseTileLayout, type TileScale, type TileColor } from "~/app/static/map/Tile/Base/base";
 import { CreateItemModal } from "../../Dialogs/create-item.modal";
 import { DynamicCreateItemDialog } from "../../Dialogs/create-item";
@@ -51,7 +50,7 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
   const defaultStroke = getDefaultStroke(props.scale ?? 1, false);
   
   // Use tile interaction hook for tool-based behavior
-  const { handleClick, cursor, shouldShowHoverEffects, activeTool } = useTileInteraction({
+  const { handleClick, cursor, shouldShowHoverEffects } = useTileInteraction({
     coordId: props.coordId,
     type: 'empty',
     onCreate: () => {
@@ -63,8 +62,6 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
   const tileActions = useContext(LegacyTileActionsContext);
 
 
-  // If context is not available, we'll still render but without the context actions
-  const onCreateTileRequested = tileActions?.onCreateTileRequested;
   
   // Check if this tile is a valid drop target
   const isValidDropTarget = tileActions?.isValidDropTarget(props.coordId) === true;
@@ -76,17 +73,6 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
   const previewColor = getColor(targetCoords);
 
 
-  // Handle create button click
-  const handleCreateClick = (e: React.MouseEvent) => {
-
-    // Prevent any bubbling
-    e.preventDefault();
-    e.stopPropagation();
-
-    // Show create modal
-    onCreateTileRequested?.(props.coordId);
-    setShowModal(true);
-  };
 
   // Handle successful creation
   const handleCreateSuccess = () => {
@@ -94,10 +80,6 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
     // Don't invalidate the cache - the optimistic update handles everything
   };
 
-  // Enhanced empty tile with simplified action integration
-  const coord = CoordSystem.parseId(props.coordId);
-  const userOwnsThisSpace =
-    props.currentUserId !== undefined && coord.userId === props.currentUserId;
   
   // Get drop handlers using helper function
   const dropProps = getDropHandlers(props.coordId, isValidDropTarget, tileActions);
@@ -146,16 +128,7 @@ export function DynamicEmptyTile(props: DynamicEmptyTileProps) {
             
             {/* Content on top of the overlay */}
             <div className="absolute inset-0 flex items-center justify-center">
-              {props.interactive && userOwnsThisSpace && activeTool !== 'create' ? (
-                <button
-                  onClick={handleCreateClick}
-                  className="create-button pointer-events-auto relative z-20 flex h-8 w-8 items-center justify-center rounded-full bg-green-500 text-white opacity-0 shadow-lg transition-opacity duration-200 hover:bg-green-600 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-green-400 group-hover:opacity-100"
-                  aria-label={`Create new item${props.parentItem ? ` under ${props.parentItem.name}` : ""}`}
-                  title={`Create new item${props.parentItem ? ` under ${props.parentItem.name}` : ""}`}
-                >
-                  <Plus size={16} />
-                </button>
-              ) : null}
+              {/* Green + button removed - creation is now handled via the Create tool */}
             </div>
           </div>
           </StaticBaseTileLayout>

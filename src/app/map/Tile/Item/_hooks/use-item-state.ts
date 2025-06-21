@@ -51,8 +51,8 @@ export function useItemState({
   const canEdit = canEditTile(currentUserId, item.metadata.ownerId);
   const testId = generateTileTestId(item.metadata.coordinates);
   
-  // Only allow dragging when the drag tool is active
-  const isDraggableWithTool = interaction.isDraggable && activeTool === 'drag';
+  // Only allow dragging when the drag tool is active AND user can edit the tile
+  const isDraggableWithTool = interaction.isDraggable && activeTool === 'drag' && canEdit;
   
   const dragProps = interactive 
     ? createDragProps(item.metadata.coordId, tileActions, isDraggableWithTool, interaction.isBeingDragged)

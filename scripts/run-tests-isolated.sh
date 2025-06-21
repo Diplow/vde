@@ -13,7 +13,12 @@ pnpm vitest run --config vitest.config.ts \
   --exclude "**/auth.test.tsx" \
   --exclude "**/page.test.tsx" \
   --exclude "**/useDragAndDrop.test.ts" \
-  --exclude "**/enhanced-drag-drop.test.ts"
+  --exclude "**/enhanced-drag-drop.test.ts" \
+  --exclude "**/TileActionsContext.test.tsx" \
+  --exclude "**/Toolbox.integration.test.tsx" \
+  --exclude "**/useKeyboardShortcuts.test.tsx" \
+  --exclude "**/ToolStateManager.test.tsx" \
+  --exclude "**/Toolbox.test.tsx"
 
 MAIN_EXIT_CODE=$?
 
@@ -23,7 +28,12 @@ pnpm vitest run --config vitest.config.ts --pool=forks --poolOptions.forks.singl
   src/app/static/map/Tile/Base/base.test.tsx \
   src/app/map/Tile/Auth/__tests__/auth-tile.test.tsx \
   src/app/map/Tile/Auth/__tests__/auth.test.tsx \
-  src/app/auth/logout/__tests__/page.test.tsx
+  src/app/auth/logout/__tests__/page.test.tsx \
+  src/app/map/Canvas/TileActionsContext.test.tsx \
+  src/app/map/Controls/Toolbox/Toolbox.integration.test.tsx \
+  src/app/map/hooks/useKeyboardShortcuts.test.tsx \
+  src/app/map/Controls/Toolbox/ToolStateManager.test.tsx \
+  src/app/map/Controls/Toolbox/Toolbox.test.tsx
 
 REACT_EXIT_CODE=$?
 

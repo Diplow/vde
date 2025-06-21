@@ -28,11 +28,12 @@ export function ToolStateManager({ children, mapCenterCoordId }: ToolStateManage
     const coord = CoordSystem.parseId(mapCenterCoordId);
     const userOwnsThisSpace = mappingUserId !== undefined && coord.userId === mappingUserId;
     
-    // Disable create, edit, and delete tools if user doesn't own the space
+    // Disable create, edit, delete, and drag tools if user doesn't own the space
     if (!userOwnsThisSpace) {
       newDisabledTools.add('create');
       newDisabledTools.add('edit');
       newDisabledTools.add('delete');
+      newDisabledTools.add('drag');
     }
     
     setDisabledTools(newDisabledTools);

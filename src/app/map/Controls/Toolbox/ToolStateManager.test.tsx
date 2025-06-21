@@ -45,11 +45,14 @@ describe('ToolStateManager', () => {
     vi.clearAllMocks()
   })
 
-  it('disables create, edit, and delete tools when user does not own the space', () => {
+  it('disables create, edit, delete, and drag tools when user does not own the space', () => {
     // Mock user ID 123
     vi.mocked(useAuth).mockReturnValue({
+      user: null,
       mappingUserId: 123,
-    } as any)
+      isLoading: false,
+      setMappingUserId: vi.fn(),
+    })
 
     // Render with a coordinate in a different user's space (user 456)
     render(
@@ -60,17 +63,20 @@ describe('ToolStateManager', () => {
       </TestWrapper>
     )
 
-    // Should disable the create, edit, and delete tools
+    // Should disable the create, edit, delete, and drag tools
     expect(mockSetDisabledTools).toHaveBeenCalledWith(
-      new Set(['create', 'edit', 'delete'])
+      new Set(['create', 'edit', 'delete', 'drag'])
     )
   })
 
   it('enables all tools when user owns the space', () => {
     // Mock user ID 123
     vi.mocked(useAuth).mockReturnValue({
+      user: null,
       mappingUserId: 123,
-    } as any)
+      isLoading: false,
+      setMappingUserId: vi.fn(),
+    })
 
     // Render with a coordinate in the user's own space
     render(
@@ -87,11 +93,14 @@ describe('ToolStateManager', () => {
     )
   })
 
-  it('disables create, edit, and delete tools when user is not authenticated', () => {
+  it('disables create, edit, delete, and drag tools when user is not authenticated', () => {
     // Mock no user (undefined)
     vi.mocked(useAuth).mockReturnValue({
+      user: null,
       mappingUserId: undefined,
-    } as any)
+      isLoading: false,
+      setMappingUserId: vi.fn(),
+    })
 
     // Render with any coordinate
     render(
@@ -102,17 +111,20 @@ describe('ToolStateManager', () => {
       </TestWrapper>
     )
 
-    // Should disable the create, edit, and delete tools
+    // Should disable the create, edit, delete, and drag tools
     expect(mockSetDisabledTools).toHaveBeenCalledWith(
-      new Set(['create', 'edit', 'delete'])
+      new Set(['create', 'edit', 'delete', 'drag'])
     )
   })
 
   it('updates disabled tools when map center changes', () => {
     // Mock user ID 123
     vi.mocked(useAuth).mockReturnValue({
+      user: null,
       mappingUserId: 123,
-    } as any)
+      isLoading: false,
+      setMappingUserId: vi.fn(),
+    })
 
     const { rerender } = render(
       <TestWrapper>
@@ -137,9 +149,9 @@ describe('ToolStateManager', () => {
       </TestWrapper>
     )
 
-    // Now create, edit, and delete tools should be disabled
+    // Now create, edit, delete, and drag tools should be disabled
     expect(mockSetDisabledTools).toHaveBeenCalledWith(
-      new Set(['create', 'edit', 'delete'])
+      new Set(['create', 'edit', 'delete', 'drag'])
     )
   })
 
@@ -147,8 +159,11 @@ describe('ToolStateManager', () => {
     // Start with user ID 123
     const mockUseAuth = vi.mocked(useAuth)
     mockUseAuth.mockReturnValue({
+      user: null,
       mappingUserId: 123,
-    } as any)
+      isLoading: false,
+      setMappingUserId: vi.fn(),
+    })
 
     const { rerender } = render(
       <TestWrapper>
@@ -166,8 +181,11 @@ describe('ToolStateManager', () => {
 
     // Simulate user logout
     mockUseAuth.mockReturnValue({
+      user: null,
       mappingUserId: undefined,
-    } as any)
+      isLoading: false,
+      setMappingUserId: vi.fn(),
+    })
 
     rerender(
       <TestWrapper>
@@ -177,9 +195,9 @@ describe('ToolStateManager', () => {
       </TestWrapper>
     )
 
-    // Now create, edit, and delete tools should be disabled
+    // Now create, edit, delete, and drag tools should be disabled
     expect(mockSetDisabledTools).toHaveBeenCalledWith(
-      new Set(['create', 'edit', 'delete'])
+      new Set(['create', 'edit', 'delete', 'drag'])
     )
   })
 })

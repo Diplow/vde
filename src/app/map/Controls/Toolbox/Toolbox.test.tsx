@@ -48,7 +48,7 @@ describe('Toolbox', () => {
   })
 
   describe('Rendering and Display Modes', () => {
-    it('renders with default closed state', () => {
+    it('renders with default full state', () => {
       render(
         <TestWrapper>
           <Toolbox />
@@ -59,11 +59,16 @@ describe('Toolbox', () => {
       const toggleButton = screen.getByRole('button', { name: /toggle toolbox/i })
       expect(toggleButton).toBeInTheDocument()
 
-      // No tool buttons should be visible when closed
-      expect(screen.queryByRole('button', { name: /navigate tool/i })).not.toBeInTheDocument()
-      expect(screen.queryByRole('button', { name: /create tool/i })).not.toBeInTheDocument()
-      expect(screen.queryByRole('button', { name: /edit tool/i })).not.toBeInTheDocument()
-      expect(screen.queryByRole('button', { name: /delete tool/i })).not.toBeInTheDocument()
+      // Tool buttons should be visible in full mode
+      expect(screen.getByRole('button', { name: /expand tool/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /navigate tool/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /create tool/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /edit tool/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /delete tool/i })).toBeInTheDocument()
+      
+      // Labels should be visible in full mode
+      expect(screen.getByText('Expand')).toBeInTheDocument()
+      expect(screen.getByText('Navigate')).toBeInTheDocument()
     })
 
     it('transitions between display modes', () => {
@@ -75,33 +80,25 @@ describe('Toolbox', () => {
 
       const toggleButton = screen.getByRole('button', { name: /toggle toolbox/i })
 
-      // Click to open to icons mode
+      // Default is full mode - aria-expanded should be true
+      expect(toggleButton).toHaveAttribute('aria-expanded', 'true')
+      
+      // Navigate through all states
+      // Full -> Icons only
       fireEvent.click(toggleButton)
+      expect(toggleButton).toHaveAttribute('aria-expanded', 'true')
       
-      // Tool buttons should be visible
-      expect(screen.getByRole('button', { name: /navigate tool/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /create tool/i })).toBeInTheDocument()
+      // Icons only -> Closed
+      fireEvent.click(toggleButton)
+      expect(toggleButton).toHaveAttribute('aria-expanded', 'false')
       
-      // In icons mode, labels are in tooltips (not visible by default)
-      // Tool buttons should be visible but labels are only in tooltips
-      const navigateTool = screen.getByRole('button', { name: /navigate tool/i })
-      const createTool = screen.getByRole('button', { name: /create tool/i })
-      expect(navigateTool).toBeInTheDocument()
-      expect(createTool).toBeInTheDocument()
+      // Closed -> Icons only
+      fireEvent.click(toggleButton)
+      expect(toggleButton).toHaveAttribute('aria-expanded', 'true')
 
-      // Click to open to full mode
+      // Icons only -> Full
       fireEvent.click(toggleButton)
-      
-      // In full mode, we still use square buttons with tooltips
-      // The buttons remain the same size
-      expect(navigateTool).toBeInTheDocument()
-      expect(createTool).toBeInTheDocument()
-
-      // Click to close
-      fireEvent.click(toggleButton)
-      
-      // No tool buttons should be visible
-      expect(screen.queryByRole('button', { name: /navigate tool/i })).not.toBeInTheDocument()
+      expect(toggleButton).toHaveAttribute('aria-expanded', 'true')
     })
   })
 
@@ -113,9 +110,7 @@ describe('Toolbox', () => {
         </TestWrapper>
       )
 
-      // Open toolbox
-      const toggleButton = screen.getByRole('button', { name: /toggle toolbox/i })
-      fireEvent.click(toggleButton)
+      // Toolbox is already open in full mode by default
 
       // Click navigate tool
       const navigateTool = screen.getByRole('button', { name: /navigate tool/i })
@@ -163,11 +158,9 @@ describe('Toolbox', () => {
 
       const { rerender } = render(<TestComponent />)
 
-      // Open toolbox
-      const toggleButton = screen.getByRole('button', { name: /toggle toolbox/i })
-      fireEvent.click(toggleButton)
-
-      // Default tool should be highlighted
+      // Toolbox is already open in full mode by default
+      
+      // Navigate tool should be highlighted (we set it as the active tool)
       const navigateTool = screen.getByRole('button', { name: /navigate tool/i })
       expect(navigateTool).toHaveAttribute('aria-pressed', 'true')
 
@@ -204,9 +197,7 @@ describe('Toolbox', () => {
       
       render(<TestComponent />)
       
-      // Open toolbox
-      const toggleButton = screen.getByRole('button', { name: /toggle toolbox/i })
-      fireEvent.click(toggleButton)
+      // Toolbox is already open in full mode by default
       
       // Check that create and delete tools are disabled
       const createTool = screen.getByRole('button', { name: /create tool \(disabled\)/i })
@@ -252,26 +243,26 @@ describe('Toolbox', () => {
       expect(navigateTooltip).toHaveTextContent('Press N')
     })
 
-    it('buttons remain square in all modes', () => {
+    it('buttons have consistent styling in all modes', () => {
       render(
         <TestWrapper>
           <Toolbox />
         </TestWrapper>
       )
 
-      // Open toolbox
-      const toggleButton = screen.getByRole('button', { name: /toggle toolbox/i })
-      fireEvent.click(toggleButton)
+      // Toolbox is already open in full mode by default
 
-      // Check button has aspect-square class
+      // Check button exists
       const navigateTool = screen.getByRole('button', { name: /navigate tool/i })
-      expect(navigateTool).toHaveClass('aspect-square')
+      expect(navigateTool).toBeInTheDocument()
 
-      // Click to full mode
-      fireEvent.click(toggleButton)
+      // Click to close, then to icons mode
+      const toggleButton = screen.getByRole('button', { name: /toggle toolbox/i })
+      fireEvent.click(toggleButton) // close
+      fireEvent.click(toggleButton) // icons
 
-      // Button should still be square
-      expect(navigateTool).toHaveClass('aspect-square')
+      // Button should still exist
+      expect(screen.getByRole('button', { name: /navigate tool/i })).toBeInTheDocument()
     })
   })
 
@@ -283,9 +274,8 @@ describe('Toolbox', () => {
         </TestWrapper>
       )
 
-      // Open toolbox
+      // Toolbox is already open in full mode by default
       const toggleButton = screen.getByRole('button', { name: /toggle toolbox/i })
-      fireEvent.click(toggleButton)
 
       // Check toolbar role
       const toolbar = screen.getByRole('toolbar')
@@ -308,9 +298,7 @@ describe('Toolbox', () => {
         </TestWrapper>
       )
 
-      // Open toolbox
-      const toggleButton = screen.getByRole('button', { name: /toggle toolbox/i })
-      fireEvent.click(toggleButton)
+      // Toolbox is already open in full mode by default
 
       // Tab through tools
       const navigateTool = screen.getByRole('button', { name: /navigate tool/i })

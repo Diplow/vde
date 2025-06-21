@@ -47,7 +47,10 @@ export function useTileInteraction({
         break;
       case 'expand':
         if (type === 'item' && onExpand) {
-          onExpand();
+          // Check if tile can be expanded
+          if (tileData && 'state' in tileData && tileData.state.canExpand !== false) {
+            onExpand();
+          }
         }
         break;
       case 'create':
@@ -80,6 +83,10 @@ export function useTileInteraction({
       return 'cursor-pointer';
     }
     if (activeTool === 'expand' && type === 'item') {
+      // Check if tile can be expanded
+      if (tileData && 'state' in tileData && tileData.state.canExpand === false) {
+        return 'cursor-not-allowed';
+      }
       // Check if tile is already expanded
       if (tileData && 'state' in tileData && tileData.state.isExpanded) {
         return 'cursor-zoom-out';
@@ -99,6 +106,10 @@ export function useTileInteraction({
       return 'cursor-pointer';
     }
     if (activeTool === 'drag' && type === 'item') {
+      // Check if user can edit (owns) the tile
+      if (tileData && 'state' in tileData && tileData.state.canEdit === false) {
+        return 'cursor-not-allowed';
+      }
       return 'cursor-move';
     }
     return 'cursor-pointer';

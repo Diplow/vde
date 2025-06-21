@@ -55,12 +55,14 @@ export function ItemTileContent({
   // Check if this tile is expanded
   const isExpanded = allExpandedItemIds.includes(item.metadata.dbId);
   
-  // Create tile data with expanded state
+  // Create tile data with expanded state and permissions
   const tileDataWithExpanded = {
     ...item,
     state: {
       ...item.state,
-      isExpanded
+      isExpanded,
+      canExpand: canEdit || hasChildren,  // Can expand if user owns tile OR tile has children
+      canEdit  // Add canEdit state for drag/edit/delete operations
     }
   };
   

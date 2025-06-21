@@ -1,16 +1,8 @@
-import { test, expect } from '@playwright/test';
-import type { Page } from '@playwright/test';
+import { test, expect } from '@playwright/test'
 
 test.describe('Toolbox - Disabled Tools', () => {
-  let page: Page;
-
-  test.beforeEach(async ({ browser }) => {
-    // Create a new page for each test
-    page = await browser.newPage();
-  });
-
-  test.afterEach(async () => {
-    await page.close();
+  test.beforeEach(async ({ page }) => {
+    // Setup for each test
   });
 
   test('disables create, edit, and delete tools when navigating to non-owned space', async () => {

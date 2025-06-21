@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTileActions } from '../../Canvas/TileActionsContext';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { cn } from '~/lib/utils';
@@ -10,9 +10,6 @@ import {
   Edit, 
   Trash2, 
   ChevronRight,
-  ChevronLeft,
-  ChevronDown,
-  ChevronUp,
   Maximize2,
   Move,
 } from 'lucide-react';
@@ -29,8 +26,8 @@ interface ToolConfig {
 }
 
 const TOOLS: ToolConfig[] = [
-  { id: 'navigate', label: 'Navigate', icon: Navigation, shortcut: 'N', color: 'cyan' },
   { id: 'expand', label: 'Expand', icon: Maximize2, shortcut: 'X', color: 'indigo' },
+  { id: 'navigate', label: 'Navigate', icon: Navigation, shortcut: 'N', color: 'cyan' },
   { id: 'create', label: 'Create', icon: Plus, shortcut: 'C', color: 'green' },
   { id: 'edit', label: 'Edit', icon: Edit, shortcut: 'E', color: 'amber' },
   { id: 'drag', label: 'Move', icon: Move, shortcut: 'M', color: 'purple' },
@@ -39,58 +36,63 @@ const TOOLS: ToolConfig[] = [
 
 export function Toolbox() {
   const { activeTool, setActiveTool, disabledTools } = useTileActions();
-  const [displayMode, setDisplayMode] = useState<DisplayMode>('closed');
   
   // Initialize keyboard shortcuts
   useKeyboardShortcuts();
 
-  // Persist display mode in localStorage and set initial cycle position
-  useEffect(() => {
-    const saved = localStorage.getItem('toolbox-display-mode') as DisplayMode | null;
-    if (saved && ['closed', 'icons', 'full'].includes(saved)) {
-      setDisplayMode(saved);
-      // Set initial cycle position based on saved mode
-      if (saved === 'closed') {
-        setCyclePosition(0);
-      } else if (saved === 'icons') {
-        // Default to position 1 (will go to full next)
-        setCyclePosition(1);
-      } else if (saved === 'full') {
-        setCyclePosition(2);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('toolbox-display-mode', displayMode);
-  }, [displayMode]);
-
   // Track which state we're in the cycle: 0=closed, 1=icons(->full), 2=full, 3=icons(->closed)
-  const [cyclePosition, setCyclePosition] = useState(0);
+  const [cyclePosition, setCyclePosition] = useState(() => {
+    // Initialize from localStorage
+    const savedPosition = localStorage.getItem('toolbox-cycle-position');
+    return savedPosition ? parseInt(savedPosition, 10) : 2; // Default to full mode (position 2)
+  });
+  
+  // Derive display mode from cycle position
+  const displayMode: DisplayMode = cyclePosition === 0 ? 'closed' : 
+                                  cyclePosition === 2 ? 'full' : 'icons';
 
-  const toggleDisplayMode = () => {
-    setCyclePosition((prev) => {
-      const nextPosition = (prev + 1) % 4;
-      
-      // Map cycle position to display mode
-      switch (nextPosition) {
-        case 0:
-          setDisplayMode('closed');
-          break;
-        case 1:
-          setDisplayMode('icons');
-          break;
-        case 2:
-          setDisplayMode('full');
-          break;
-        case 3:
-          setDisplayMode('icons');
-          break;
+  // Save cycle position to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('toolbox-cycle-position', cyclePosition.toString());
+  }, [cyclePosition]);
+
+  const toggleDisplayMode = useCallback(() => {
+    setCyclePosition((prev) => (prev + 1) % 4);
+  }, []);
+  
+  // Keyboard shortcut for toggling the toolbox
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ignore shortcuts when typing in input fields
+      const target = event.target as HTMLElement | null;
+      if (target) {
+        const isEditable = 
+          target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.contentEditable === 'true';
+        
+        if (isEditable) {
+          return;
+        }
       }
-      
-      return nextPosition;
-    });
-  };
+
+      // Ignore shortcuts when modifier keys are pressed
+      if (event.ctrlKey || event.altKey || event.metaKey) {
+        return;
+      }
+
+      // Toggle toolbox with 'T' key
+      if (event.key === 't' || event.key === 'T') {
+        event.preventDefault();
+        toggleDisplayMode();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [toggleDisplayMode]);
 
   const handleToolClick = (tool: ToolType) => {
     // Don't select disabled tools
@@ -101,7 +103,7 @@ export function Toolbox() {
     setActiveTool(tool);
     // If toolbox is closed, open it to icons mode when a tool is selected
     if (displayMode === 'closed') {
-      setDisplayMode('icons');
+      setCyclePosition(1); // Set to icons mode (position 1)
     }
   };
 
@@ -124,56 +126,87 @@ export function Toolbox() {
   return (
     <div className="fixed left-4 z-50" style={{ top: topOffset }}>
       <div className={cn(
-        "bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-700",
-        "transition-all duration-300 origin-top-left",
-        displayMode === 'closed' ? 'w-16 rounded-t-lg rounded-b-none' : displayMode === 'icons' ? 'w-16 rounded-lg' : 'w-48 rounded-lg',
-        // Different easing for opening vs closing
-        cyclePosition === 0 || cyclePosition === 3 ? 'ease-in' : 'ease-out'
+        "bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-700 rounded-lg",
+        "transition-all duration-300 ease-in-out origin-top-left",
+        displayMode === 'closed' ? 'w-16' : displayMode === 'icons' ? 'w-16' : 'w-48'
       )}>
         {/* Toggle button */}
         <button
           onClick={toggleDisplayMode}
-          className="w-full p-2 flex items-center justify-center bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 focus:bg-gray-200 dark:focus:bg-gray-700 rounded-t-lg rounded-b-none transition-colors duration-200 focus:outline-none"
+          className={cn(
+            "w-full h-12 flex items-center bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 focus:bg-gray-200 dark:focus:bg-gray-700 rounded-t-lg rounded-b-none transition-colors duration-200 focus:outline-none"
+          )}
           aria-label="Toggle toolbox"
           aria-expanded={displayMode !== 'closed'}
         >
-          <div className="relative w-5 h-5">
-            <ChevronDown className={cn(
-              "w-5 h-5 absolute inset-0 transition-opacity duration-300",
-              cyclePosition === 0 ? "opacity-100" : "opacity-0 pointer-events-none"
-            )} />
-            <ChevronRight className={cn(
-              "w-5 h-5 absolute inset-0 transition-opacity duration-300",
-              cyclePosition === 1 ? "opacity-100" : "opacity-0 pointer-events-none"
-            )} />
-            <ChevronLeft className={cn(
-              "w-5 h-5 absolute inset-0 transition-opacity duration-300",
-              cyclePosition === 2 ? "opacity-100" : "opacity-0 pointer-events-none"
-            )} />
-            <ChevronUp className={cn(
-              "w-5 h-5 absolute inset-0 transition-opacity duration-300",
-              cyclePosition === 3 ? "opacity-100" : "opacity-0 pointer-events-none"
-            )} />
+          {/* Single flex container that transitions smoothly */}
+          <div className={cn(
+            "w-full h-full flex items-center transition-all duration-300 ease-in-out",
+            displayMode === 'full' ? "justify-start gap-2 px-6" : "justify-center"
+          )}>
+            <ChevronRight 
+              className="w-5 h-5 flex-shrink-0 transition-transform ease-in-out"
+              style={{
+                transform: `rotate(${
+                  cyclePosition === 0 ? 90 :    // Down
+                  cyclePosition === 1 ? 0 :     // Right
+                  cyclePosition === 2 ? 180 :   // Left
+                  270                           // Up (270° instead of -90° for continuous rotation)
+                }deg)`,
+                transitionDuration: `${
+                  // 180° rotation for: position 2->3 (180° to 270°) and position 3->0 (270° to 90°)
+                  (cyclePosition === 3 || cyclePosition === 0) ? 300 : 150
+                }ms`
+              }}
+            />
+            
+            <span className={cn(
+              "text-sm font-medium transition-all duration-300",
+              displayMode === 'full' ? "opacity-100 flex-1 w-auto" : "opacity-0 w-0",
+              "text-gray-700 dark:text-gray-300"
+            )}>
+              Toolbox
+            </span>
+            
+            <span className={cn(
+              "text-xs font-medium px-1.5 py-0.5 rounded transition-all duration-300",
+              "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400",
+              displayMode === 'full' ? "opacity-100" : "opacity-0 w-0 px-0"
+            )}>
+              T
+            </span>
           </div>
         </button>
 
-        {/* Tools */}
+        {/* Separator - always visible */}
+        <div className="h-px bg-gray-200 dark:bg-gray-700" />
+
+        {/* Tools section */}
         <div className={cn(
-          "transition-all duration-300",
-          displayMode === 'closed' ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[400px] opacity-100',
-          cyclePosition === 0 || cyclePosition === 3 ? 'ease-in' : 'ease-out'
+          "transition-all duration-300 ease-in-out overflow-hidden",
+          displayMode === 'closed' ? 'max-h-[80px]' : 'max-h-[400px]'
         )}>
-          {/* Separator */}
-          <div className="h-px bg-gray-200 dark:bg-gray-700" />
-          
-          <div className="p-2 space-y-1.5 relative" role="toolbar" aria-label="Map tools">
-            {TOOLS.map((tool) => {
+          <div className="p-2 relative flex flex-col" role="toolbar" aria-label="Map tools">
+            {TOOLS.map((tool, index) => {
               const Icon = tool.icon;
               const isActive = activeTool === tool.id;
               const isDisabled = disabledTools.has(tool.id);
               
+              // Determine if this tool should be visible
+              const isClosing = cyclePosition === 0 && displayMode === 'icons';
+              const shouldHide = (displayMode === 'closed' || isClosing) && !isActive;
+              
+              const isLastVisibleTool = displayMode === 'closed' || (index === TOOLS.length - 1);
+              
               return (
-                <div key={tool.id} className="relative group overflow-visible">
+                <div 
+                  key={tool.id} 
+                  className={cn(
+                    "relative group overflow-visible transition-all duration-300 ease-in-out",
+                    shouldHide ? "opacity-0 max-h-0 scale-95" : "opacity-100 max-h-[48px] scale-100",
+                    !shouldHide && !isLastVisibleTool && "mb-1.5"
+                  )}
+                >
                   <button
                     onClick={() => handleToolClick(tool.id)}
                     onKeyDown={(e) => {
@@ -186,7 +219,7 @@ export function Toolbox() {
                     className={cn(
                       "w-full h-12 flex items-center justify-start rounded-lg transition-all duration-200 relative overflow-hidden",
                       displayMode === 'full' ? 'gap-2 px-2' : 'px-2',
-                      !isDisabled && "hover:bg-gray-100 dark:hover:bg-gray-800 hover:scale-105",
+                      !isDisabled && displayMode !== 'closed' && "hover:bg-gray-100 dark:hover:bg-gray-800 hover:scale-105",
                       "focus:outline-none focus:ring-2",
                       // Apply tool color to focus ring when active
                       isActive && !isDisabled && {
@@ -213,7 +246,7 @@ export function Toolbox() {
                   >
                     {/* Single flex container that transitions smoothly */}
                     <div className={cn(
-                      "w-full h-full flex items-center transition-all duration-300",
+                      "w-full h-full flex items-center transition-all duration-300 ease-in-out",
                       displayMode === 'full' ? "justify-start gap-2 px-2" : "justify-center"
                     )}>
                       <Icon className={cn(

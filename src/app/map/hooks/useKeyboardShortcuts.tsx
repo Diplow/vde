@@ -15,7 +15,7 @@ const TOOL_SHORTCUTS: Record<string, ToolType> = {
   'E': 'edit',
   'd': 'delete',
   'D': 'delete',
-  'Escape': 'select',
+  'Escape': 'expand',
 };
 
 export function useKeyboardShortcuts() {

@@ -6,6 +6,7 @@ import {
   useState,
   useCallback,
   useMemo,
+  useEffect,
   type ReactNode,
 } from "react";
 import type { TileData } from "../types/tile-data";
@@ -77,7 +78,13 @@ export function TileActionsProvider({
   activeTool: controlledActiveTool,
   setActiveTool: controlledSetActiveTool,
 }: TileActionsProviderProps) {
-  const [internalActiveTool, setInternalActiveTool] = useState<ToolType>('navigate');
+  const [internalActiveTool, setInternalActiveTool] = useState<ToolType>(() => {
+    // Initialize from localStorage, default to 'expand'
+    const savedTool = localStorage.getItem('active-tool') as ToolType | null;
+    return savedTool && ['select', 'navigate', 'create', 'edit', 'delete', 'expand', 'drag'].includes(savedTool) 
+      ? savedTool 
+      : 'expand';
+  });
   const [isDragging, setIsDragging] = useState(false);
   const [disabledTools, setDisabledTools] = useState<Set<ToolType>>(new Set());
 
@@ -87,7 +94,14 @@ export function TileActionsProvider({
 
   const handleSetActiveTool = useCallback((tool: ToolType) => {
     setActiveTool(tool);
+    // Save to localStorage
+    localStorage.setItem('active-tool', tool);
   }, [setActiveTool]);
+  
+  // Save active tool to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('active-tool', activeTool);
+  }, [activeTool]);
 
   const onTileClick = useCallback((tileData: TileData) => {
     switch (activeTool) {

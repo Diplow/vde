@@ -1,13 +1,21 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useKeyboardShortcuts } from './useKeyboardShortcuts'
-import { TileActionsProvider } from '../Canvas/TileActionsContext'
 import type { ReactNode } from 'react'
+import React from 'react'
+
+// Mock the TileActionsContext
+const mockSetActiveTool = vi.fn()
+vi.mock('../Canvas/TileActionsContext', () => ({
+  useTileActions: () => ({
+    activeTool: 'select',
+    setActiveTool: mockSetActiveTool,
+  }),
+}))
 
 describe('useKeyboardShortcuts', () => {
   let addEventListenerSpy: ReturnType<typeof vi.spyOn>
   let removeEventListenerSpy: ReturnType<typeof vi.spyOn>
-  const mockSetActiveTool = vi.fn()
 
   beforeEach(() => {
     addEventListenerSpy = vi.spyOn(document, 'addEventListener')
@@ -20,14 +28,8 @@ describe('useKeyboardShortcuts', () => {
     removeEventListenerSpy.mockRestore()
   })
 
-  const wrapper = ({ children }: { children: ReactNode }) => (
-    <TileActionsProvider
-      activeTool="select"
-      setActiveTool={mockSetActiveTool}
-    >
-      {children}
-    </TileActionsProvider>
-  )
+  // Wrapper is not needed since we're mocking the context
+  const wrapper = ({ children }: { children: ReactNode }) => <>{children}</>
 
   describe('Event Listener Management', () => {
     it('registers keyboard event listener on mount', () => {
@@ -87,9 +89,13 @@ describe('useKeyboardShortcuts', () => {
       handler(new KeyboardEvent('keydown', { key: 'd' }))
       expect(mockSetActiveTool).toHaveBeenCalledWith('delete')
 
-      // Test 'Escape' for select
+      // Test 'M' for drag
+      handler(new KeyboardEvent('keydown', { key: 'm' }))
+      expect(mockSetActiveTool).toHaveBeenCalledWith('drag')
+
+      // Test 'Escape' for expand (default)
       handler(new KeyboardEvent('keydown', { key: 'Escape' }))
-      expect(mockSetActiveTool).toHaveBeenCalledWith('select')
+      expect(mockSetActiveTool).toHaveBeenCalledWith('expand')
     })
 
     it('handles uppercase letters', () => {
@@ -230,7 +236,7 @@ describe('useKeyboardShortcuts', () => {
 
       const handler = addEventListenerSpy.mock.calls[0]?.[1] as EventListener
 
-      const event = new KeyboardEvent('keydown', { key: 'x' })
+      const event = new KeyboardEvent('keydown', { key: 'z' })
       const preventDefaultSpy = vi.spyOn(event, 'preventDefault')
 
       handler(event)

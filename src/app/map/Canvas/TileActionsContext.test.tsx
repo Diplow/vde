@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act, render } from '@testing-library/react'
 import { TileActionsProvider, useTileActions } from './TileActionsContext'
 import type { ReactNode } from 'react'
@@ -6,6 +6,10 @@ import React from 'react'
 import { createMockTileData } from '../test-utils/mockTileData'
 
 describe('TileActionsContext', () => {
+  beforeEach(() => {
+    // Clear localStorage before each test
+    window.localStorage.clear()
+  })
   describe('Tool State Management', () => {
     it('provides tool state with default value', () => {
       const wrapper = ({ children }: { children: ReactNode }) => (
@@ -14,7 +18,7 @@ describe('TileActionsContext', () => {
 
       const { result } = renderHook(() => useTileActions(), { wrapper })
 
-      expect(result.current.activeTool).toBe('navigate')
+      expect(result.current.activeTool).toBe('expand')
       expect(typeof result.current.setActiveTool).toBe('function')
     })
 
@@ -61,8 +65,8 @@ describe('TileActionsContext', () => {
       render(<TestComponent />)
 
       // Both should have same initial state
-      expect(results[0]?.activeTool).toBe('navigate')
-      expect(results[1]?.activeTool).toBe('navigate')
+      expect(results[0]?.activeTool).toBe('expand')
+      expect(results[1]?.activeTool).toBe('expand')
 
       // Update from consumer1
       act(() => {
