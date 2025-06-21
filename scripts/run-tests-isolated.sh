@@ -18,7 +18,8 @@ pnpm vitest run --config vitest.config.ts \
   --exclude "**/Toolbox.integration.test.tsx" \
   --exclude "**/useKeyboardShortcuts.test.tsx" \
   --exclude "**/ToolStateManager.test.tsx" \
-  --exclude "**/Toolbox.test.tsx"
+  --exclude "**/Toolbox.test.tsx" \
+  --exclude "**/item-tile-content.test.tsx"
 
 MAIN_EXIT_CODE=$?
 
@@ -33,7 +34,8 @@ pnpm vitest run --config vitest.config.ts --pool=forks --poolOptions.forks.singl
   src/app/map/Controls/Toolbox/Toolbox.integration.test.tsx \
   src/app/map/hooks/useKeyboardShortcuts.test.tsx \
   src/app/map/Controls/Toolbox/ToolStateManager.test.tsx \
-  src/app/map/Controls/Toolbox/Toolbox.test.tsx
+  src/app/map/Controls/Toolbox/Toolbox.test.tsx \
+  src/app/map/Tile/Item/_components/__tests__/item-tile-content.test.tsx
 
 REACT_EXIT_CODE=$?
 

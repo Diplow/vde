@@ -117,8 +117,21 @@ export function createNavigationHandler(config: NavigationHandlerConfig) {
 
       let urlUpdated = false;
 
-      // Skip URL updates for now - just update cache state
-      urlUpdated = false;
+      // Update URL with new center and filtered expanded items
+      if (router && existingItem) {
+        const newUrl = buildMapUrl(
+          existingItem.metadata.dbId,
+          filteredExpandedDbIds,
+        );
+        
+        // Use push or replace based on navigation options
+        if (options.pushToHistory ?? true) {
+          router.push(newUrl);
+        } else {
+          router.replace(newUrl);
+        }
+        urlUpdated = true;
+      }
 
       return {
         success: true,
@@ -245,7 +258,12 @@ export function createNavigationHandler(config: NavigationHandlerConfig) {
     // Update the cache state
     dispatch(cacheActions.toggleItemExpansion(itemId));
     
-    // Skip URL updates for now
+    // Update URL using replaceState to avoid adding to browser history
+    const newUrl = buildMapUrl(
+      centerItem.metadata.dbId,
+      currentExpanded,
+    );
+    router.replace(newUrl);
   };
 
   return {

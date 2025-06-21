@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render } from "@testing-library/react";
+import React from "react";
 import { ItemTileContent } from "../item-tile-content";
 import type { TileData } from "~/app/map/types/tile-data";
 import { TileActionsProvider } from "~/app/map/Canvas/TileActionsContext";
@@ -17,9 +18,9 @@ vi.mock("~/app/map/Cache/map-cache", () => ({
 }));
 
 // Mock the useTileInteraction hook to check the tileData passed to it
-let capturedTileData: any = null;
+let capturedTileData: TileData | null = null;
 vi.mock("~/app/map/hooks/useTileInteraction", () => ({
-  useTileInteraction: (props: any) => {
+  useTileInteraction: (props: { tileData: TileData }) => {
     capturedTileData = props.tileData;
     return {
       handleClick: vi.fn(),
@@ -94,7 +95,7 @@ describe("ItemTileContent - Scale 1 Expansion", () => {
 
     // Check that canExpand was set to false
     expect(capturedTileData).toBeDefined();
-    expect(capturedTileData.state.canExpand).toBe(false);
+    expect(capturedTileData?.state.canExpand).toBe(false);
   });
 
   it("should set canExpand to true for scale 1 tiles that are already expanded (can collapse)", () => {
@@ -127,8 +128,8 @@ describe("ItemTileContent - Scale 1 Expansion", () => {
 
     // Check that canExpand was set to true (because it can collapse)
     expect(capturedTileData).toBeDefined();
-    expect(capturedTileData.state.canExpand).toBe(true);
-    expect(capturedTileData.state.isExpanded).toBe(true);
+    expect(capturedTileData?.state.canExpand).toBe(true);
+    expect(capturedTileData?.state.isExpanded).toBe(true);
   });
 
   it("should set canExpand to true for scale 2 tiles with children", () => {
@@ -161,7 +162,7 @@ describe("ItemTileContent - Scale 1 Expansion", () => {
 
     // Check that canExpand was set to true
     expect(capturedTileData).toBeDefined();
-    expect(capturedTileData.state.canExpand).toBe(true);
+    expect(capturedTileData?.state.canExpand).toBe(true);
   });
 
   it("should set canExpand to false for scale 2 tiles without children and no edit permission", () => {
@@ -194,7 +195,7 @@ describe("ItemTileContent - Scale 1 Expansion", () => {
 
     // Check that canExpand was set to false
     expect(capturedTileData).toBeDefined();
-    expect(capturedTileData.state.canExpand).toBe(false);
+    expect(capturedTileData?.state.canExpand).toBe(false);
   });
 
   it("should set canExpand to true for scale 3 tiles with edit permission", () => {
@@ -227,6 +228,6 @@ describe("ItemTileContent - Scale 1 Expansion", () => {
 
     // Check that canExpand was set to true
     expect(capturedTileData).toBeDefined();
-    expect(capturedTileData.state.canExpand).toBe(true);
+    expect(capturedTileData?.state.canExpand).toBe(true);
   });
 });

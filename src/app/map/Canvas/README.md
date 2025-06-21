@@ -34,7 +34,15 @@ The Canvas component serves as the main container for the hexagonal map visualiz
 - Optimizes rendering for visible tiles only
 - Handles responsive layout adjustments
 
-### 6. **Tile Scale Management**
+### 6. **URL Sharing**
+- Synchronizes expanded tile state with the URL
+- Makes map views shareable via URL copy/paste
+- Uses `replaceState` for expansions (no back button clutter)
+- Preserves view state across page refreshes
+- Example: `/map?center=123&expandedItems=456,789`
+- See [Cache URL Synchronization](../Cache/README.md#url-synchronization) for details
+
+### 7. **Tile Scale Management**
 The canvas implements a sophisticated scaling system with "shell" mechanics for expanded tiles:
 
 #### Scale Hierarchy
@@ -84,6 +92,8 @@ The expand tool shows appropriate cursors based on state:
 - `cursor-zoom-in`: Can expand (scale 2+ tiles with children or edit permission)
 - `cursor-zoom-out`: Can collapse (any expanded tile, including scale 1)
 - `cursor-not-allowed`: Cannot expand (scale 1 tiles that aren't already expanded)
+
+When tiles are expanded or collapsed, the URL is automatically updated with the current expansion state, making the view shareable. The URL uses `replaceState` to avoid cluttering browser history with expansion changes.
 
 These mechanics ensure visual consistency while preventing invalid states in the tile hierarchy.
 
