@@ -80,16 +80,20 @@ export function useTileInteraction({
       return 'cursor-pointer';
     }
     if (activeTool === 'expand' && type === 'item') {
+      // Check if tile is already expanded
+      if (tileData && 'state' in tileData && tileData.state.isExpanded) {
+        return 'cursor-zoom-out';
+      }
       return 'cursor-zoom-in';
     }
     if (activeTool === 'create' && type === 'empty') {
-      return 'cursor-crosshair';
+      return 'cursor-cell';
     }
     if (activeTool === 'edit' && type === 'item') {
-      return 'cursor-pointer'; // Use pointer for edit mode
+      return 'cursor-text';
     }
     if (activeTool === 'delete' && type === 'item') {
-      return 'cursor-not-allowed';
+      return 'cursor-crosshair';
     }
     if (activeTool === 'select') {
       return 'cursor-pointer';
@@ -98,7 +102,7 @@ export function useTileInteraction({
       return 'cursor-move';
     }
     return 'cursor-pointer';
-  }, [activeTool, type]);
+  }, [activeTool, type, tileData]);
 
   // Determine if tile should show hover effects
   const shouldShowHoverEffects = useCallback(() => {

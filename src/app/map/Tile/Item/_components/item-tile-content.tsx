@@ -52,11 +52,23 @@ export function ItemTileContent({
   const router = useRouter();
   const { navigateToItem, toggleItemExpansionWithURL } = useMapCache();
   
+  // Check if this tile is expanded
+  const isExpanded = allExpandedItemIds.includes(item.metadata.dbId);
+  
+  // Create tile data with expanded state
+  const tileDataWithExpanded = {
+    ...item,
+    state: {
+      ...item.state,
+      isExpanded
+    }
+  };
+  
   // Use tile interaction hook for tool-based behavior
   const { handleClick, cursor, activeTool } = useTileInteraction({
     coordId: item.metadata.coordId,
     type: 'item',
-    tileData: item,
+    tileData: tileDataWithExpanded,
     onNavigate: () => {
       void navigateToItem(item.metadata.coordId, { pushToHistory: true }).catch((error) => {
         console.warn("Navigation failed, falling back to page navigation", error);

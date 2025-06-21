@@ -6,10 +6,12 @@ export type TileCursor =
   | "cursor-grab" // for draggable tiles
   | "cursor-grabbing" // for dragging tiles
   | "cursor-move" // for drag tool
-  | "cursor-crosshair" // for selecting tiles
+  | "cursor-crosshair" // for delete tool
   | "cursor-not-allowed" // for locked tiles
   | "cursor-zoom-in" // for expandable tiles
-  | "cursor-zoom-out"; // for expanded tiles
+  | "cursor-zoom-out" // for expanded tiles
+  | "cursor-cell" // for create tool
+  | "cursor-text"; // for edit tool
 
 export type TileStroke = {
   color: "transparent" | "zinc-950" | "zinc-900" | "zinc-800" | "zinc-50";
