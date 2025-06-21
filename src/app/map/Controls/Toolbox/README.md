@@ -1,60 +1,107 @@
 # Toolbox Component
 
-The Toolbox component provides a persistent menu for switching between different interaction modes (tools) when working with the hexagonal map interface.
+The Toolbox provides a UI for selecting tools to interact with the hexagonal map. It supports three display modes and smooth animations between states.
 
-## Test Files Created
+## Architecture
 
-### Unit Tests
-1. **`Toolbox.test.tsx`** - Tests for the Toolbox component
-   - Display modes (closed, icons, full)
-   - Tool selection and state management
-   - Keyboard shortcut tooltips
-   - Accessibility features
+### Core Components
 
-2. **`TileActionsContext.test.tsx`** - Tests for context extensions
-   - Tool state management
-   - Tool-specific click handlers
-   - Performance optimizations
+**Toolbox** (`Toolbox.tsx`)
+- Main container component
+- Manages tool selection and state
+- Coordinates sub-components
 
-3. **`useKeyboardShortcuts.test.tsx`** - Tests for keyboard shortcuts hook
-   - Event listener management
-   - Keyboard shortcut handling
-   - Input field conflict prevention
+**ToolboxToggle** (`_components/ToolboxToggle.tsx`)
+- Header button that controls expansion/collapse
+- Shows chevron with smooth rotation animation
+- Displays "Toolbox" label and "T" shortcut in full mode
 
-### Integration Tests
-4. **`Toolbox.integration.test.tsx`** - Tests for complete feature integration
-   - Tool-based tile interactions
-   - Visual feedback (cursors, highlights)
-   - Keyboard integration
-   - State persistence
+**ToolButton** (`_components/ToolButton.tsx`)
+- Individual tool button component
+- Handles active/disabled/hover states
+- Shows tool icon, label, and keyboard shortcut
 
-### E2E Tests
-5. **`tests/e2e/toolbox.spec.ts`** - End-to-end tests
-   - Toolbox display and toggling
-   - Tool selection and persistence
-   - Keyboard shortcuts
-   - Tool interactions with tiles
-   - Accessibility compliance
-   - Visual states and feedback
+**ToolTooltip** (`_components/ToolTooltip.tsx`)
+- Hover tooltip shown in icons mode
+- Displays tool name and keyboard shortcut
 
-## Implementation Status
+### Hooks
 
-✅ **Tests Created** - All test files have been created and are failing as expected
-❌ **Implementation Pending** - Component implementation has not started yet
+**useToolboxCycle** (`_hooks/useToolboxCycle.ts`)
+- Manages the 4-state animation cycle
+- Persists state to localStorage
+- Provides display mode derived from cycle position
 
-## Next Steps
+**useToolboxKeyboard** (`_hooks/useToolboxKeyboard.ts`)
+- Handles 'T' key for toggling toolbox
+- Respects input field focus and modifier keys
 
-1. Implement the Toolbox component
-2. Extend TileActionsContext with tool state
-3. Create useKeyboardShortcuts hook
-4. Update tile components to use active tool
-5. Add visual feedback (cursors, highlights)
-6. Ensure all tests pass
+### Utilities
 
-## Architecture Notes
+**tool-styles** (`_utils/tool-styles.ts`)
+- Centralized styling for tool buttons
+- Color theming system for each tool type
+- Handles active/disabled/hover states
 
-The implementation will follow Solution 1 from the issue document:
-- Context-based tool system using TileActionsContext
-- Floating panel with three display modes
-- Global keyboard shortcut handling
-- Tool-specific click handlers in tiles
+**toolbox-layout** (`_utils/toolbox-layout.ts`)
+- Calculates dynamic height based on tool count
+- Centers toolbox vertically on screen
+
+**toolbox-visibility** (`_utils/toolbox-visibility.ts`)
+- Manages complex visibility rules during animations
+- Converts cycle position to display mode
+- Controls chevron rotation angles
+
+## Display Modes
+
+1. **Closed**: Only shows toggle button and active tool
+2. **Icons**: Shows tool icons with hover tooltips
+3. **Full**: Shows icons, labels, and keyboard shortcuts
+
+## Animation Cycle
+
+The toolbox uses a 4-position cycle for smooth animations:
+```
+0: closed
+1: icons (opening from closed)
+2: full
+3: icons (closing to closed)
+```
+
+This allows different transition speeds and behaviors when opening vs closing.
+
+## Tools
+
+- **Expand** (X): Expand tiles to show children
+- **Navigate** (N): Navigate to different tiles
+- **Create** (C): Create new tiles
+- **Edit** (E): Edit tile content
+- **Move** (M): Drag tiles to new positions
+- **Delete** (D): Delete tiles
+
+## Keyboard Shortcuts
+
+- **T**: Toggle toolbox display mode
+- **X/N/C/E/M/D**: Select respective tools (when not in input fields)
+
+## State Management
+
+- Active tool is managed by `TileActionsContext`
+- Display mode persists to localStorage
+- Disabled tools are determined by map state
+
+## Styling
+
+Each tool has an associated color theme:
+- Expand: Indigo
+- Navigate: Cyan
+- Create: Green
+- Edit: Amber
+- Move: Purple
+- Delete: Rose
+
+Colors are applied to:
+- Button background when active
+- Focus ring color
+- Icon and text colors
+- Consistent theming across light/dark modes
