@@ -42,7 +42,7 @@ describe("ItemTileContent - Scale 1 Expansion", () => {
         path: [1],
       },
       depth: 1,
-      parentId: null,
+      parentId: undefined,
     },
     data: {
       name: "Test Tile",
@@ -73,11 +73,15 @@ describe("ItemTileContent - Scale 1 Expansion", () => {
           item={testTile}
           scale={1}
           baseHexSize={50}
-          tileColor="zinc-50"
+          tileColor={{ color: "zinc", tint: "50" }}
           testId="test-tile"
           interactive={true}
           isBeingDragged={false}
-          urlInfo={{ hasURL: false }}
+          urlInfo={{ 
+            pathname: "/map",
+            searchParamsString: "",
+            rootItemId: "root"
+          }}
           allExpandedItemIds={[]} // Not expanded
           hasChildren={true} // Even with children, scale 1 shouldn't be expandable
           isCenter={false}
@@ -102,11 +106,15 @@ describe("ItemTileContent - Scale 1 Expansion", () => {
           item={testTile}
           scale={1}
           baseHexSize={50}
-          tileColor="zinc-50"
+          tileColor={{ color: "zinc", tint: "50" }}
           testId="test-tile"
           interactive={true}
           isBeingDragged={false}
-          urlInfo={{ hasURL: false }}
+          urlInfo={{ 
+            pathname: "/map",
+            searchParamsString: "",
+            rootItemId: "root"
+          }}
           allExpandedItemIds={["1"]} // This tile is expanded
           hasChildren={true}
           isCenter={false}
@@ -132,11 +140,15 @@ describe("ItemTileContent - Scale 1 Expansion", () => {
           item={testTile}
           scale={2}
           baseHexSize={50}
-          tileColor="zinc-50"
+          tileColor={{ color: "zinc", tint: "50" }}
           testId="test-tile"
           interactive={true}
           isBeingDragged={false}
-          urlInfo={{ hasURL: false }}
+          urlInfo={{ 
+            pathname: "/map",
+            searchParamsString: "",
+            rootItemId: "root"
+          }}
           allExpandedItemIds={[]}
           hasChildren={true}
           isCenter={false}
@@ -161,11 +173,15 @@ describe("ItemTileContent - Scale 1 Expansion", () => {
           item={testTile}
           scale={2}
           baseHexSize={50}
-          tileColor="zinc-50"
+          tileColor={{ color: "zinc", tint: "50" }}
           testId="test-tile"
           interactive={true}
           isBeingDragged={false}
-          urlInfo={{ hasURL: false }}
+          urlInfo={{ 
+            pathname: "/map",
+            searchParamsString: "",
+            rootItemId: "root"
+          }}
           allExpandedItemIds={[]}
           hasChildren={false}
           isCenter={false}
@@ -190,11 +206,15 @@ describe("ItemTileContent - Scale 1 Expansion", () => {
           item={testTile}
           scale={3}
           baseHexSize={50}
-          tileColor="zinc-50"
+          tileColor={{ color: "zinc", tint: "50" }}
           testId="test-tile"
           interactive={true}
           isBeingDragged={false}
-          urlInfo={{ hasURL: false }}
+          urlInfo={{ 
+            pathname: "/map",
+            searchParamsString: "",
+            rootItemId: "root"
+          }}
           allExpandedItemIds={[]}
           hasChildren={false}
           isCenter={true}
